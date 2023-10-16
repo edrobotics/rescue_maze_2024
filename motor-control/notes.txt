@@ -1,0 +1,6 @@
+PID Library: https://github.com/br3ttb/Arduino-PID-Library
+Motor PID Library: https://github.com/natnqweb/Motor_PID
+
+Need to make it clear how it is done whether both edges are counted or just one, with CPR.
+
+Need to check all types, especially float/double with the PID Library
