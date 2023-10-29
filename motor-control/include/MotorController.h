@@ -38,14 +38,14 @@ class MotorController
 
     // Encoder tracking
     Encoder encoder;
-    long encoderPos {0}; // Position of the encoder, in ticks. Reversing applies here already. A long should be sufficient for unreasonably large distances...
+    long encoderPos {0L}; // Position of the encoder, in ticks. Reversing applies here already. A long should be sufficient for unreasonably large distances...
     float curMotorSpeed {0}; // Current motor speed in rpm
     // double curMotorOutSpeed {0}; // Current output shaft speed in rpm. Not really used?
     // const long MILLIS_PER_MINUTE {long(60000)};
-    #define MICROS_PER_MINUTE 60000000 // Bad to use #define? 60e6 micros per minute
+    #define MICROS_PER_MINUTE 60000000L // Bad to use #define? 60e6 micros per minute
 
     // Distance measuring
-    long tickStartDistance {0}; // Ticks driven since begin of distancemeasure
+    long tickStartDistance {0L}; // Ticks driven since begin of distancemeasure
 
     // Motor controlling
     int pwmPin;
@@ -58,7 +58,7 @@ class MotorController
     // PID
     #warning untuned constants
     float Kp {0.03};
-    float Ki {0};
+    float Ki {0.02};
     float Kd {0};
     QuickPID pid {&curMotorSpeed, &speedCorrection, &motorSpeed, Kp, Ki, Kd, QuickPID::pMode::pOnError, QuickPID::dMode::dOnMeas, QuickPID::iAwMode::iAwCondition, QuickPID::Action::direct};
     uint32_t pidSampleTimeUs = 10000; // How often the PID loop should update, in microseconds

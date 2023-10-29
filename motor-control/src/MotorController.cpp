@@ -28,8 +28,8 @@ bool MotorController::init()
 
 void MotorController::setSpeed(double speed)
 {
-    outputSpeed = speed;
-    motorSpeed = outputSpeed*encOutputRatio;
+    // outputSpeed = speed; // Should not be updated here? Not needed?
+    motorSpeed = speed*encOutputRatio;
 }
 
 void MotorController::setPWM(int pwmSpeed)
@@ -59,7 +59,8 @@ void MotorController::setPWM(int pwmSpeed)
 
 double MotorController::rpmToPwm(double rpmSpeed)
 {
-    return rpmSpeed/encOutputRatio;
+    // return rpmSpeed/encOutputRatio;
+    return rpmSpeed/33.4154675813246;
 }
 
 bool MotorController::update()
@@ -79,13 +80,19 @@ bool MotorController::update(bool usePIDCorr)
         return false;
     }
 
-    int read = encoder.read();
+    long read = encoder.read();
     encoderPos = (isReversed) ? -read : read;
 
     // Calculate speeds
     #warning possible overflows and truncations ahead. Fixed?
     if (updateTime==lastUpdateTime) return; // Would result in division by 0
     curMotorSpeed = double(encoderPos-lastEncoderPos)/double(cpr*(updateTime-lastUpdateTime)) * double(MICROS_PER_MINUTE);
+    // If the value is this large, something is wrong. Should fix problems with very negative numbers.
+    if (abs(curMotorSpeed)>15000)
+    {
+        #warning dirty fix for the negative values? Yes, it is dirty and it blocks the PID for long periods when the value is negative
+        return false;
+    }
 
     // PID Loop calculation
     // Updates speedCorrection
@@ -95,11 +102,17 @@ bool MotorController::update(bool usePIDCorr)
         Serial.println("----------------------ABORTED----------------------------");
         return false;
     }
+
+    if (motorSpeed==0)
+    {
+        #warning crude solution for integral term problem that will not work later
+        pid.Reset(); // Reset the controller to prevent integral windup.
+    }
     
     // Speed correction by PWM
     if (usePIDCorr==true)
     {
-        setPWM(rpmToPwm(curMotorSpeed)+speedCorrection);
+        setPWM(rpmToPwm(motorSpeed)+speedCorrection);
     }
 
     // Serial.print("encoderPos:");Serial.print(encoderPos);Serial.print(",");
@@ -136,13 +149,13 @@ double MotorController::getOutputSpeed()
 
 void MotorController::printValues()
 {
-    // Serial.print("motorSpeed:");Serial.print(motorSpeed);Serial.print(",");
+    Serial.print("motorSpeed:");Serial.print(motorSpeed);Serial.print(",");
     Serial.print("curMotorSpeed:");Serial.print(curMotorSpeed);Serial.print(",");
     // Serial.print("curPWM:");Serial.print(curPWM);Serial.print(",");
-    // Serial.print("speedCorrection:");Serial.print(speedCorrection);Serial.print(",");
+    Serial.print("speedCorrection:");Serial.print(speedCorrection);Serial.print(",");
     // Serial.print("error:");Serial.print(motorSpeed-curMotorSpeed);Serial.print(",");
-    // Serial.print("speedCorrection:");Serial.print(speedCorrection);Serial.print(",");
-    // Serial.print("outputSpeed:");Serial.print(getOutputSpeed());Serial.print(",");
+    Serial.print("outputSpeed:");Serial.print(getOutputSpeed());Serial.print(",");
+    Serial.print("encoderPos:");Serial.print(encoderPos);Serial.print(",");
     Serial.println("");
 }
 
@@ -150,6 +163,21 @@ void MotorController::printMotorSpeed()
 {
     Serial.println(curMotorSpeed);
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 void MotorController::pwmRPMCalibration()
 {
