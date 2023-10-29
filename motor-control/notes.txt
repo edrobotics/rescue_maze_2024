@@ -4,3 +4,13 @@ Motor PID Library: https://github.com/natnqweb/Motor_PID
 Need to make it clear how it is done whether both edges are counted or just one, with CPR.
 
 Need to check all types, especially float/double with the PID Library
+
+Left to do:
+Migrate to teensy?
+Tune constants
+Handle integral windup
+Incorporate PWM "bump"?
+Finish calibration routine:
+    Make linear regression on the Arduino
+    Store the regression function in EEPROM(or other)
+Communication with raspberry
