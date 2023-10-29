@@ -14,7 +14,8 @@ class MotorController
     MotorController(int enA, int enB, int pwmPin, int dirPin, double encRatio, int cpr);
     
     bool init();
-    void update(); // Read encoder positions and set new PID loop value
+    bool update(); // Read encoder positions and set new PID loop value
+    bool update(bool usePIDCorr); // Read encoder positions and calculates values. Does NOT correct, just calculates.
     void setSpeed(double speed); // Sets the speed in rpm
     void setPWM(int pwmSpeed); // Sets the PWM output. Clamps if too great.
 
@@ -25,6 +26,8 @@ class MotorController
     bool isReversed {false}; // If the direction of the motor is inverted. Should this apply to the encoderPosition as well?
 
     void printValues();
+    void printMotorSpeed();
+    void pwmRPMCalibration(); // Calibrate the pwm to rpm curve. Currently outputs csv for calculation in spreadsheet program.
 
 
     private:
@@ -39,7 +42,7 @@ class MotorController
     float curMotorSpeed {0}; // Current motor speed in rpm
     // double curMotorOutSpeed {0}; // Current output shaft speed in rpm. Not really used?
     // const long MILLIS_PER_MINUTE {long(60000)};
-    #define MILLIS_PER_MINUTE 60000 // Bad to use #define?
+    #define MICROS_PER_MINUTE 60000000 // Bad to use #define? 60e6 micros per minute
 
     // Distance measuring
     long tickStartDistance {0}; // Ticks driven since begin of distancemeasure
@@ -50,13 +53,22 @@ class MotorController
     double outputSpeed {0}; // Wanted output speed in rpm
     float motorSpeed {0}; // Wanted motor speed in rpm
     float speedCorrection;
+    int curPWM {0}; // Current PWM signal
 
     // PID
     #warning untuned constants
-    float Kp {0.04};
+    float Kp {0.03};
     float Ki {0};
     float Kd {0};
     QuickPID pid {&curMotorSpeed, &speedCorrection, &motorSpeed, Kp, Ki, Kd, QuickPID::pMode::pOnError, QuickPID::dMode::dOnMeas, QuickPID::iAwMode::iAwCondition, QuickPID::Action::direct};
+    uint32_t pidSampleTimeUs = 10000; // How often the PID loop should update, in microseconds
+    
+    double rpmToPwm(double rpmSpeed); // Function to convert motor rpm values to pwm values during no-load operation.
+    
+    // Calibration of rpmToPwm function
+    int calibrationIterations = 242;
+    double calibrateSinglePWM_RPM(int pwmToCal); // Returns the rpm corresponding to the pwm
+    void printCsvVars(int PWM, double RPM);
     
 
 };
