@@ -592,6 +592,9 @@
     (property "Datasheet" "" (at 0 0 0)
       (effects (font (size 1.27 1.27)) hide)
     )
+    (property "ki_fp_filters" "JST_XH_?6* JST_XH_?7* PinSocket_1?06* PinSocket_1?07*" (at 0 0 0)
+      (effects (font (size 1.27 1.27)) hide)
+    )
     (symbol "VL53L0X/VL53L1X_1_1"
       (rectangle (start -3.81 1.27) (end 3.81 -16.51)
         (stroke (width 0) (type default))
