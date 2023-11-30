@@ -175,7 +175,8 @@
         0.0,
         0.3,
         0.5,
-        1.0
+        1.0,
+        2.0
       ],
       "via_dimensions": [
         {
@@ -452,7 +453,7 @@
       "idf": "",
       "netlist": "",
       "specctra_dsn": "",
-      "step": "",
+      "step": "kicad_RCJ_3dtest.step",
       "vrml": ""
     },
     "page_layout_descr_file": ""
