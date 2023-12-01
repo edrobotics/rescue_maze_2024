@@ -453,7 +453,7 @@
       "idf": "",
       "netlist": "",
       "specctra_dsn": "",
-      "step": "kicad_RCJ_3dtest.step",
+      "step": "3d-models/kicad_RCJ_3dtest.step",
       "vrml": ""
     },
     "page_layout_descr_file": ""
