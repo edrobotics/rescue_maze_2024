@@ -40,8 +40,28 @@
   (pad "13" thru_hole circle (at 12.7 -2.54) (size 1.524 1.524) (drill 0.762) (layers "*.Cu" "*.Mask") (tstamp b96aac78-9109-4b9a-91b5-91b124242b88))
   (pad "14" thru_hole circle (at 12.7 0) (size 1.524 1.524) (drill 0.762) (layers "*.Cu" "*.Mask") (tstamp 1123940c-2c7e-44a7-8fac-a103513a812b))
   (model "${KIPRJMOD}/3d-models/drv887x-single-brushed-dc-motor-driver-carrier.step"
-    (opacity 0.7900)    (offset (xyz -1.24 -1.28 3.5))
+    (opacity 0.7900)    (offset (xyz -1.24 -1.28 9.5))
     (scale (xyz 1 1 1))
     (rotate (xyz 0 0 0))
+  )
+  (model "${KICAD7_3DMODEL_DIR}/Connector_PinSocket_2.54mm.3dshapes/PinSocket_1x07_P2.54mm_Vertical.step"
+    (offset (xyz 0 0 0))
+    (scale (xyz 1 1 1))
+    (rotate (xyz 0 0 -180))
+  )
+  (model "${KICAD7_3DMODEL_DIR}/Connector_PinSocket_2.54mm.3dshapes/PinSocket_1x07_P2.54mm_Vertical.step"
+    (offset (xyz 12.7 0 0))
+    (scale (xyz 1 1 1))
+    (rotate (xyz 0 0 -180))
+  )
+  (model "${KICAD7_3DMODEL_DIR}/Connector_PinHeader_2.54mm.3dshapes/PinHeader_1x07_P2.54mm_Vertical.step"
+    (offset (xyz 0 0 9.5))
+    (scale (xyz 1 1 1))
+    (rotate (xyz 0 180 -180))
+  )
+  (model "${KICAD7_3DMODEL_DIR}/Connector_PinHeader_2.54mm.3dshapes/PinHeader_1x07_P2.54mm_Vertical.step"
+    (offset (xyz 12.7 0 9.5))
+    (scale (xyz 1 1 1))
+    (rotate (xyz 0 180 -180))
   )
 )

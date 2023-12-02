@@ -29,4 +29,29 @@
   (pad "10" thru_hole circle (at 7.62 -12.7) (size 1.524 1.524) (drill 0.762) (layers "*.Cu" "*.Mask") (tstamp 064e2deb-f229-43fc-a3e6-9cb1b48bec3c))
   (pad "11" thru_hole circle (at 10.16 -12.7) (size 1.524 1.524) (drill 0.762) (layers "*.Cu" "*.Mask") (tstamp 0eeae026-cd26-4654-a6e1-26c918de72d2))
   (pad "12" thru_hole circle (at 12.7 -12.7) (size 1.524 1.524) (drill 0.762) (layers "*.Cu" "*.Mask") (tstamp 234ce6f3-57f7-45d6-a5e3-3ed2a5050470))
+  (model "${KIPRJMOD}/3d-models/ICM20948_LSM6DSOX_copy.step"
+    (offset (xyz -6.35 -2.54 9.5))
+    (scale (xyz 1 1 1))
+    (rotate (xyz 0 0 0))
+  )
+  (model "${KICAD7_3DMODEL_DIR}/Connector_PinSocket_2.54mm.3dshapes/PinSocket_1x06_P2.54mm_Vertical.step"
+    (offset (xyz 0 0 0))
+    (scale (xyz 1 1 1))
+    (rotate (xyz 0 0 -90))
+  )
+  (model "${KICAD7_3DMODEL_DIR}/Connector_PinSocket_2.54mm.3dshapes/PinSocket_1x06_P2.54mm_Vertical.step"
+    (offset (xyz 0 12.7 0))
+    (scale (xyz 1 1 1))
+    (rotate (xyz 0 0 -90))
+  )
+  (model "${KICAD7_3DMODEL_DIR}/Connector_PinHeader_2.54mm.3dshapes/PinHeader_1x06_P2.54mm_Vertical.step"
+    (offset (xyz 0 0 9.5))
+    (scale (xyz 1 1 1))
+    (rotate (xyz 0 180 -90))
+  )
+  (model "${KICAD7_3DMODEL_DIR}/Connector_PinHeader_2.54mm.3dshapes/PinHeader_1x06_P2.54mm_Vertical.step"
+    (offset (xyz 0 12.7 9.5))
+    (scale (xyz 1 1 1))
+    (rotate (xyz 0 180 -90))
+  )
 )

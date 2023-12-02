@@ -88,4 +88,44 @@
   (pad "25" thru_hole circle (at 21.59 -5.08) (size 1.524 1.524) (drill 0.762) (layers "*.Cu" "*.Mask") (tstamp f4b3da48-2d1a-44c1-8009-8d60b85a7dd8))
   (pad "25" thru_hole circle (at 21.59 -2.54) (size 1.524 1.524) (drill 0.762) (layers "*.Cu" "*.Mask") (tstamp af4ef12c-caa7-4803-9067-2620f61fb518))
   (pad "25" thru_hole circle (at 21.59 0) (size 1.524 1.524) (drill 0.762) (layers "*.Cu" "*.Mask") (tstamp 151303c1-7fa7-4233-a548-913ac925e341))
+  (model "${KICAD7_3DMODEL_DIR}/Connector_PinSocket_2.54mm.3dshapes/PinSocket_1x08_P2.54mm_Vertical.step"
+    (offset (xyz 0 0 0))
+    (scale (xyz 1 1 1))
+    (rotate (xyz 0 0 -180))
+  )
+  (model "${KICAD7_3DMODEL_DIR}/Connector_PinSocket_2.54mm.3dshapes/PinSocket_1x08_P2.54mm_Vertical.step"
+    (offset (xyz -5.08 0 0))
+    (scale (xyz 1 1 1))
+    (rotate (xyz 0 0 -180))
+  )
+  (model "${KICAD7_3DMODEL_DIR}/Connector_PinSocket_2.54mm.3dshapes/PinSocket_1x08_P2.54mm_Vertical.step"
+    (offset (xyz -2.54 0 0))
+    (scale (xyz 1 1 1))
+    (rotate (xyz 0 0 -180))
+  )
+  (model "${KICAD7_3DMODEL_DIR}/Connector_PinSocket_2.54mm.3dshapes/PinSocket_1x08_P2.54mm_Vertical.step"
+    (offset (xyz 24.12 0 0))
+    (scale (xyz 1 1 1))
+    (rotate (xyz 0 0 -180))
+  )
+  (model "${KICAD7_3DMODEL_DIR}/Connector_PinSocket_2.54mm.3dshapes/PinSocket_1x08_P2.54mm_Vertical.step"
+    (offset (xyz 21.58 0 0))
+    (scale (xyz 1 1 1))
+    (rotate (xyz 0 0 -180))
+  )
+  (model "${KICAD7_3DMODEL_DIR}/Connector_PinSocket_2.54mm.3dshapes/PinSocket_1x08_P2.54mm_Vertical.step"
+    (offset (xyz 19.04 0 0))
+    (scale (xyz 1 1 1))
+    (rotate (xyz 0 0 -180))
+  )
+  (model "${KICAD7_3DMODEL_DIR}/Connector_PinSocket_2.54mm.3dshapes/PinSocket_1x04_P2.54mm_Vertical.step"
+    (offset (xyz 6.35 -10.16 0))
+    (scale (xyz 1 1 1))
+    (rotate (xyz 0 0 -90))
+  )
+  (model "${KICAD7_3DMODEL_DIR}/Connector_PinSocket_2.54mm.3dshapes/PinSocket_1x03_P2.54mm_Vertical.step"
+    (offset (xyz 7.62 -5.7 0))
+    (scale (xyz 1 1 1))
+    (rotate (xyz 0 0 -90))
+  )
 )

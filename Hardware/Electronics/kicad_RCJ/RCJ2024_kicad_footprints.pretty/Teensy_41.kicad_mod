@@ -73,4 +73,29 @@
   (pad "46" thru_hole circle (at 15.24 -55.88) (size 1.524 1.524) (drill 0.762) (layers "*.Cu" "*.Mask") (tstamp 5cd8309a-30b5-4f9b-9a1e-cf193bc1b8d1))
   (pad "47" thru_hole circle (at 15.24 -58.42) (size 1.524 1.524) (drill 0.762) (layers "*.Cu" "*.Mask") (tstamp 7a9b46d8-33be-4f71-af95-f7bae605ec2d))
   (pad "48" thru_hole circle (at 0 -22.86) (size 1.524 1.524) (drill 0.762) (layers "*.Cu" "*.Mask") (tstamp a30a17e3-f976-47c4-882e-566aea49a97d))
+  (model "${KICAD7_3DMODEL_DIR}/Connector_PinSocket_2.54mm.3dshapes/PinSocket_1x24_P2.54mm_Vertical.step"
+    (offset (xyz 0 0 0))
+    (scale (xyz 1 1 1))
+    (rotate (xyz 0 0 -180))
+  )
+  (model "${KICAD7_3DMODEL_DIR}/Connector_PinSocket_2.54mm.3dshapes/PinSocket_1x24_P2.54mm_Vertical.step"
+    (offset (xyz 15.24 0 0))
+    (scale (xyz 1 1 1))
+    (rotate (xyz 0 0 -180))
+  )
+  (model "${KICAD7_3DMODEL_DIR}/Connector_PinHeader_2.54mm.3dshapes/PinHeader_1x24_P2.54mm_Vertical.step"
+    (offset (xyz 0 0 9.5))
+    (scale (xyz 1 1 1))
+    (rotate (xyz 0 180 -180))
+  )
+  (model "${KICAD7_3DMODEL_DIR}/Connector_PinHeader_2.54mm.3dshapes/PinHeader_1x24_P2.54mm_Vertical.step"
+    (offset (xyz 15.24 0 9.5))
+    (scale (xyz 1 1 1))
+    (rotate (xyz 0 180 -180))
+  )
+  (model "${KIPRJMOD}/3d-models/teensy_4.1.step"
+    (offset (xyz 7.615 59.67 9.5))
+    (scale (xyz 1 1 1))
+    (rotate (xyz -90 0 90))
+  )
 )
