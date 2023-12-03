@@ -1,4 +1,4 @@
-22186875042134337
+22186875601592996
 Audio_Module
 Reverb_BTDR-1H
 Digital Reverberation Unit, http://www.belton.co.kr/inc/downfile.php?seq=17&file=pdf (footprint from http://www.uk-electronic.de/PDF/BTDR-1.pdf)
@@ -80983,12 +80983,12 @@ Teensy_41
 48
 48
 RCJ2024_kicad_footprints
-VL53L0X_VL53L1X_connector
+lidar
 
 
 0
-5
-5
+0
+0
 RF
 Skyworks_SKY13575_639LF
 http://www.skyworksinc.com/uploads/documents/SKY13575_639LF_203270D.pdf
