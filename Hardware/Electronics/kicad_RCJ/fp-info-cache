@@ -1,4 +1,4 @@
-22186875614931979
+22188577575389147
 Audio_Module
 Reverb_BTDR-1H
 Digital Reverberation Unit, http://www.belton.co.kr/inc/downfile.php?seq=17&file=pdf (footprint from http://www.uk-electronic.de/PDF/BTDR-1.pdf)
@@ -80963,6 +80963,13 @@ ICM2049
 12
 RCJ2024_kicad_footprints
 IO_Expander
+
+
+0
+55
+25
+RCJ2024_kicad_footprints
+IO_Expander_nopower
 
 
 0
