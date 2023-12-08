@@ -8,8 +8,8 @@ using namespace std;
 int main()
 {
     thread fusionT = thread(mainFusion);
-    thread globNavT = thread(mainFusion);
-    thread locNavT = thread(mainFusion);
+    thread globNavT = thread(mainGlobalNav);
+    thread locNavT = thread(mainLocalNav);
 
     fusionT.join();
     globNavT.join();
