@@ -1,6 +1,6 @@
 #!/bin/bash
 
-g++ -g ./src/*.cpp -I./include/ `pkg-config --cflags --libs opencv4` -o ldlidar
+g++ -g -std=gnu++17 ./src/*.cpp -I./include/ `pkg-config --cflags --libs opencv4` -o ldlidar -Ofast #use O3 or O2 if not working
 chmod +x ldlidar
 
-echo "compiled successfully"
+echo "compiled successfully (maybe)"

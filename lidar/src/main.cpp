@@ -5,9 +5,22 @@
 #include <ldlidar_driver/ldlidar_driver_linux.h>
 
 #include <iostream>
+#include <fstream>
 #include <chrono>
 #include <math.h>
 #include <thread>
+
+#define CODE_READ_LIDAR
+
+#ifndef CODE_READ_LIDAR
+#define CODE_READ_FILE_TXT
+// #define CODE_READ_FILE_IMG
+#else
+#define CODE_SAVE_TXT
+#define CODE_SAVE_SCAN
+#define CODE_SAVE_SCANPLT
+#define CODE_SAVE_LATEST
+#endif
 
 #define PORT "/dev/ttyUSB0" //COM4?
 #define BAUDRATE 230400U
@@ -15,13 +28,23 @@
 #define PROJECTPATH std::string("/home/markfri/code/rescue_maze_2024/lidar/")
 #define SCANPATH PROJECTPATH + std::string("img/scans/")
 #define BASEIMGPATH PROJECTPATH + std::string("img/base.png")
-#define SCAN_BASENAME SCANPATH + string("ldlidar_scan_")
+#define SCAN_BASENAME SCANPATH + std::string("ldlidar_scan_")
+#define SCANTXT_PATH SCANPATH + std::string("ldlidar_scan_latest.txt")
+#define SCANTXT_BASE SCANPATH + std::string("ldlidar_scan_")
+
+#ifdef CODE_READ_FILE_IMG
+#define READ_FILE_IMG_PATH SCANPATH + std::string("latest.png")
+#endif
 
 using namespace std;
 using namespace ldlidar;
 using namespace cv;
 
+void writeFile(Points2D& points);
+
 void createCoords(Points2D& points);
+
+Points2D pointsFromTxt(string path);
 
 struct SLine;
 
@@ -32,10 +55,16 @@ SLine LineFitRANSAC(
     int T,//number of expected minimum inliers 
     std::vector<cv::Point>& nzPoints);
 
+// void LineMod(SLine &&line) // Rvalue reference - use in main program?
+// {
+
+// }
+
 int main(int argc, char const *argv[]) //TESTA FÖRSTORING AV PUNKTER??? , expandera mer i riktningen åt senare och tidigare punkter (om de är sorterade efter vinkel i point2d)
 {
-     LDLidarDriverLinuxInterface ldInterface;
-    // ldInterface.RegisterGetTimestampFunctional(std::bind(GetSystemTimeStamp));
+    #ifndef CODE_READ_FILE_IMG
+    #ifdef CODE_READ_LIDAR
+    LDLidarDriverLinuxInterface ldInterface;
     if (!ldInterface.Connect(LDType::LD_19, PORT, BAUDRATE))
     {
       cout << "Could not connect to lidar on port " + string(PORT) << endl;
@@ -53,7 +82,12 @@ int main(int argc, char const *argv[]) //TESTA FÖRSTORING AV PUNKTER??? , expan
     Points2D points;
     // for (int i = 0; i < 10; i++)
     // {
-      ldInterface.GetLaserScanData(points);
+    ldInterface.GetLaserScanData(points);
+
+    #elif CODE_READ_FILE_TXT
+    Points2D points = pointsFromTXT(SCANTXT_PATH, 0);
+    #endif
+
       cout << points.size() << " - size\n";
       createCoords(points);
       // cout << points[1].angle << " - ang\n";
@@ -64,7 +98,7 @@ int main(int argc, char const *argv[]) //TESTA FÖRSTORING AV PUNKTER??? , expan
       cout << points[0].x << "," << points[0].y << " - xy\n" << points[0].angle << " - angle\n";
       std::this_thread::sleep_for(std::chrono::seconds(1));
     // }
-    
+
     Mat image = imread(BASEIMGPATH, IMREAD_GRAYSCALE);
 
     int cols = image.cols;
@@ -77,6 +111,14 @@ int main(int argc, char const *argv[]) //TESTA FÖRSTORING AV PUNKTER??? , expan
         image.at<uchar>(points[i].y + image.cols/2, points[i].x + image.cols/2) = pixelVal;
     }
 
+    std::this_thread::sleep_for(std::chrono::seconds(2));
+
+    cout << "closing: " << ldInterface.Stop() << "\n";
+    bool disconnected = ldInterface.Disconnect();
+    cout << "disconnected: " << disconnected << "\n";
+    #else
+    Mat image = imread(READ_FILE_IMG_PATH)
+    #endif
     ///////////////////////////////////////////////////////////////////////////
 
     Mat dst, cdstP;
@@ -86,33 +128,13 @@ int main(int argc, char const *argv[]) //TESTA FÖRSTORING AV PUNKTER??? , expan
     // Canny(image, dst, 50, 200);
     // Copy edges to the images that will display the results in BGR
     cvtColor(dst, cdstP, COLOR_GRAY2BGR);
-    // cdstP = cdst.clone();
-
-    // // Standard Hough Line Transform
-    // vector<Vec2f> lines; // will hold the results of the detection
-    // HoughLines(dst, lines, 1, CV_PI/180, 50, 50, 10); // runs the actual detection
-    // // Draw the lines
-    // cout << "lines: " << lines.size() << endl;
-    // for( size_t i = 0; i < lines.size(); i++ )
-    // {
-    //     float rho = lines[i][0], theta = lines[i][1];
-    //     Point pt1, pt2;
-    //     double a = cos(theta), b = sin(theta);
-    //     double x0 = a*rho, y0 = b*rho;
-    //     pt1.x = cvRound(x0 + 1000*(-b));
-    //     pt1.y = cvRound(y0 + 1000*(a));
-    //     pt2.x = cvRound(x0 - 1000*(-b));
-    //     pt2.y = cvRound(y0 - 1000*(a));
-    //     line( cdst, pt1, pt2, Scalar(0,0,255), 3, LINE_AA);
-    // }
 
     // Probabilistic Line Transform
 
     vector<Vec4i> linesP; // will hold the results of the detection
     fitLine(dst, linesP, DIST_L2, 0, 0.01, 0.01);
-    // HoughLinesP(dst, linesP, 1, CV_PI/180, 5, 10, 50/*, 40, 50, 10 */); // runs the actual detection
-    
-    cout << "lines: " << linesP.size() << "\n";
+    HoughLinesP(dst, linesP, 1, CV_PI/180, 5, 10, 50/*, 40, 50, 10 */); // runs the actual detection
+
     // Draw the lines
     for( size_t i = 0; i < linesP.size(); i++ )
     {
@@ -126,25 +148,45 @@ int main(int argc, char const *argv[]) //TESTA FÖRSTORING AV PUNKTER??? , expan
     ///////////////////////////////////////////////////////////////////////
     
     string tNow = to_string(time(0));
-    // imwrite(SCAN_BASENAME + tNow + string(".png"), image);
-    // imwrite(SCAN_BASENAME + tNow + string("_SHLT.png"), cdst);
+    #ifdef CODE_SAVE_SCAN
+    imwrite(SCAN_BASENAME + tNow + string(".png"), image);
+    #endif
+    #ifdef CODE_SAVE_SCANPLT
     imwrite(SCAN_BASENAME + tNow + string("_PLT.png"), cdstP);
+    #endif
+    #ifdef CODE_SAVE_LATEST
     imwrite(SCAN_BASENAME + "latest_PLT.png", cdstP);
     imwrite(SCAN_BASENAME + "latest.png", image);
+    #endif
+    // imwrite(SCAN_BASENAME + tNow + string("_SHLT.png"), cdst);
     
-    // String windowName = "scan";
-    // namedWindow("scan", WindowFlags::WINDOW_NORMAL);
-    // imshow("scan", image);
-    // resizeWindow("scan", Size(100, 100));
+    #ifdef CODE_SAVE_TXT
+    writeFile(points);
+    #endif
 
-    std::this_thread::sleep_for(std::chrono::seconds(2));
-
-    cout << "closing: " << ldInterface.Stop() << "\n";
-    bool disconnected = ldInterface.Disconnect();
-    cout << "\ndisconnected: " << disconnected << endl;
-
-    // cv::waitKey(0);
     return 0;
+}
+
+void writeFile(Points2D& points)
+{
+    uint16_t dist[points.size()];
+    float ang[points.size()];
+
+    for (int i = 0; i < points.size(); ++i)
+    {
+        dist[i] = points[i].distance;
+        ang[i] = points[i].angle;
+    }
+
+    ofstream oFile(SCANTXT_PATH);
+
+    for (int i = 0; i < points.size(); ++i)
+    {
+        oFile << dist[i] << " " << ang[i] << "\n";
+    }
+
+    oFile.flush();
+    oFile.close();
 }
 
 void createCoords(Points2D& points)
@@ -154,6 +196,24 @@ void createCoords(Points2D& points)
 		i->x = sin(i->angle*M_PI/180)*i->distance; //+x is right
 		i->y = -cos(i->angle*M_PI/180)*i->distance; //+y is forward
 	}
+}
+
+Points2D pointsFromTxt(string path)
+{
+    Points2D points;
+    ifstream inFile(SCANTXT_PATH);
+
+    int r;
+    float v;
+    while (inFile >> r >> v)
+    {
+        PointData point;
+        point.distance = r;
+        point.angle = v;
+        points.push_back(point);
+    }
+
+    return points;
 }
 
 struct SLine
