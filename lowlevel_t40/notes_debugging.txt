@@ -1,0 +1,25 @@
+To test:
+Remove current limiting
+Lower PWM duty cycle
+Higher PWM frequency
+Supply voltage 5V
+Change IMODE from chopping cycle by cycle to fixed off-time
+Acceleration limiting
+
+
+Tested:
+Lower PWM duty cycle - helps
+Make PWM frequency higher - helps
+Removed current limiting - helps, but not as much as expected?
+5V supply did not help. Higher supply voltage does seem to help though
+Setting IMODE does not seem to change anything
+
+
+
+Other problems:
+When running multiple motors, it does not work. Probably due to current drop.
+
+
+SOLUTION:
+When connecting four wires to the benchtop voltge supply, you can drive even one motor on full PWM duty cycle.
+One weird thing though: Current limiting does not kick in when completely stopping the motor. Why? The fault pin does not go low
