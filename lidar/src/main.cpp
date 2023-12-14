@@ -10,17 +10,17 @@
 #include <math.h>
 #include <thread>
 
-#define CODE_READ_LIDAR
+// #define CODE_READ_LIDAR
 
 #ifndef CODE_READ_LIDAR
-#define CODE_READ_FILE_TXT
-// #define CODE_READ_FILE_IMG
+// #define CODE_READ_FILE_TXT
+#define CODE_READ_FILE_IMG
 #else
 #define CODE_SAVE_TXT
 #define CODE_SAVE_SCAN
-#define CODE_SAVE_SCANPLT
-#define CODE_SAVE_LATEST
+// #define CODE_SAVE_LATEST
 #endif
+#define CODE_SAVE_SCANPLT
 
 #define PORT "/dev/ttyUSB0" //COM4?
 #define BAUDRATE 230400U
@@ -33,7 +33,7 @@
 #define SCANTXT_BASE SCANPATH + std::string("ldlidar_scan_")
 
 #ifdef CODE_READ_FILE_IMG
-#define READ_FILE_IMG_PATH SCANPATH + std::string("latest.png")
+#define READ_FILE_IMG_PATH SCAN_BASENAME + std::string("latest.png")
 #endif
 
 using namespace std;
@@ -117,8 +117,9 @@ int main(int argc, char const *argv[]) //TESTA FÖRSTORING AV PUNKTER??? , expan
     bool disconnected = ldInterface.Disconnect();
     cout << "disconnected: " << disconnected << "\n";
     #else
-    Mat image = imread(READ_FILE_IMG_PATH)
+    Mat image = imread(READ_FILE_IMG_PATH, IMREAD_GRAYSCALE);
     #endif
+
     ///////////////////////////////////////////////////////////////////////////
 
     Mat dst, cdstP;
@@ -126,14 +127,14 @@ int main(int argc, char const *argv[]) //TESTA FÖRSTORING AV PUNKTER??? , expan
     // Edge detection
     dst = image.clone();
     // Canny(image, dst, 50, 200);
+    cv::dilate(dst, dst, getStructuringElement(MorphShapes::MORPH_ELLIPSE, cv::Size(3, 3)));
     // Copy edges to the images that will display the results in BGR
     cvtColor(dst, cdstP, COLOR_GRAY2BGR);
 
     // Probabilistic Line Transform
 
     vector<Vec4i> linesP; // will hold the results of the detection
-    fitLine(dst, linesP, DIST_L2, 0, 0.01, 0.01);
-    HoughLinesP(dst, linesP, 1, CV_PI/180, 5, 10, 50/*, 40, 50, 10 */); // runs the actual detection
+    HoughLinesP(dst, linesP, 1, CV_PI/1800, 0, 80, 50/*, 40, 50, 10 */); // runs the actual detection
 
     // Draw the lines
     for( size_t i = 0; i < linesP.size(); i++ )
@@ -178,7 +179,17 @@ void writeFile(Points2D& points)
         ang[i] = points[i].angle;
     }
 
+    std::cout << "done 1\n";
+
     ofstream oFile(SCANTXT_PATH);
+
+    if (!oFile)
+    {
+        std::cout << "What error\n";
+        return;
+    }
+
+    std::cout << "done 2\n";
 
     for (int i = 0; i < points.size(); ++i)
     {
