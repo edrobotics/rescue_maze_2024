@@ -3,8 +3,12 @@
         {
             "name": "Linux",
             "includePath": [
-                "/home/markfri/code/rescue_maze_2024/lidar/include/",
-                "${workspaceFolder}/**"
+                "/usr/include/pcl-1.12/",
+                "/usr/include/eigen3/",
+                "/usr/include/vtk-9.1/",
+                "/usr/include/opencv4/",
+                "${workspaceFolder}/**",
+                "${workspaceFolder}/include/"
             ],
             "defines": [],
             "compilerPath": "/usr/bin/gcc",
