@@ -2,20 +2,44 @@
 import cv2
 import logging
 #if using picamera 
-from picamera.array import PiRGBArray
-from picamera import PiCamera
+#from picamera2 import PiCamera2, Preview
+#import time, libcamera 
+import visionclass
+
+
+
+
 
 
 if __name__ == "__main__":
 
-    #camera starts here
-    camera = PiCamera()
-    camera.resolution = (640, 480)
-    camera.framerate = 10
-    camera.awb_mode = 'off'
-    rg, bg = (1.8, 1.42)
-    camera.awb_gains = (rg, bg)
-    rawCapture = PiRGBArray(camera, size=(640, 480))
-    for frame in camera.capture_continuous(rawCapture, format="bgr", use_video_port=True):
-        image = frame.array
+    #picam = PiCamera2()
+    #picam.start()
+
+    cap = cv2.VideoCapture("/dev/video0")
+    cap2 = cv2.VideoCapture("/dev/video2")
+
+    imgProc= visionclass.imgproc(bLogging=True)
+
+    while True:
+        try:
+            print("new frame")
+            #piImg = picam.capture_array()
+            ret, image1 = cap.read()
+            ret2, image2 = cap2.read()
+            imgProc.do_the_work(image1,image1,image2)
+
+
+        except Exception as ex:  
+            print("Exception: ", ex)
+            break
+
+
+    print("releasing cameras")
+    cap.release()
+    cap2.release()
+   # picam.stop()
+
+
+
         
