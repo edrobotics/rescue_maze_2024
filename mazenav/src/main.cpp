@@ -1,15 +1,16 @@
 #include <thread>
-#include <fusion.h>
-#include <globalnav.h>
-#include <localnav.h>
+#include <fusion/fusion.h>
+#include <globalNav/globalNav.h>
+#include <localNav/localNav.h>
 
 using namespace std;
 
 int main()
 {
-    thread fusionT = thread(mainFusion);
-    thread globNavT = thread(mainGlobalNav);
-    thread locNavT = thread(mainLocalNav);
+    fusion::main();
+    thread fusionT = thread(fusion::main);
+    thread globNavT = thread(globalNav::main);
+    thread locNavT = thread(localNav::main);
 
     fusionT.join();
     globNavT.join();
