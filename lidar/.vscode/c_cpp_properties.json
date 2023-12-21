@@ -7,8 +7,7 @@
                 "/usr/include/eigen3/",
                 "/usr/include/vtk-9.1/",
                 "/usr/include/opencv4/",
-                "${workspaceFolder}/**",
-                "${workspaceFolder}/include/"
+                "${workspaceFolder}/**"
             ],
             "defines": [],
             "compilerPath": "/usr/bin/gcc",

@@ -22,7 +22,7 @@ else
 fi
 
 
-g++ -g -std=gnu++17 ./src/*.cpp ./src/*/*.cpp -I./include/ -o ./build/mazenav -Og $envDefine #use O3 or O2 if not working (previously Ofast)
+g++ -g -std=gnu++17 `find src -iregex ".*\.cpp"` -I./include/ -o ./build/mazenav -Og $envDefine #use O3 or O2 if not working (previously Ofast)
 chmod +x ./build/mazenav
 
 echo "compiled successfully (maybe)"
