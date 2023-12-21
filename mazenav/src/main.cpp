@@ -7,7 +7,7 @@ using namespace std;
 
 int main()
 {
-    fusion::main();
+    
     thread fusionT = thread(fusion::main);
     thread globNavT = thread(globalNav::main);
     thread locNavT = thread(localNav::main);

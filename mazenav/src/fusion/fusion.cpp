@@ -2,5 +2,5 @@
 
 void fusion::main()
 {
-    
+
 }
