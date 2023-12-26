@@ -20,11 +20,11 @@ class log:
 
     
     def save_image(self, image, camera):
-        self.fnum =+1
+        self.fnum +=1
         try:
 
             if self.bLogging:
-                path = f'{self.current_log_folder}{camera}{self.fnum}.png'
+                path = f'{self.current_log_folder}{camera}/{self.fnum}.png'
                 cv2.imwrite(path,image)
         except Exception as ex:
             logging.exception("couldn't log")
