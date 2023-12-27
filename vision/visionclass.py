@@ -8,7 +8,8 @@ from ColorVision import *
 class imgproc:
     framedetected = ()
 
-    def __init__(self, bLogging):
+    def __init__(self, bLogging, path):
+        self.path = path
         self.bLogging = bLogging
         self.log = loggingclass.log(bLogging=bLogging)
 

@@ -5,6 +5,7 @@ import shutil
 import traceback
 import numpy as np
 import visionclass as vc 
+from configparser import ConfigParser
 
 
 def nothing(x):
@@ -13,6 +14,13 @@ def nothing(x):
 
 
 class Trackbars:
+
+    def run(self,image):
+        self.create()
+        self.showimage(image)
+        self.clean_up()
+        
+
     def create(self):
 
         cv2.namedWindow("HSV Value")
@@ -52,9 +60,11 @@ class Trackbars:
 
 class validation:
     TB = Trackbars() #trackbar object
+    base_folder =  vc.imgproc.path
+    config_path = os.path.join(base_folder, "config.ini")
 
-    def __init__(self, base_folder) -> None:
-        self.base_folder = base_folder
+    def __init__(self) -> None:
+        pass
 
 
     def keystrocks(self):
@@ -77,7 +87,7 @@ class validation:
             key = cv2.waitKey(1)
             for folder in folders:
                 if key == ord(folder):
-                    self.move(file_name,folders[folder])
+                    self.move(self.file_name,folders[folder])
                     moved = True
             if key == 32 or key == ord("q"):
                 break
@@ -85,9 +95,7 @@ class validation:
             elif moved:
                 break
             elif key == ord("t"):
-                TB.create()
-                TB.showimage(self.image)
-                TB.clean_up()
+                self.TB.run(self.image)
                     
         if key == 27:
             cv2.destroyAllWindows()
@@ -113,7 +121,7 @@ class validation:
 
 
     def showimage(self, victim):
-        if True or len(vc.framedetected[0]) == 1:
+        if True or len(vc.framedetected[0]) == 1: #true for now
 
             cv2.imshow("image",vc.image)
             #colours = ("red","green","yellow")
@@ -164,4 +172,8 @@ class validation:
             else:
                 print(f"finished {tot} images")
 
+
+    def clearstat(self):
+        ct = 0
+        tot = 0
 

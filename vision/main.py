@@ -6,9 +6,11 @@ import logging
 #import time, libcamera 
 import visionclass
 import argparse
-
-
+from configparser import ConfigParser
+import os.path
 print("finished imports")
+
+
 
 def get_intensity(action,x, y, flags, *userdata):
     global position
@@ -22,6 +24,19 @@ def get_intensity(action,x, y, flags, *userdata):
 
 
 if __name__ == "__main__":
+
+    dir_path = os.path.dirname(os.path.realpath(__file__))
+    config_filepath = dir_path+"/config.ini"
+
+    exists = os.path.exists(config_filepath)
+    config = None
+    if exists:
+        print("--------config.ini file found at ", config_filepath)
+        config = ConfigParser()
+        config.read(config_filepath)
+    else:
+        print("---------config.ini file not found at ", config_filepath)
+
     parser = argparse.ArgumentParser()
     parser.add_argument("-l", "--logging", type=bool)
     parser.add_argument("-t", "--testing", type=bool)
@@ -33,16 +48,25 @@ if __name__ == "__main__":
     testing = args.testing
     showsource = args.showsource
 
+    paths_config = config["PATHS"]
+    #base_folder = paths_config["basefolder"]
+   #print(f"basefolder{base_folder}")
+
     if not args.testing:
+        print("opening cameras")
         #picam = PiCamera2()
         #picam.start()
 
         cap = cv2.VideoCapture("/dev/video0")
         cap2 = cv2.VideoCapture("/dev/video2")
     else: 
-        sorted_images = "/Users/lukas/GitHub/rescue_maze_2024/vision/log/previous/"
 
-    imgProc= visionclass.imgproc(bLogging=bLogging)
+        import validation as val
+        valC = val.validation()
+        sorted_images_local = "log/previous"
+        sorted_images = os.path.join(dir_path, sorted_images_local)
+
+    imgProc= visionclass.imgproc(bLogging,dir_path)
     if showsource: 
         cv2.namedWindow("cam0")
         cv2.namedWindow("cam1")
@@ -65,14 +89,14 @@ if __name__ == "__main__":
 
             if victim == "all":
                 for victim in victims:
-                    evaluatefolder(victim)
-                    testing.clearstat()
-                    if stop:
-                        break
+                    valC.evaluatefolder(victim)
+                    valC.clearstat()
+                   # if stop:
+                   #     break
 
             else:
                 if victim in victims:
-                    evaluatefolder(victim)
+                    valC.evaluatefolder(victim)
                 else:
                     print("invalid victim")
             cv2.destroyAllWindows()
