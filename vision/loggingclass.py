@@ -3,12 +3,13 @@ import numpy as np
 import pathlib
 import cv2
 import logging
+#import visionclass as vc 
 
 
 class log:
-    log_folder = "/home/pi/vision/log/unsorted/"
     fnum = 0
-    def __init__(self,bLogging = True) -> None:
+    def __init__(self,base_dir, bLogging = True) -> None:
+        self.log_folder = os.path.join(base_dir, "log/unsorted/")
         self.bLogging = bLogging
         self.createfolder()
 

@@ -59,12 +59,13 @@ class Trackbars:
 
 
 class validation:
-    TB = Trackbars() #trackbar object
-    base_folder =  vc.imgproc.path
-    config_path = os.path.join(base_folder, "config.ini")
+    stop = False
 
-    def __init__(self) -> None:
-        pass
+    def __init__(self,dir_path) -> None:
+        self.TB = Trackbars() #trackbar object
+        self.base_folder =  dir_path
+        self.config_path = os.path.join(self.base_folder, "config.ini")
+
 
 
     def keystrocks(self):
@@ -99,7 +100,7 @@ class validation:
                     
         if key == 27:
             cv2.destroyAllWindows()
-            stop = True
+            self.stop = True
             print("stoping")
 
 
@@ -132,8 +133,9 @@ class validation:
     def evaluatefolder(self,victim):
         print("evaluating", victim)
         cams = ("picam", "cam1", "cam2")
-        for cam in cams:
-            source_folder = os.path.join(self.base_folder,victim,cam)
+        #for cam in cams:
+        if True:
+            source_folder = os.path.join(self.base_folder,"log/previous",victim)
             file_list = os.listdir(source_folder)
             ct = 0
             for file_name in file_list:
@@ -141,8 +143,8 @@ class validation:
                 if self.stop:
                     break
                 ct += 1
-        #        print(file_name)
                 source_path = os.path.join(source_folder, file_name)
+                print(source_path)
 
                 try:
                     image = cv2.imread(source_path) 
@@ -177,3 +179,25 @@ class validation:
         ct = 0
         tot = 0
 
+    def runValidation(self):
+        print("testing")
+        victims = ("U","H","S", "red","yellow","green","none")
+
+        victim = input("victim to evaluate: ")
+
+
+        if victim == "all":
+            for victim in victims:
+                self.evaluatefolder(victim)
+                self.clearstat()
+                if self.stop:
+                    break
+
+        elif victim in victims:
+            self.evaluatefolder(victim)
+        else:
+            print("invalid victim")
+        cv2.destroyAllWindows()
+
+
+                     

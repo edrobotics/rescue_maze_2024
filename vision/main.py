@@ -20,11 +20,46 @@ def get_intensity(action,x, y, flags, *userdata):
       #  print(f"bgr: {image[y,x]}")
     
 
+def openCams(cPi = True, c1 = True, c2 = True):
+    global piCam
+    global cap
+    global cap2
+    print("opening cameras")
+    if cPi:
+        piCam = PiCamera2()
+        piCam.start()
+
+    if c1: cap = cv2.VideoCapture("/dev/video0")
+    if c2: cap2 = cv2.VideoCapture("/dev/video2")
+
+def closeCams():
+    global piCam
+    global cap
+    global cap2
+    print("releasing cameras")
+    cap.release()
+    cap2.release()
+    piCam.stop()
 
 
+
+
+
+def showSource():
+    cv2.namedWindow("cam0")
+    cv2.namedWindow("cam1")
+    cv2.namedWindow("cam2")
+    cv2.setMouseCallback("cam0", get_intensity)
+    cv2.setMouseCallback("cam1", get_intensity)
+    cv2.setMouseCallback("cam2", get_intensity)
+    windows = ("cam0","cam1","cam2","window", "binary", "red", "yellow","green")
+    for window in windows:
+        cv2.namedWindow(window)
+        cv2.setMouseCallback(window, get_intensity)
 
 if __name__ == "__main__":
-
+    logging.basicConfig(filename='log/vision.log', encoding='utf-8', level=logging.DEBUG)
+    logging.info("started")
     dir_path = os.path.dirname(os.path.realpath(__file__))
     config_filepath = dir_path+"/config.ini"
 
@@ -51,84 +86,50 @@ if __name__ == "__main__":
     paths_config = config["PATHS"]
     #base_folder = paths_config["basefolder"]
    #print(f"basefolder{base_folder}")
+    imgProc= visionclass.imgproc(bLogging,dir_path)
 
     if not args.testing:
-        print("opening cameras")
-        #picam = PiCamera2()
-        #picam.start()
-
-        cap = cv2.VideoCapture("/dev/video0")
-        cap2 = cv2.VideoCapture("/dev/video2")
+        openCams(cPi=False)
     else: 
 
         import validation as val
-        valC = val.validation()
+        valC = val.validation(dir_path)
         sorted_images_local = "log/previous"
         sorted_images = os.path.join(dir_path, sorted_images_local)
 
-    imgProc= visionclass.imgproc(bLogging,dir_path)
     if showsource: 
-        cv2.namedWindow("cam0")
-        cv2.namedWindow("cam1")
-        cv2.namedWindow("cam2")
-        cv2.setMouseCallback("cam0", get_intensity)
-        cv2.setMouseCallback("cam1", get_intensity)
-        cv2.setMouseCallback("cam2", get_intensity)
-        windows = ("image","window", "binary", "red", "yellow","green")
-        for window in windows:
-            cv2.namedWindow(window)
-            cv2.setMouseCallback(window, get_intensity)
+        showSource()
     
     try :
         if args.testing:
-            print("testing")
-            victims = ("U","H","S", "red","yellow","green","none")
-
-            victim = input("victim to evaluate: ")
-
-
-            if victim == "all":
-                for victim in victims:
-                    valC.evaluatefolder(victim)
-                    valC.clearstat()
-                   # if stop:
-                   #     break
-
-            else:
-                if victim in victims:
-                    valC.evaluatefolder(victim)
-                else:
-                    print("invalid victim")
-            cv2.destroyAllWindows()
-
-
+            valC.runValidation()
                     
 
 
         else:
             while True:
+                try:
+                    print("new frame")
+                    #piImg = picam.capture_array()
+                    ret, image1 = cap.read()
+                    ret2, image2 = cap2.read()
+                    #imgProc.do_the_work(piImg, "cam0")
+                    imgProc.do_the_work(image1, "cam1")
+                    imgProc.do_the_work(image2, "cam2")
 
-                print("new frame")
-                #piImg = picam.capture_array()
-                ret, image1 = cap.read()
-                ret2, image2 = cap2.read()
-                #imgProc.do_the_work(piImg, "cam0")
-                imgProc.do_the_work(image1, "cam1")
-                imgProc.do_the_work(image2, "cam2")
+                    if showsource:
+                        #cv2.imshow("cam0",piImg)
+                        cv2.imshow("cam1",image1)
+                        cv2.imshow("cam2",image2)
+                except Exception as ex:
 
-                if showsource:
-                    #cv2.imshow("cam0",piImg)
-                    cv2.imshow("cam1",image1)
-                    cv2.imshow("cam2",image2)
-
+                    
+                    closeCams()
     except Exception as ex:  
         print("Exception: ", ex)
 
 
-    print("releasing cameras")
-    cap.release()
-    cap2.release()
-   # picam.stop()
+
 
 
 

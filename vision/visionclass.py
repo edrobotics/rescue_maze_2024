@@ -6,12 +6,14 @@ from ColorVision import *
 
 
 class imgproc:
+    
     framedetected = ()
 
-    def __init__(self, bLogging, path):
-        self.path = path
+    def __init__(self, bLogging, dir_path):
+        print("initiating visionclass")
+        self.dir_path = dir_path
         self.bLogging = bLogging
-        self.log = loggingclass.log(bLogging=bLogging)
+        self.log = loggingclass.log(base_dir=dir_path, bLogging = bLogging)
 
 
     def do_the_work(self, image, camera):
@@ -26,8 +28,8 @@ class imgproc:
 
 class colorVictims(imgproc):
     def find_color(self, image, camera):
-        find_color_and_square(image)
-        
+        #find_color_and_square(image)
+        pass
 
 
 class visualVictims(imgproc):
