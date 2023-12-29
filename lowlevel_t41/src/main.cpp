@@ -33,7 +33,6 @@ void loop()
     motorRF.update();
     motorLF.update();
     motorLB.update();
-    // motorLF.printValues();
     delay(1);
   }
 

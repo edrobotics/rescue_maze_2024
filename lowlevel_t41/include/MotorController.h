@@ -18,6 +18,8 @@ class MotorController
     bool update(bool usePIDCorr); // Read encoder positions and calculates values. Does NOT correct, just calculates.
     void setSpeed(double speed); // Sets the speed in rpm
     void setPWM(int pwmSpeed); // Sets the PWM output. Clamps if too great.
+    void stopDumb(); // Stop by setting PWM values manually. Ensures no unwanted drift.
+    void stopPID(); // Stop by using PID algorithm. Should stand still regardless of pushing (probably not needed), but can drift in some cases.
 
     void startDistanceMeasure(); // Begin distance measuring
     // Maybe replace these with passing pointers in the beginning and then updating the values through pointers?
@@ -64,13 +66,6 @@ class MotorController
     float Kd {0.0001};
     QuickPID pid {&curMotorSpeed, &speedCorrection, &motorSpeed, Kp, Ki, Kd, QuickPID::pMode::pOnError, QuickPID::dMode::dOnMeas, QuickPID::iAwMode::iAwCondition, QuickPID::Action::direct};
     uint32_t pidSampleTimeUs = 10000; // How often the PID loop should update, in microseconds. Untuned, just a guess
-    double rpmToPwm(double rpmSpeed); // Function to convert motor rpm values to pwm values during no-load operation.
-    
-    // Calibration of rpmToPwm function
-    int calibrationIterations = 242;
-    double calibrateSinglePWM_RPM(int pwmToCal); // Returns the rpm corresponding to the pwm
-    void printCsvVars(int PWM, double RPM);
-    
 
 };
 
