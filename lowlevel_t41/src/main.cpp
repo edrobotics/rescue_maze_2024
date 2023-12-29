@@ -1,5 +1,6 @@
 #include <Arduino.h>
 #include "MotorController.h"
+#include "Communicator.h"
 
 //                     ENCA, ENCB, PWM, DIR, ENCRATIO, CPR
 MotorController motorRF {3,     2,   7,   6,    46.85,  48};
@@ -7,8 +8,12 @@ MotorController motorLF {39,   38,  28,  29,    46.85,  48};
 MotorController motorRB {1,     0,   5,   4,    46.85,  48};
 MotorController motorLB {23,   22,   37, 36,    46.85,  48};
 
+Communicator communicator {1};
+
 void setup()
 {
+  communicator.init();
+
   motorRF.init();
   motorLF.init();
   motorLB.init();
@@ -18,14 +23,34 @@ void setup()
   delay(1000);
 }
 
+void motorTestLoop();
+void i2cTestLoop();
+
 void loop()
+{
+  // motorTestLoop();
+  i2cTestLoop();
+
+}
+
+void i2cTestLoop()
+{
+  if (communicator.check())
+  {
+    communicator.recompute();
+  }
+  delay(100);
+
+}
+
+void motorTestLoop()
 {
   static long timeflag;
 
-  motorRF.setSpeed(100);
-  motorRB.setSpeed(100);
-  motorLF.setSpeed(100);
-  motorLB.setSpeed(100);
+  motorRF.setSpeed(150);
+  motorRB.setSpeed(150);
+  motorLF.setSpeed(150);
+  motorLB.setSpeed(150);
   timeflag = millis();
   while (millis()-timeflag < 1000)
   {
@@ -49,5 +74,4 @@ void loop()
     motorLB.update();
     delay(1);
   }
-
 }
