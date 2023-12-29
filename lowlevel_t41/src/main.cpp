@@ -7,15 +7,8 @@ MotorController motorLF {39,   38,  28,  29,    46.85,  48};
 MotorController motorRB {1,     0,   5,   4,    46.85,  48};
 MotorController motorLB {23,   22,   37, 36,    46.85,  48};
 
-int pwmPin = 28;
-int dirPin = 29;
-
 void setup()
 {
-  // pinMode(dirPin, OUTPUT);
-  // pinMode(pwmPin, OUTPUT);
-  // analogWriteFrequency(pwmPin, 80000);
-  // delay(1000);
   motorRF.init();
   motorLF.init();
   motorLB.init();
@@ -40,7 +33,7 @@ void loop()
     motorRF.update();
     motorLF.update();
     motorLB.update();
-    motorLF.printValues();
+    // motorLF.printValues();
     delay(1);
   }
 

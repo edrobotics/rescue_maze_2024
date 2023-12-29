@@ -16,7 +16,6 @@ bool MotorController::init()
     pid.SetMode(QuickPID::Control::automatic);
     pid.SetControllerDirection(QuickPID::Action::direct);
     pid.SetOutputLimits(-255, 255); // Limits for setPwm(), positive and negative. Should be narrower?
-    #warning untuned sample time
     pid.SetSampleTimeUs(pidSampleTimeUs);
     #warning PID setup not done!(?)
 
@@ -119,6 +118,16 @@ bool MotorController::update(bool usePIDCorr)
         newPWMVal = 0;
     }
 
+    // Protection against stalling and getting stuck (motors cannot be driven above 252 in duty cycle)
+    if (newPWMVal>250)
+    {
+        newPWMVal = 250;
+    }
+    else if (newPWMVal<-250)
+    {
+        newPWMVal = -250;
+    }
+
     // if (abs(motorSpeed) < 200)
     // {
     //     if (newPWMVal > 210)
@@ -138,7 +147,6 @@ bool MotorController::update(bool usePIDCorr)
         // setPWM(rpmToPwm(motorSpeed)+speedCorrection);
         setPWM(newPWMVal);
     }
-    // Serial.println(curPWM);
 
     // Serial.print("encoderPos:");Serial.print(encoderPos);Serial.print(",");
     // Serial.print(";Serial.print(encoderPos);Serial.print(",");

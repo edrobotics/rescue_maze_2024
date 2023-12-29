@@ -59,12 +59,11 @@ class MotorController
     long lastEncoderPos = 0;
 
     // PID
-    #warning untuned constants
     float Kp {0.005};
     float Ki {0.003};
     float Kd {0.0001};
     QuickPID pid {&curMotorSpeed, &speedCorrection, &motorSpeed, Kp, Ki, Kd, QuickPID::pMode::pOnError, QuickPID::dMode::dOnMeas, QuickPID::iAwMode::iAwCondition, QuickPID::Action::direct};
-    uint32_t pidSampleTimeUs = 10000; // How often the PID loop should update, in microseconds
+    uint32_t pidSampleTimeUs = 10000; // How often the PID loop should update, in microseconds. Untuned, just a guess
     double rpmToPwm(double rpmSpeed); // Function to convert motor rpm values to pwm values during no-load operation.
     
     // Calibration of rpmToPwm function
