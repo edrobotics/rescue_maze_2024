@@ -19,18 +19,21 @@ bool TeensyCommunicator::initiate()
 
 void TeensyCommunicator::testI2C()
 {
-    i2cComm.writeRegister(0x00, 0);
-    i2cComm.writeRegister(0x01, 50);
-    i2cComm.writeRegister(0x02, 50);
+    i2cComm.writeRegister(0x00, 1, 0);
+    std::this_thread::sleep_for(std::chrono::milliseconds(1));
+    i2cComm.writeRegister(0x01, 1, 50);
+    std::this_thread::sleep_for(std::chrono::milliseconds(1));
+    i2cComm.writeRegister(0x02, 1, 50);
+    std::this_thread::sleep_for(std::chrono::milliseconds(1));
 
-    uint8_t dataRdy = 0;
+    uint64_t dataRdy = 0;
     while (dataRdy!=1)
     {
-        i2cComm.readRegister(0x03, &dataRdy);
-        std::this_thread::sleep_for(std::chrono::milliseconds(1));
+        i2cComm.readRegister(0x03, 1, &dataRdy);
+        std::this_thread::sleep_for(std::chrono::milliseconds(2));
     }
-    uint8_t result = -69;
-    i2cComm.readRegister(0x04, &result);
+    uint64_t result = -69;
+    i2cComm.readRegister(0x05, 2, &result);
     std::cout << "The result is: " << result << "\n";
 }
 

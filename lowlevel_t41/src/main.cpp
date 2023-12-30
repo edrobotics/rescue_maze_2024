@@ -12,7 +12,9 @@ Communicator communicator {1};
 
 void setup()
 {
+  Serial.begin(9600);
   communicator.init();
+  pinMode(LED_BUILTIN, OUTPUT);
 
   motorRF.init();
   motorLF.init();
@@ -39,7 +41,10 @@ void i2cTestLoop()
   {
     communicator.recompute();
   }
-  delay(100);
+  // digitalWrite(LED_BUILTIN, HIGH);
+  delay(50);
+  // digitalWrite(LED_BUILTIN, LOW);
+  delay(150);
 
 }
 

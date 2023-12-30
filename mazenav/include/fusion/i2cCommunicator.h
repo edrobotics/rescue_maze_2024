@@ -12,18 +12,18 @@
 class i2cCommunicator
 {
     public:
-    i2cCommunicator(__uint8_t portNum, __uint8_t addr);
+    i2cCommunicator(uint8_t portNum, uint8_t addr);
     bool init();
-    bool readRegister(__uint8_t reg, __uint8_t* value);
-    bool writeRegister(__uint8_t reg, __uint8_t value);
+    bool readRegister(uint8_t reg, uint8_t size, uint64_t* value);
+    bool writeRegister(uint8_t reg, uint8_t size, uint64_t value);
 
     private:
-    __uint8_t portNum;
-    __uint8_t slaveAddr;
+    uint8_t portNum;
+    uint8_t slaveAddr;
     char filename[20];
     int i2cFile;
 
-    bool readReg(int file, __uint8_t addr, __uint8_t reg, __uint8_t* value);
-    bool writeReg(int file, __uint8_t addr, __uint8_t reg, __uint8_t value);
+    bool readReg(int file, uint8_t addr, uint8_t reg, uint8_t size, uint64_t* value);
+    bool writeReg(int file, uint8_t addr, uint8_t reg, uint8_t size, uint64_t value);
 
 };

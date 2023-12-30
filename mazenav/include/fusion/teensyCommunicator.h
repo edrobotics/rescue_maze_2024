@@ -18,6 +18,8 @@ class TeensyCommunicator
         bool initiate();
         void testI2C();
 
+        // Register map object (here or in I2C?)
+
         struct Settings
         {
             uint8_t operation; // 0 is addition, 1 is subtraction
