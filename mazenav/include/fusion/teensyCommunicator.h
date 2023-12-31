@@ -6,6 +6,7 @@
 #include <chrono>
 
 #include "fusion/i2cCommunicator.h"
+#include "fusion/TransferData.h"
 
 // For communicating with teensy. Backbone for many sensor-classes.
 class TeensyCommunicator
