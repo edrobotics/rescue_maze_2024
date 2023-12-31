@@ -29,8 +29,7 @@ namespace globalNav
         uint16_t g;
         uint16_t h;
 
-        int cost() const { return g + h; }
-
+        int cost() const { return g + h; };
         tile* parent;
 
         uint16_t getInfo();
