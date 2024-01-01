@@ -8,202 +8,275 @@ TransferData::TransferData()
 
 void TransferData::compose()
 {
-    for (int i=0;i<dataLen;++i)
+    int arrIdx = 0;
+    // ToF
+    for (int i=0;i<tofNum;++i)
     {
-        int shiftNum = 8*(dataLen-i-1);
-        byteArr[i] = static_cast<uint8_t>((dataInt & (0b11111111 << shiftNum)) >> shiftNum);
+        u16toB(tofData[i], byteArr[arrIdx], byteArr[arrIdx+1]);
+        arrIdx+=2;
+    }
+
+    // Colour sensors
+    for (int i=0;i<colNum;++i)
+    {
+        for (int k=0;k<col_num;++k)
+        {
+            u16toB(colData[i][k], byteArr[arrIdx], byteArr[arrIdx+1]);
+            arrIdx+=2;
+        }
+    }
+
+    // IMU
+    for (int i=0;i<imuNum;++i)
+    {
+        for (int k=0;k<imu_num;++k)
+        {
+            s16toB(imuData[i][k], byteArr[arrIdx], byteArr[arrIdx+1]);
+            arrIdx+=2;
+        }
+
+    }
+
+    //RPM
+    for (int i=0;i<motorNum;++i)
+    {
+        s16toB(rpmData[i], byteArr[arrIdx], byteArr[arrIdx+1]);
+        arrIdx+=2;
+    }
+
+    //Pos
+    for (int i=0;i<motorNum;++i)
+    {
+        s16toB(posData[i], byteArr[arrIdx], byteArr[arrIdx+1]);
+        arrIdx+=2;
     }
 
 }
 
 void TransferData::decompose()
 {
-    dataInt = 0;
-    for (int i=0;i<dataLen;++i)
+    int arrIdx = 0;
+    // ToF
+    for (int i=0;i<tofNum;++i)
     {
-        int shiftNum = 8*(dataLen-i-1);
-        dataInt |= byteArr[i] << shiftNum;
+        btoU16(byteArr[arrIdx], byteArr[arrIdx+1], tofData[i]);
+        arrIdx+=2;
     }
-}
 
-unsigned int TransferData::getTof(int index)
-{
-    switch (index)
+    // Colour sensors
+    for (int i=0;i<colNum;++i)
     {
-        case 0:
-            return static_cast<unsigned int>((dataInt & MSK_TOF0) >> TOF_SHIFT0);
-            break;
-        case 1:
-            return static_cast<unsigned int>((dataInt & MSK_TOF1) >> TOF_SHIFT1);
-            break;
-        case 2:
-            return static_cast<unsigned int>((dataInt & MSK_TOF2) >> TOF_SHIFT2);
-            break;
-        case 3:
-            return static_cast<unsigned int>((dataInt & MSK_TOF3) >> TOF_SHIFT3);
-            break;
-        case 4:
-            return static_cast<unsigned int>((dataInt & MSK_TOF4) >> TOF_SHIFT4);
-            break;
-        case 5:
-            return static_cast<unsigned int>((dataInt & MSK_TOF5) >> TOF_SHIFT5);
-            break;
-        case 6:
-            return static_cast<unsigned int>((dataInt & MSK_TOF6) >> TOF_SHIFT6);
-            break;
-        case 7:
-            return static_cast<unsigned int>((dataInt & MSK_TOF7) >> TOF_SHIFT7);
-            break;
-        case 8:
-            return static_cast<unsigned int>((dataInt & MSK_TOF8) >> TOF_SHIFT8);
-            break;
-        case 9:
-            return static_cast<unsigned int>((dataInt & MSK_TOF9) >> TOF_SHIFT9);
-            break;
-        default:
-            return 0;
-            break;
+        for (int k=0;k<col_num;++k)
+        {
+            btoU16(byteArr[arrIdx], byteArr[arrIdx+1], colData[i][k]);
+            arrIdx+=2;
+        }
     }
-}
 
-unsigned int TransferData::getCol(int index, Col colour)
-{
-    switch (index)
+    // IMU
+    for (int i=0;i<imuNum;++i)
     {
-        case 0:
-            switch(colour)
-            {
-                case col_r:
-                    return static_cast<unsigned int>((dataInt & MSK_COL0R) >> COL_SHIFT0R);
-                    break;
-                case col_g:
-                    return static_cast<unsigned int>((dataInt & MSK_COL0G) >> COL_SHIFT0G);
-                    break;
-                case col_b:
-                    return static_cast<unsigned int>((dataInt & MSK_COL0B) >> COL_SHIFT0B);
-                    break;
-                case col_c:
-                    return static_cast<unsigned int>((dataInt & MSK_COL0C) >> COL_SHIFT0C);
-                    break;
-                default:
-                    return 0;
-                    break;
-            }
-        case 1:
-            switch(colour)
-            {
-                case col_r:
-                    return static_cast<unsigned int>((dataInt & MSK_COL1R) >> COL_SHIFT1R);
-                    break;
-                case col_g:
-                    return static_cast<unsigned int>((dataInt & MSK_COL1G) >> COL_SHIFT1G);
-                    break;
-                case col_b:
-                    return static_cast<unsigned int>((dataInt & MSK_COL1B) >> COL_SHIFT1B);
-                    break;
-                case col_c:
-                    return static_cast<unsigned int>((dataInt & MSK_COL1C) >> COL_SHIFT1C);
-                    break;
-                default:
-                    return 0;
-                    break;
-            }
-        default:
-            return 0;
-            break;
+        for (int k=0;k<imu_num;++k)
+        {
+            btoS16(byteArr[arrIdx], byteArr[arrIdx+1], imuData[i][k]);
+            arrIdx+=2;
+        }
 
     }
+
+    //RPM
+    for (int i=0;i<motorNum;++i)
+    {
+        btoS16(byteArr[arrIdx], byteArr[arrIdx+1], rpmData[i]);
+        arrIdx+=2;
+    }
+
+    //Pos
+    for (int i=0;i<motorNum;++i)
+    {
+        btoS16(byteArr[arrIdx], byteArr[arrIdx+1], posData[i]);
+        arrIdx+=2;
+    }
+
 }
 
 
-void TransferData::getIMU(int index)
+void TransferData::u16toB(uint16_t input, uint8_t& byte1, uint8_t& byte2)
 {
+    byte1 = static_cast<uint8_t>((input & (0b11111111 << 8)) >> 8);
+    byte2 = static_cast<uint8_t>(input & 0b11111111);
+}
+
+void TransferData::s16toB(int16_t input, uint8_t& byte1, uint8_t& byte2)
+{
+    byte1 = static_cast<uint8_t>((input & (0b11111111 << 8)) >> 8);
+    byte2 = static_cast<uint8_t>(input & 0b11111111);
+}
+
+void TransferData::btoU16(uint8_t input1, uint8_t input2, uint16_t& output)
+{
+    output = static_cast<uint16_t>(input2);
+    output |= input1 << 8;
+}
+
+void TransferData::btoS16(uint8_t input1, uint8_t input2, int16_t& output)
+{
+    output = static_cast<uint16_t>(input2);
+    output |= input1 << 8;
+}
+
+void TransferData::test()
+{
+    // uint16_t u16 = 555;
+    // int16_t s16 = -555;
+    // uint8_t byte1, byte2, byte3, byte4;
+    // s16toB(s16, byte1, byte2);
+    // std::cout << "s16=" << s16 << "\n";
+    // btoS16(byte1, byte2, s16);
+    // std::cout << "s16=" << s16 << "\n";
+
+    
+
+}
+
+
+
+bool TransferData::getTof(int index, int& value)
+{
+    if (index<0 || index >= tofNum)
+    {
+        return false;
+    }
+    else
+    {
+        value = tofData[index];
+        return true;
+    }
+
+}
+
+bool TransferData::getCol(int index, Col colour, int& value)
+{
+    if (index<0 || index>=colNum)
+    {
+        return false;
+    }
+    else
+    {
+        value = colData[index][colour];
+        return true;
+    }
+}
+
+
+bool TransferData::getIMU(int index, ImuVec vec, int& value)
+{
+    if (index<0 || index>=imuNum)
+    {
+        return false;
+    }
+    else
+    {
+        value = imuData[index][vec];
+        return true;
+    }
     
 }
 
-int TransferData::getRPM(int index)
+bool TransferData::getRPM(int index, int& value)
 {
-    switch (index)
+    if (index<0 || index >=motorNum)
     {
-        case 0:
-            return static_cast<int>((dataInt & MSK_RPM0) >> RPM_SHIFT0);
-            break;
-        case 1:
-            return static_cast<int>((dataInt & MSK_RPM1) >> RPM_SHIFT1);
-            break;
-        case 2:
-            return static_cast<int>((dataInt & MSK_RPM2) >> RPM_SHIFT2);
-            break;
-        case 3:
-            return static_cast<int>((dataInt & MSK_RPM3) >> RPM_SHIFT3);
-            break;
-        default:
-            return 0;
-            break;
+        return false;
+    }
+    else
+    {
+        value = rpmData[index];
+        return true;
     }
 
 }
 
-int TransferData::getPos(int index)
+bool TransferData::getPos(int index, int& value)
 {
-    switch (index)
+    if (index<0 || index >=motorNum)
     {
-        case 0:
-            return static_cast<int>((dataInt & MSK_POS0) >> POS_SHIFT0);
-            break;
-        case 1:
-            return static_cast<int>((dataInt & MSK_POS1) >> POS_SHIFT1);
-            break;
-        case 2:
-            return static_cast<int>((dataInt & MSK_POS2) >> POS_SHIFT2);
-            break;
-        case 3:
-            return static_cast<int>((dataInt & MSK_POS3) >> POS_SHIFT3);
-            break;
-        default:
-            return 0;
-            break;
+        return false;
+    }
+    else
+    {
+        value = posData[index];
+        return true;
     }
 
 }
 
 
-void TransferData::setTof(int index, int value)
+bool TransferData::setTof(int index, int value)
 {
-    switch (index)
+    if (index<0 || index >= tofNum)
     {
-        case 0:
-            dataInt &= ~MSK_TOF1;
-            dataInt |= MSK_TOF1 & value;
-            break;
-        default:
-            break;
+        return false;
+    }
+    else
+    {
+        tofData[index] = value;
+        return true;
     }
 
+}
+
+bool TransferData::setCol(int index, Col colour, int value)
+{
+    if (index<0 || index>=colNum)
+    {
+        return false;
+    }
+    else
+    {
+        colData[index][colour] = value;
+        return true;
+    }
 
 }
 
-void TransferData::setCol(int index, Col colour, int value)
+bool TransferData::setIMU(int index, ImuVec vec, int value)
 {
+    if (index<0 || index>=imuNum)
+    {
+        return false;
+    }
+    else
+    {
+        imuData[index][vec] = value;
+        return true;
+    }
 
 }
 
-void TransferData::setIMU(int index, int value)
+bool TransferData::setRPM(int index, int value)
 {
+    if (index<0 || index >=motorNum)
+    {
+        return false;
+    }
+    else
+    {
+        rpmData[index] = value;
+        return true;
+    }
 
 }
 
-void TransferData::setRPM(int index, int value)
+bool TransferData::setPos(int index, int value)
 {
-
-}
-
-void TransferData::setPos(int index, int value)
-{
-
-}
-
-void TransferData::printInt()
-{
-    std::cout << "dataInt=" << "\n" << std::hex << dataInt << "\n";
+    if (index<0 || index >=motorNum)
+    {
+        return false;
+    }
+    else
+    {
+        posData[index] = value;
+        return true;
+    }
 }

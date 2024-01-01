@@ -16,6 +16,7 @@ class i2cCommunicator
     bool init();
     bool readRegister(uint8_t reg, uint8_t size, uint64_t* value);
     bool writeRegister(uint8_t reg, uint8_t size, uint64_t value);
+    bool readTransferData();
 
     private:
     uint8_t portNum;
