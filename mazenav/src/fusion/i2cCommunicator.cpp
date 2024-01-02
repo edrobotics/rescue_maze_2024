@@ -31,7 +31,7 @@ bool i2cCommunicator::readRegister(uint8_t reg, uint8_t size, uint8_t values[])
 
 bool i2cCommunicator::writeRegister(uint8_t reg, uint8_t size, uint8_t values[])
 {
-    return writeReg(i2cFile, slaveAddr, reg, size,  values);
+    return writeReg(i2cFile, slaveAddr, reg, size, values);
 }
 
 bool i2cCommunicator::readReg(int file, uint8_t addr, uint8_t reg, uint8_t size, uint8_t values[])
@@ -61,7 +61,7 @@ bool i2cCommunicator::readReg(int file, uint8_t addr, uint8_t reg, uint8_t size,
     }
 
     // Return the byte array
-    memcpy(&values, &inbuf, size);
+    memcpy(values, inbuf, size);
 
     return true;
 }
@@ -85,10 +85,14 @@ bool i2cCommunicator::writeReg(int file, uint8_t addr, uint8_t reg, uint8_t size
 
     packets.msgs  = messages;
     packets.nmsgs = 1;
-    if(ioctl(file, I2C_RDWR, &packets) < 0) {
-        return 0;
+    std::cout << "Before write\n";
+    if (ioctl(file, I2C_RDWR, &packets) < 0)
+    {
+        std::cout << "Aborted\n";
+        std::cout << "Errno: " << errno << "  with explanation " << strerror(errno) << "\n";
+        return false;
     }
+    std::cout << "After successful write\n";
 
-    return 1;
     return true;
 }

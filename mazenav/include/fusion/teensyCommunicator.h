@@ -25,10 +25,11 @@ class TeensyCommunicator
         // The registers on the teensy
         enum i2cRegisters
         {
-            reg_rpmVals = 0,
-            reg_rdyFlag = 8,
-            reg_byteArr = 10,
-            reg_infreqArr = 74,
+            reg_writeRdyFlag = 0,
+            reg_rpmVals = 2,
+            reg_rdyFlag = 10,
+            reg_byteArr = 12,
+            reg_infreqArr = 76,
             reg_num,
         };
 

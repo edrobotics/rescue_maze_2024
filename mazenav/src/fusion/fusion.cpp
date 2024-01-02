@@ -6,7 +6,7 @@ TransferData transDat = TransferData{};
 
 void fusion::main()
 {
-    // communicator.initiate();
+    communicator.initiate();
     
     // communicator.testI2C();
 
@@ -26,7 +26,9 @@ void fusion::main()
     // std::cout << "TOF0 has the value: " << tof0 << "\n";
     // std::cout << "TOF5 has the value: " << tof5 << "\n";
     // std::cout << "RPM3 has the value: " << rpm3 << "\n";
-
-    communicator.test();
+    while (true)
+    {
+        communicator.test();
+    }
     
 }

@@ -1,12 +1,9 @@
 #include "fusion/TransferData.h"
 
-
 TransferData::TransferData()
 {
 
 }
-
-
 
 void TransferData::compose()
 {
@@ -107,9 +104,16 @@ void TransferData::composeSettings()
     int arrIdx = 0;
     for (int i=0;i<motorNum;++i)
     {
-        s16toB(rpmControlVals[i], settingArr[arrIdx], settingArr[arrIdx+1]);
+        s16toB(rpmControlVals[i], controlArr[arrIdx], controlArr[arrIdx+1]);
         arrIdx+=2;
     }
+
+    std::cout << "SettingArr(in transferdata): ";
+    for (int i=0;i<8;++i)
+    {
+        std::cout << controlArr[i] << ",";
+    }
+    std::cout << "\n";
 }
 
 void TransferData::decomposeSettings()
@@ -117,7 +121,7 @@ void TransferData::decomposeSettings()
     int arrIdx = 0;
     for (int i=0;i<motorNum;++i)
     {
-        btoS16(settingArr[arrIdx], settingArr[arrIdx+1], rpmControlVals[i]);
+        btoS16(controlArr[arrIdx], controlArr[arrIdx+1], rpmControlVals[i]);
         arrIdx+=2;
     }
 
@@ -157,8 +161,6 @@ void TransferData::test()
     // btoS16(byte1, byte2, s16);
     // std::cout << "s16=" << s16 << "\n";
 
-    
-
 }
 
 
@@ -167,9 +169,9 @@ void TransferData::getByteArr(uint8_t data[])
     memcpy(data, byteArr, dataLen);
 }
 
-void TransferData::getSettingsArr(uint8_t data[])
+void TransferData::getControlArr(uint8_t data[])
 {
-    memcpy(data, byteArr, dataLen);
+    memcpy(data, controlArr, settingLen);
 }
 
 

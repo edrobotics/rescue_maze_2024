@@ -13,7 +13,7 @@ constexpr int MOTOR_NUM = 4;
 
 Communicator communicator {1};
 
-int16_t rpmVals[4] {};
+int rpmVals[4] {};
 
 
 void setup()
@@ -41,7 +41,7 @@ void loop()
   communicationLoop();
   for (int i=0;i<MOTOR_NUM;++i)
   {
-    // motorControllers[i]->update();
+    motorControllers[i]->update();
   }
   delay(1);
 
@@ -53,12 +53,14 @@ void communicationLoop()
 
   if (communicator.check())
   {
+    communicator.updateSettings();
     communicator.getRpmVals(rpmVals);
     for (int i=0;i<MOTOR_NUM;++i)
     {
       Serial.print("Motor ");Serial.print(i);Serial.print(" = ");Serial.print(rpmVals[i]);Serial.print("    ");
-      // motorControllers[i]->setSpeed(rpmVals[i]);
+      motorControllers[i]->setSpeed(rpmVals[i]);
     }
+    Serial.println("");
   }
 
   if (millis()-timeFlag>20)
@@ -66,6 +68,7 @@ void communicationLoop()
     for (int i=0;i<MOTOR_NUM;++i)
     {
       communicator.transDat.setRPM(i, motorControllers[i]->getOutputSpeed());
+      // communicator.transDat.setRPM(i, 55);
     }
 
     // Some more updating of other things

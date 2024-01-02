@@ -99,6 +99,33 @@ void TransferData::decompose()
 
 }
 
+void TransferData::composeSettings()
+{
+    int arrIdx = 0;
+    for (int i=0;i<motorNum;++i)
+    {
+        s16toB(rpmControlVals[i], controlArr[arrIdx], controlArr[arrIdx+1]);
+        arrIdx+=2;
+    }
+
+    // std::cout << "SettingArr(in transferdata): ";
+    // for (int i=0;i<8;++i)
+    // {
+    //     std::cout << controlArr[i] << ",";
+    // }
+    // std::cout << "\n";
+}
+
+void TransferData::decomposeSettings()
+{
+    int arrIdx = 0;
+    for (int i=0;i<motorNum;++i)
+    {
+        btoS16(controlArr[arrIdx], controlArr[arrIdx+1], rpmControlVals[i]);
+        arrIdx+=2;
+    }
+
+}
 
 void TransferData::u16toB(uint16_t input, uint8_t& byte1, uint8_t& byte2)
 {
@@ -136,11 +163,16 @@ void TransferData::test()
 
 }
 
+
 void TransferData::getByteArr(uint8_t data[])
 {
     memcpy(data, byteArr, dataLen);
 }
 
+void TransferData::getControlArr(uint8_t data[])
+{
+    memcpy(data, controlArr, settingLen);
+}
 
 
 bool TransferData::getTof(int index, int& value)
@@ -279,6 +311,32 @@ bool TransferData::setPos(int index, int value)
     else
     {
         posData[index] = value;
+        return true;
+    }
+}
+
+bool TransferData::setRpmControl(int index, int value)
+{
+    if (index<0 || index >= motorNum)
+    {
+        return false;
+    }
+    else
+    {
+        rpmControlVals[index] = value;
+        return true;
+    }
+}
+
+bool TransferData::getRpmControl(int index, int& value)
+{
+    if (index<0 || index>=motorNum)
+    {
+        return false;
+    }
+    else
+    {
+        value = rpmControlVals[index];
         return true;
     }
 }

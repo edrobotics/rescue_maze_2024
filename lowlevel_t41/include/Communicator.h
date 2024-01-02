@@ -20,8 +20,12 @@ class Communicator
 
         void updateRegisters();
 
-        // Getters for settings
-        void getRpmVals(int16_t rpmVals[]);
+        // Settings control
+        // Set the settings to TransferData and decompose
+        void updateSettings();
+
+        // Getters for settings (call decomposeSettings first!)
+        void getRpmVals(int rpmVals[]);
 
         // For data sending
         TransferData transDat {};
@@ -31,20 +35,23 @@ class Communicator
         static const int motorNum = 4;
         static const int dataLen = 64; // Number of bytes for data to be sent regurarly
         static const int infrequentDataLen = 1; // Number of bytes for data to be sent infrequently (battery voltage etc.)
+        static const int CONTROL_DATA_LEN = 8;
 
         // Structs for doing i2c with registers
         // For controlling the teensy
         struct Settings
         {
-            int16_t rpmVal[motorNum] {}; // REG 0-1, 2-3, 4-5, 6-7
+            uint8_t writeRdyFlag = 1; // Whether the data can be written or not // REG0
+            uint8_t filler1 = 0; // Reserved to fill memory up to 2-byte boundary // REG1
+            uint8_t controlArr[CONTROL_DATA_LEN] {0}; // REG 2-9
         };
 
         struct Registers
         {
-            uint8_t dataRdyFlag = 0; // Tells the master if data is ready or not // REG8
-            uint8_t filler1 = 0; // Reserved to fill memory up to 2-byte boundary // REG9
-            uint8_t byteArr[dataLen] {}; // The data that should be retrieved often // REG10-73
-            uint8_t infrequentArr[infrequentDataLen] {}; // REG74-??
+            uint8_t dataRdyFlag = 0; // Tells the master if data is ready or not // REG10
+            uint8_t filler1 = 0; // Reserved to fill memory up to 2-byte boundary // REG11
+            uint8_t byteArr[dataLen] {}; // The data that should be retrieved often // REG12-75
+            uint8_t infrequentArr[infrequentDataLen] {}; // REG76-??
         };
 
         // Instantiate the structs.

@@ -32,12 +32,19 @@ bool Communicator::check()
 {
     if (newDataAvail==1)
     {
+        newDataAvail = 0;
         return true;
     }
     else
     {
         return false;
     }
+}
+
+void Communicator::updateSettings()
+{
+    memcpy(transDat.controlArr, settings.controlArr, CONTROL_DATA_LEN);
+    transDat.decomposeSettings();
 }
 
 void Communicator::updateRegisters()
@@ -53,7 +60,10 @@ void Communicator::updateRegisters()
 
 }
 
-void Communicator::getRpmVals(int16_t rpmVals[motorNum])
+void Communicator::getRpmVals(int rpmVals[motorNum])
 {
-    memcpy(settings.rpmVal, rpmVals, motorNum);
+    for (int i=0;i<motorNum;++i)
+    {
+        transDat.getRpmControl(i, rpmVals[i]);
+    }
 }
