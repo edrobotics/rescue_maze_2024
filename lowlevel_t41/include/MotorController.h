@@ -23,8 +23,10 @@ class MotorController
 
     void startDistanceMeasure(); // Begin distance measuring
     // Maybe replace these with passing pointers in the beginning and then updating the values through pointers?
-    double getDistance(); // Returns the distance turned on output shaft since beginning distance measuring. Measured in rounds. Maybe int where every step is part of full revolution?
-    double getOutputSpeed(); // Returns the current speed of the output shaft, measuren in rpm.
+    // Returns the distance turned on output shaft since beginning distance measuring. Measured in rounds. Maybe int where every step is part of full revolution?
+    double getDistance();
+    // Returns the current speed of the output shaft, measured in rpm.
+    double getOutputSpeed();
     bool isReversed {false}; // If the direction of the motor is inverted. Should this apply to the encoderPosition as well?
 
     void printValues();

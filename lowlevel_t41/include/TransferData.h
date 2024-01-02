@@ -1,13 +1,7 @@
-// Idea: Either do byte array and copy into it, or make a byte pointer
-
-// Other idea: Use normal datatypes first, but store how many bytes they are allowed to use. Then iterate through them to create the byte array and then iterate backwards to get values again.
-
-
 #pragma once
-#include <stdint.h>
-#include <iostream>
-#include <cstring> // memcpy
 
+#include <stdint.h> // Types
+#include <cstring> // memcpy
 
 class TransferData
 {
@@ -19,20 +13,10 @@ class TransferData
     // Decompose the array into the int
     void decompose();
 
-    void composeSettings();
-
-    void decomposeSettings();
+    void test();
 
     void getByteArr(uint8_t data[]);
-    void getSettingsArr(uint8_t data[]);
-    
-    static const int dataLen = 64; // Data length in bytes
-    static const int settingLen = 8;
-    uint8_t byteArr[dataLen] {};
-    uint8_t settingArr[settingLen] {};
 
-
-    void test();
 
     enum Col
     {
@@ -58,37 +42,31 @@ class TransferData
     bool getRPM(int index, int& value);
     bool getPos(int index, int& value);
 
-    // Setters for teensy-pi
+    // Setters
     bool setTof(int index, int value);
     bool setCol(int index, Col colour, int value);
     bool setIMU(int index, ImuVec vec, int value);
     bool setRPM(int index, int value);
     bool setPos(int index, int value);
 
-    // Setters for pi-teensy
-    bool setRpmControl(int index, int value);
-
 
     private:
-        // Teensy to pi
+    static const int dataLen = 64; // Data length in bytes
 
-        static const int tofNum = 7;
-        uint16_t tofData[tofNum] {};
+    static const int tofNum = 7;
+    uint16_t tofData[tofNum] {};
 
-        static const int colNum = 2;
-        uint16_t colData[colNum][col_num] {};
+    static const int colNum = 2;
+    uint16_t colData[colNum][col_num] {};
 
-        static const int imuNum = 3;
-        int16_t imuData[imuNum][imu_num] {};
+    static const int imuNum = 3;
+    int16_t imuData[imuNum][imu_num] {};
 
-        static const int motorNum = 4;
-        int16_t rpmData[motorNum] {};
-        int16_t posData[motorNum] {};
+    static const int motorNum = 4;
+    int16_t rpmData[motorNum] {};
+    int16_t posData[motorNum] {};
 
-
-        // Pi to teensy
-        int16_t rpmControlVals[motorNum] {};
-
+    uint8_t byteArr[dataLen] {};
 
     void u16toB(uint16_t input, uint8_t& byte1, uint8_t& byte2);
     void s16toB(int16_t input, uint8_t& byte1, uint8_t& byte2);

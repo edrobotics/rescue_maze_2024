@@ -24,17 +24,17 @@ bool i2cCommunicator::init()
 
 }
 
-bool i2cCommunicator::readRegister(uint8_t reg, uint8_t size, uint64_t* value)
+bool i2cCommunicator::readRegister(uint8_t reg, uint8_t size, uint8_t values[])
 {
-    return readReg(i2cFile, slaveAddr, reg, size, value);
+    return readReg(i2cFile, slaveAddr, reg, size, values);
 }
 
-bool i2cCommunicator::writeRegister(uint8_t reg, uint8_t size, uint64_t value)
+bool i2cCommunicator::writeRegister(uint8_t reg, uint8_t size, uint8_t values[])
 {
-    return writeReg(i2cFile, slaveAddr, reg, size,  value);
+    return writeReg(i2cFile, slaveAddr, reg, size,  values);
 }
 
-bool i2cCommunicator::readReg(int file, uint8_t addr, uint8_t reg, uint8_t size, uint64_t* value)
+bool i2cCommunicator::readReg(int file, uint8_t addr, uint8_t reg, uint8_t size, uint8_t values[])
 {
     uint8_t outbuf;
     uint8_t inbuf[size];
@@ -60,27 +60,17 @@ bool i2cCommunicator::readReg(int file, uint8_t addr, uint8_t reg, uint8_t size,
         return false;
     }
 
-    // Convert the 8-bit array to a number of the requested size
-    *value = inbuf[0];
-    for (int i=1;i<size;++i)
-    {
-        *value = (*value) | (inbuf[i] << 8*i);
-    }
-    // *value = (inbuf[0] << 8) | inbuf[1];
+    // Return the byte array
+    memcpy(&values, &inbuf, size);
 
     return true;
 }
 
-bool i2cCommunicator::writeReg(int file, uint8_t addr, uint8_t reg, uint8_t size, uint64_t value)
+bool i2cCommunicator::writeReg(int file, uint8_t addr, uint8_t reg, uint8_t size, uint8_t values[])
 {
     uint8_t outbuf[1+size];
     struct i2c_rdwr_ioctl_data packets;
     struct i2c_msg messages[1];
-    uint8_t values[size];
-    for (int i=0;i<size;++i)
-    {
-        values[size-1-i] = static_cast<uint8_t>((value & (0b11111111 << 8*i)) >> 8*i);
-    }
 
     messages[0].addr  = addr;
     messages[0].flags = 0;
@@ -90,7 +80,7 @@ bool i2cCommunicator::writeReg(int file, uint8_t addr, uint8_t reg, uint8_t size
     outbuf[0] = reg;
     for (int i=0;i<size;++i)
     {
-        outbuf[i+1] = value;
+        outbuf[i+1] = values[i];
     }
 
     packets.msgs  = messages;

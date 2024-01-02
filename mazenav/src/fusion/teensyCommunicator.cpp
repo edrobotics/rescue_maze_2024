@@ -19,21 +19,50 @@ bool TeensyCommunicator::initiate()
 
 void TeensyCommunicator::testI2C()
 {
-    i2cComm.writeRegister(0x00, 1, 0);
-    std::this_thread::sleep_for(std::chrono::milliseconds(1));
-    i2cComm.writeRegister(0x01, 1, 50);
-    std::this_thread::sleep_for(std::chrono::milliseconds(1));
-    i2cComm.writeRegister(0x02, 1, 50);
-    std::this_thread::sleep_for(std::chrono::milliseconds(1));
+}
 
-    uint64_t dataRdy = 0;
-    while (dataRdy!=1)
+void TeensyCommunicator::test()
+{
+    for (int i=0;i<4;++i)
     {
-        i2cComm.readRegister(0x03, 1, &dataRdy);
-        std::this_thread::sleep_for(std::chrono::milliseconds(2));
+        transData.setRpmControl(i, 50);
     }
-    uint64_t result = -69;
-    i2cComm.readRegister(0x05, 2, &result);
-    std::cout << "The result is: " << result << "\n";
+    transData.composeSettings();
+
+    uint8_t settingArr[8] {};
+    transData.getSettingsArr(settingArr);
+
+    i2cComm.writeRegister(reg_rpmVals, sizeof(settingArr), settingArr);
+
+    while (true)
+    {
+        // Wait until data is ready
+        std::cout << "Waiting for data...    ";
+        static uint8_t rdyFlag[1] {0};
+        while (rdyFlag[0] != 1)
+        {
+            i2cComm.readRegister(reg_rdyFlag, 1, rdyFlag);
+            std::this_thread::sleep_for(std::chrono::milliseconds(1));
+        }
+        std::cout << "Data Ready" << "\n";
+
+        uint8_t byteArr[64] {};
+
+        i2cComm.readRegister(reg_byteArr, 64, byteArr);
+
+        memcpy(transData.byteArr, byteArr, 64);
+
+        transData.decompose();
+
+        std::cout << "Motor speeds are: ";
+        for (int i=0;i<4;++i)
+        {
+            int motorSpeed {133};
+            transData.getRPM(i, motorSpeed);
+            std::cout << "M" << i << "=" << motorSpeed << "    ";
+        }
+        std::cout << "\n";
+        std::this_thread::sleep_for(std::chrono::milliseconds(10));
+    }
 }
 

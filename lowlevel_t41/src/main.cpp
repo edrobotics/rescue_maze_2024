@@ -8,7 +8,13 @@ MotorController motorLF {39,   38,  28,  29,    46.85,  48};
 MotorController motorRB {1,     0,   5,   4,    46.85,  48};
 MotorController motorLB {23,   22,   37, 36,    46.85,  48};
 
+MotorController* motorControllers[] {&motorRF, &motorLF, &motorRB, &motorLB};
+constexpr int MOTOR_NUM = 4;
+
 Communicator communicator {1};
+
+int16_t rpmVals[4] {};
+
 
 void setup()
 {
@@ -26,26 +32,55 @@ void setup()
 }
 
 void motorTestLoop();
+void communicationLoop();
 void i2cTestLoop();
 
 void loop()
 {
-  // motorTestLoop();
-  i2cTestLoop();
+
+  communicationLoop();
+  for (int i=0;i<MOTOR_NUM;++i)
+  {
+    // motorControllers[i]->update();
+  }
+  delay(1);
+
+}
+
+void communicationLoop()
+{
+  static long timeFlag = 0;
+
+  if (communicator.check())
+  {
+    communicator.getRpmVals(rpmVals);
+    for (int i=0;i<MOTOR_NUM;++i)
+    {
+      Serial.print("Motor ");Serial.print(i);Serial.print(" = ");Serial.print(rpmVals[i]);Serial.print("    ");
+      // motorControllers[i]->setSpeed(rpmVals[i]);
+    }
+  }
+
+  if (millis()-timeFlag>20)
+  {
+    for (int i=0;i<MOTOR_NUM;++i)
+    {
+      communicator.transDat.setRPM(i, motorControllers[i]->getOutputSpeed());
+    }
+
+    // Some more updating of other things
+    // ...
+    // Done updating everything
+
+    // Update the registers
+    communicator.updateRegisters();
+  }
 
 }
 
 void i2cTestLoop()
 {
-  if (communicator.check())
-  {
-    communicator.recompute();
-  }
-  // digitalWrite(LED_BUILTIN, HIGH);
-  delay(50);
-  // digitalWrite(LED_BUILTIN, LOW);
-  delay(150);
-
+  
 }
 
 void motorTestLoop()

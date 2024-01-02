@@ -7,15 +7,16 @@
 #include <linux/i2c-dev.h> // I2C
 #include <i2c/smbus.h> // I2C
 #include <sys/ioctl.h> // I2C
-#include <stdint.h>
+#include <stdint.h> // Types
+#include <cstring> // memcpy
 
 class i2cCommunicator
 {
     public:
     i2cCommunicator(uint8_t portNum, uint8_t addr);
     bool init();
-    bool readRegister(uint8_t reg, uint8_t size, uint64_t* value);
-    bool writeRegister(uint8_t reg, uint8_t size, uint64_t value);
+    bool readRegister(uint8_t reg, uint8_t size, uint8_t values[]);
+    bool writeRegister(uint8_t reg, uint8_t size, uint8_t values[]);
     bool readTransferData();
 
     private:
@@ -24,7 +25,7 @@ class i2cCommunicator
     char filename[20];
     int i2cFile;
 
-    bool readReg(int file, uint8_t addr, uint8_t reg, uint8_t size, uint64_t* value);
-    bool writeReg(int file, uint8_t addr, uint8_t reg, uint8_t size, uint64_t value);
+    bool readReg(int file, uint8_t addr, uint8_t reg, uint8_t size, uint8_t values[]);
+    bool writeReg(int file, uint8_t addr, uint8_t reg, uint8_t size, uint8_t values[]);
 
 };

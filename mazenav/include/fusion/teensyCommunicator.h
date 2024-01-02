@@ -18,23 +18,21 @@ class TeensyCommunicator
 
         bool initiate();
         void testI2C();
+        void test();
 
-        // Register map object (here or in I2C?)
+        TransferData transData {};
 
-        struct Settings
+        // The registers on the teensy
+        enum i2cRegisters
         {
-            uint8_t operation; // 0 is addition, 1 is subtraction
-            uint16_t number1; // The first number to execute the operation on
-            uint16_t number2; // The other number to execute the operation on
+            reg_rpmVals = 0,
+            reg_rdyFlag = 8,
+            reg_byteArr = 10,
+            reg_infreqArr = 74,
+            reg_num,
         };
 
-        struct Registers
-        {
-            uint8_t readyFlag = 0; // Tells the master if data is ready or not
-            int16_t result = 420;
-        };
-
-        // // Motor and wheel stuff
+        // Motor and wheel stuff
         // bool setWheelSpeed(float rpm);
         // int getWheelSpeed();
         // int getDistanceTravelled();
@@ -42,6 +40,7 @@ class TeensyCommunicator
     private:
         i2cCommunicator i2cComm;
         const int tofReadingNum = 5; // Maximum number of TOF frames to accept.
+
 
 
 

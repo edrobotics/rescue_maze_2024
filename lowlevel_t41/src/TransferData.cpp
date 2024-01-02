@@ -1,12 +1,9 @@
-#include "fusion/TransferData.h"
-
+#include "TransferData.h"
 
 TransferData::TransferData()
 {
 
 }
-
-
 
 void TransferData::compose()
 {
@@ -102,26 +99,6 @@ void TransferData::decompose()
 
 }
 
-void TransferData::composeSettings()
-{
-    int arrIdx = 0;
-    for (int i=0;i<motorNum;++i)
-    {
-        s16toB(rpmControlVals[i], settingArr[arrIdx], settingArr[arrIdx+1]);
-        arrIdx+=2;
-    }
-}
-
-void TransferData::decomposeSettings()
-{
-    int arrIdx = 0;
-    for (int i=0;i<motorNum;++i)
-    {
-        btoS16(settingArr[arrIdx], settingArr[arrIdx+1], rpmControlVals[i]);
-        arrIdx+=2;
-    }
-
-}
 
 void TransferData::u16toB(uint16_t input, uint8_t& byte1, uint8_t& byte2)
 {
@@ -149,28 +126,21 @@ void TransferData::btoS16(uint8_t input1, uint8_t input2, int16_t& output)
 
 void TransferData::test()
 {
-    // uint16_t u16 = 555;
-    // int16_t s16 = -555;
+    // uint16_t u16 = 5555;
+    // int16_t s16 = -5555;
     // uint8_t byte1, byte2, byte3, byte4;
     // s16toB(s16, byte1, byte2);
-    // std::cout << "s16=" << s16 << "\n";
+    // Serial.print("s16=");Serial.println(s16);
     // btoS16(byte1, byte2, s16);
-    // std::cout << "s16=" << s16 << "\n";
-
-    
+    // Serial.print("s16=");Serial.println(s16);
 
 }
-
 
 void TransferData::getByteArr(uint8_t data[])
 {
     memcpy(data, byteArr, dataLen);
 }
 
-void TransferData::getSettingsArr(uint8_t data[])
-{
-    memcpy(data, byteArr, dataLen);
-}
 
 
 bool TransferData::getTof(int index, int& value)
@@ -309,19 +279,6 @@ bool TransferData::setPos(int index, int value)
     else
     {
         posData[index] = value;
-        return true;
-    }
-}
-
-bool TransferData::setRpmControl(int index, int value)
-{
-    if (index<0 || index >= motorNum)
-    {
-        return false;
-    }
-    else
-    {
-        rpmControlVals[index] = value;
         return true;
     }
 }
