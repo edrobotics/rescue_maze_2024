@@ -21,11 +21,11 @@ void Communicator::init()
     // Begin listening on I2C_ADDRESS
     i2cSlave.listen(I2C_ADDRESS);
 
-    // Register a function to run after reading
+    // Register I2C isr functions
     i2cSlave.after_read(std::bind(&Communicator::onReadISR, this, std::placeholders::_1));
-
     i2cSlave.after_write(std::bind(&Communicator::onWriteISR, this, std::placeholders::_1, std::placeholders::_2));
-    Serial.println("I2C initialized");
+
+    Serial.println("[Communicator] I2C initialized");
 }
 
 bool Communicator::check()
@@ -43,27 +43,18 @@ bool Communicator::check()
 
 void Communicator::updateSettings()
 {
-    memcpy(transDat.controlArr, settings.controlArr, CONTROL_DATA_LEN);
-    transDat.decomposeSettings();
+    memcpy(transData.controlArr, settings.controlArr, CONTROL_DATA_LEN);
+    transData.decomposeSettings();
 }
 
-void Communicator::updateRegisters()
+void Communicator::updateByteArray()
 {
-    Registers newRegisters {};
-    newRegisters.dataRdyFlag = 1;
+    registers.dataRdyFlag = 0;
+    uint8_t byteArr[DATA_LEN] {};
 
-    transDat.compose();
-    transDat.getByteArr(newRegisters.byteArr);
-    newRegisters.infrequentArr[0] = 0;
+    transData.compose();
+    transData.getByteArr(byteArr);
 
-    memcpy(&registers, &newRegisters, sizeof(Registers));
-
-}
-
-void Communicator::getRpmVals(int rpmVals[motorNum])
-{
-    for (int i=0;i<motorNum;++i)
-    {
-        transDat.getRpmControl(i, rpmVals[i]);
-    }
+    memcpy(registers.byteArr, byteArr, DATA_LEN);
+    registers.dataRdyFlag = 1;
 }

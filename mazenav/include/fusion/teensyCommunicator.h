@@ -6,7 +6,7 @@
 #include <chrono>
 
 #include "fusion/i2cCommunicator.h"
-#include "fusion/TransferData.h"
+#include "TransferData/TransferData.h"
 
 // For communicating with teensy. Backbone for many sensor-classes.
 class TeensyCommunicator
@@ -40,9 +40,6 @@ class TeensyCommunicator
 
     private:
         i2cCommunicator i2cComm;
-        const int tofReadingNum = 5; // Maximum number of TOF frames to accept.
-
-
 
 
 };

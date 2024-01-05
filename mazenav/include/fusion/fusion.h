@@ -1,6 +1,6 @@
 #pragma once
 #include <fusion/teensyCommunicator.h>
-#include <fusion/TransferData.h>
+#include "TransferData/TransferData.h"
 
 namespace fusion
 {

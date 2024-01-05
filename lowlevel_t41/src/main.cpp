@@ -1,6 +1,7 @@
 #include <Arduino.h>
 #include "MotorController.h"
 #include "Communicator.h"
+#include "Imu.h"
 
 //                     ENCA, ENCB, PWM, DIR, ENCRATIO, CPR
 MotorController motorRF {3,     2,   7,   6,    46.85,  48};
@@ -13,6 +14,8 @@ constexpr int MOTOR_NUM = 4;
 
 Communicator communicator {1};
 
+Imu imu {};
+
 int rpmVals[4] {};
 
 
@@ -20,7 +23,7 @@ void setup()
 {
   Serial.begin(9600);
   communicator.init();
-  pinMode(LED_BUILTIN, OUTPUT);
+  imu.init();
 
   motorRF.init();
   motorLF.init();
@@ -34,17 +37,40 @@ void setup()
 void motorTestLoop();
 void communicationLoop();
 void i2cTestLoop();
+void imuLoop();
 
 void loop()
 {
-
-  communicationLoop();
-  for (int i=0;i<MOTOR_NUM;++i)
-  {
-    motorControllers[i]->update();
-  }
   delay(1);
+  imuLoop();
+  // communicationLoop();
+  // for (int i=0;i<MOTOR_NUM;++i)
+  // {
+  //   motorControllers[i]->update();
+  // }
+  // delay(1);
 
+  // if (imu.runLoop())
+  // {
+  //   Serial.print("real=");Serial.print(imu.rotationVector.real, 5);Serial.print("  ");
+  //   Serial.print("i=");Serial.print(imu.rotationVector.i, 5);Serial.print("  ");
+  //   Serial.print("j=");Serial.print(imu.rotationVector.j, 5);Serial.print("  ");
+  //   Serial.print("k=");Serial.print(imu.rotationVector.k, 5);Serial.print("  ");
+  //   Serial.println("");
+  // }
+
+}
+
+void imuLoop()
+{
+  if (imu.runLoop())
+  {
+    for (int i=0;i<Quaternion::term_num;++i)
+    {
+      communicator.transData.setIMU(0, i, imu.rotationVector.floats[i]);
+      communicator.updateByteArray();
+    }
+  }
 }
 
 void communicationLoop()
@@ -54,7 +80,7 @@ void communicationLoop()
   if (communicator.check())
   {
     communicator.updateSettings();
-    communicator.getRpmVals(rpmVals);
+    // communicator.getRpmVals(rpmVals);
     for (int i=0;i<MOTOR_NUM;++i)
     {
       Serial.print("Motor ");Serial.print(i);Serial.print(" = ");Serial.print(rpmVals[i]);Serial.print("    ");
@@ -67,8 +93,8 @@ void communicationLoop()
   {
     for (int i=0;i<MOTOR_NUM;++i)
     {
-      communicator.transDat.setRPM(i, motorControllers[i]->getOutputSpeed());
-      // communicator.transDat.setRPM(i, 55);
+      communicator.transData.setRPM(i, motorControllers[i]->getOutputSpeed());
+      // communicator.transData.setRPM(i, 55);
     }
 
     // Some more updating of other things
@@ -76,7 +102,7 @@ void communicationLoop()
     // Done updating everything
 
     // Update the registers
-    communicator.updateRegisters();
+    communicator.updateByteArray();
   }
 
 }
