@@ -2,6 +2,12 @@
 #include "MotorController.h"
 #include "Communicator.h"
 #include "Imu.h"
+#include "TofCollection.h"
+#include <DFRobot_MCP23017.h>
+
+Communicator communicator {1};
+DFRobot_MCP23017 ioExpander {};
+
 
 //                     ENCA, ENCB, PWM, DIR, ENCRATIO, CPR
 MotorController motorRF {3,     2,   7,   6,    46.85,  48};
@@ -9,12 +15,14 @@ MotorController motorLF {39,   38,  28,  29,    46.85,  48};
 MotorController motorRB {1,     0,   5,   4,    46.85,  48};
 MotorController motorLB {23,   22,   37, 36,    46.85,  48};
 
-MotorController* motorControllers[] {&motorRF, &motorLF, &motorRB, &motorLB};
 constexpr int MOTOR_NUM = 4;
-
-Communicator communicator {1};
+MotorController* motorControllers[] {&motorRF, &motorLF, &motorRB, &motorLB};
 
 Imu imu {};
+
+TofCollection tof {&ioExpander};
+
+
 
 int rpmVals[4] {};
 
@@ -22,15 +30,17 @@ int rpmVals[4] {};
 void setup()
 {
   Serial.begin(9600);
+  // Initialization of all subcomponents
   communicator.init();
-  imu.init();
-
-  motorRF.init();
-  motorLF.init();
-  motorLB.init();
-  motorRB.init();
+  for (int i=0;i<MOTOR_NUM;++i)
+  {
+    motorControllers[i]->init();
+  }
   motorRF.isReversed = true;
   motorRB.isReversed = true;
+  imu.init();
+  tof.init();
+
   delay(1000);
 }
 
@@ -42,7 +52,8 @@ void imuLoop();
 void loop()
 {
   delay(1);
-  imuLoop();
+  // imuLoop();
+  // Serial.print("dist=");Serial.println(tof.getDistance());
   // communicationLoop();
   // for (int i=0;i<MOTOR_NUM;++i)
   // {
