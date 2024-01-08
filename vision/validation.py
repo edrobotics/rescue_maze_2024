@@ -8,6 +8,8 @@ import visionclass as vc
 from configparser import ConfigParser
 
 
+print("imported validation")
+
 def nothing(x):
 	pass
 
@@ -65,6 +67,7 @@ class validation:
         self.TB = Trackbars() #trackbar object
         self.base_folder =  dir_path
         self.config_path = os.path.join(self.base_folder, "config.ini")
+        self.imgproc = vc.imgproc(bLogging=False, dir_path=dir_path)
 
 
 
@@ -148,16 +151,16 @@ class validation:
 
                 try:
                     image = cv2.imread(source_path) 
-                    vc.do_the_work(image, file_name)
+                    self.imgproc.do_the_work(image, file_name)
                 
-                    if len(vc.framedetected) == 1:
-                        if victim != vc.framedetected[0]:
-                            self.showimage(victim, vc.image)
-                    elif len(vc.framedetected) == 0 and victim == "none":
+                    if len(self.imgproc.framedetected) == 1:
+                        if victim != self.imgproc.framedetected[0]:
+                            self.showimage(victim, self.imgproc.image)
+                    elif len(self.imgproc.framedetected) == 0 and victim == "none":
                         continue
 
                     else:
-                        self.showimage(victim, vc.image)
+                        self.showimage(victim, self.imgproc.image)
 
         #        except IndexError:
         #            print(file_name)
@@ -165,6 +168,7 @@ class validation:
 
                 except Exception as e:
                     print(file_name)
+                    print(e)
                     logging.exception("exception in evaluate folder")
                     
             print(f"{victim} was evaluated")

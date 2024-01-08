@@ -11,7 +11,7 @@ class log:
     def __init__(self,base_dir, bLogging = True) -> None:
         self.log_folder = os.path.join(base_dir, "log/unsorted/")
         self.bLogging = bLogging
-        self.createfolder()
+        if bLogging: self.createfolder()
 
     def createfolder(self):  
         dnum = len(os.listdir(self.log_folder))
@@ -25,7 +25,8 @@ class log:
         try:
 
             if self.bLogging:
-                path = f'{self.current_log_folder}{camera}/{self.fnum}.png'
+                path = f'{self.current_log_folder}/{camera}{self.fnum}.png'
+                print(f"saving image {path}")
                 cv2.imwrite(path,image)
         except Exception as ex:
             logging.exception("couldn't log")

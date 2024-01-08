@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 import cv2
 import logging
-#if using picamera 
-#from picamera2 import PiCamera2, Preview
-#import time, libcamera 
+if False: #if using picam 
+    from picamera2 import PiCamera2, Preview
+    import time, libcamera 
 import visionclass
 import argparse
 from configparser import ConfigParser
@@ -29,8 +29,12 @@ def openCams(cPi = True, c1 = True, c2 = True):
         piCam = PiCamera2()
         piCam.start()
 
-    if c1: cap = cv2.VideoCapture("/dev/video0")
-    if c2: cap2 = cv2.VideoCapture("/dev/video2")
+    if c1: 
+        print("opening camera 1")
+        cap = cv2.VideoCapture("/dev/video0")
+    if c2: 
+        print("opening camera 2")
+        cap2 = cv2.VideoCapture("/dev/video2")
 
 def closeCams():
     global piCam
@@ -80,57 +84,55 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
     bLogging = args.logging
-    testing = args.testing
     showsource = args.showsource
+    if bLogging:
+        testing = False
+    elif args.testing == True:
+        testing = True
+    else: testing = False
 
     paths_config = config["PATHS"]
     #base_folder = paths_config["basefolder"]
    #print(f"basefolder{base_folder}")
     imgProc= visionclass.imgproc(bLogging,dir_path)
 
-    if not args.testing:
-        openCams(cPi=False)
-    else: 
-
+    if args.testing:
+        print("running validation")
         import validation as val
         valC = val.validation(dir_path)
         sorted_images_local = "log/previous"
         sorted_images = os.path.join(dir_path, sorted_images_local)
-
-    if showsource: 
-        showSource()
-    
-    try :
-        if args.testing:
-            valC.runValidation()
-                    
-
-
-        else:
-            while True:
-                try:
-                    print("new frame")
-                    #piImg = picam.capture_array()
-                    ret, image1 = cap.read()
-                    ret2, image2 = cap2.read()
-                    #imgProc.do_the_work(piImg, "cam0")
-                    imgProc.do_the_work(image1, "cam1")
-                    imgProc.do_the_work(image2, "cam2")
-
-                    if showsource:
-                        #cv2.imshow("cam0",piImg)
-                        cv2.imshow("cam1",image1)
-                        cv2.imshow("cam2",image2)
-                except Exception as ex:
-
-                    
-                    closeCams()
-    except Exception as ex:  
-        print("Exception: ", ex)
-
-
-
-
-
-
+        valC.runValidation()
+    else: 
+        if showsource: 
+            showSource()
         
+                    
+
+
+        openCams(cPi=False)
+        while True:
+            try:
+                print("new frame")
+                #piImg = picam.capture_array()
+                ret, image1 = cap.read()
+                ret2, image2 = cap2.read()
+                #imgProc.do_the_work(piImg, "cam0")
+                imgProc.do_the_work(image1, "cam1")
+                imgProc.do_the_work(image2, "cam2")
+
+                if showsource:
+                    #cv2.imshow("cam0",piImg)
+                    cv2.imshow("cam1",image1)
+                    cv2.imshow("cam2",image2)
+            except Exception as ex:
+
+                
+                closeCams()
+
+
+
+
+
+
+    
