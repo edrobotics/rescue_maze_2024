@@ -32,7 +32,7 @@ class TofCollection
         bool update();
 
         // Distance array that can be read once update has returned true (otherwise risk reading old values)
-        uint8_t distances[TOF_NUM] {0};
+        uint16_t distances[TOF_NUM] {0};
 
         void test();
 

@@ -182,21 +182,13 @@ void TransferData::getControlArr(uint8_t data[])
 }
 
 
-bool TransferData::getTof(int index, int& value)
+bool TransferData::getTof(uint16_t values[])
 {
-    if (index<0 || index >= TOF_NUM)
-    {
-        return false;
-    }
-    else
-    {
-        value = tofData[index];
-        return true;
-    }
-
+    memcpy(values, tofData, sizeof(tofData[0])*TOF_NUM);
+    return true;
 }
 
-bool TransferData::getCol(int index, Col colour, int& value)
+bool TransferData::getCol(int index, uint16_t values[])
 {
     if (index<0 || index>=COL_NUM)
     {
@@ -204,13 +196,13 @@ bool TransferData::getCol(int index, Col colour, int& value)
     }
     else
     {
-        value = colData[index][colour];
+        memcpy(values, colData[index], sizeof(colData[index][0])*col_num);
         return true;
     }
 }
 
 
-bool TransferData::getIMU(int index, ImuVec vec, float& value)
+bool TransferData::getIMU(int index, float values[])
 {
     if (index<0 || index>=IMU_NUM)
     {
@@ -218,56 +210,35 @@ bool TransferData::getIMU(int index, ImuVec vec, float& value)
     }
     else
     {
-        value = imuData[index][vec];
+        memcpy(values, imuData[index], sizeof(imuData[index][0])*imu_num);
         return true;
     }
     
 }
 
-bool TransferData::getRPM(int index, int& value)
+bool TransferData::getRPM(int16_t values[])
 {
-    if (index<0 || index >=MOTOR_NUM)
-    {
-        return false;
-    }
-    else
-    {
-        value = rpmData[index];
-        return true;
-    }
+    memcpy(values, rpmData, sizeof(rpmData[0])*MOTOR_NUM);
+    return true;
 
 }
 
-bool TransferData::getPos(int index, int& value)
+bool TransferData::getPos(int16_t values[])
 {
-    if (index<0 || index >=MOTOR_NUM)
-    {
-        return false;
-    }
-    else
-    {
-        value = posData[index];
-        return true;
-    }
+    memcpy (values, posData, sizeof(posData[0])*MOTOR_NUM);
+    return true;
 
 }
 
 
-bool TransferData::setTof(int index, int value)
+bool TransferData::setTof(uint16_t values[])
 {
-    if (index<0 || index >= TOF_NUM)
-    {
-        return false;
-    }
-    else
-    {
-        tofData[index] = value;
-        return true;
-    }
+    memcpy(tofData, values, sizeof(tofData[0])*TOF_NUM);
+    return true;
 
 }
 
-bool TransferData::setCol(int index, Col colour, int value)
+bool TransferData::setCol(int index, uint16_t values[])
 {
     if (index<0 || index>=COL_NUM)
     {
@@ -275,13 +246,13 @@ bool TransferData::setCol(int index, Col colour, int value)
     }
     else
     {
-        colData[index][colour] = value;
+        memcpy(colData[index], values, sizeof(colData[index][0])*col_num);
         return true;
     }
 
 }
 
-bool TransferData::setIMU(int index, int imuVec, float value)
+bool TransferData::setIMU(int index, float values[])
 {
     if (index<0 || index>=IMU_NUM)
     {
@@ -289,61 +260,38 @@ bool TransferData::setIMU(int index, int imuVec, float value)
     }
     else
     {
-        imuData[index][imuVec] = value;
+        memcpy(imuData[index], values, sizeof(imuData[index][0])*imu_num);
         return true;
     }
 
 }
 
-bool TransferData::setRPM(int index, int value)
+bool TransferData::setRPM(int16_t values[])
 {
-    if (index<0 || index >=MOTOR_NUM)
-    {
-        return false;
-    }
-    else
-    {
-        rpmData[index] = value;
-        return true;
-    }
-
+    memcpy(rpmData, values, sizeof(rpmData[0])*MOTOR_NUM);
+    return true;
 }
 
-bool TransferData::setPos(int index, int value)
+bool TransferData::setPos(int16_t values[])
 {
-    if (index<0 || index >=MOTOR_NUM)
-    {
-        return false;
-    }
-    else
-    {
-        posData[index] = value;
-        return true;
-    }
+    memcpy(posData, values, sizeof(posData[0])*MOTOR_NUM);
+    return true;
 }
 
-bool TransferData::setRpmControl(int index, int value)
+bool TransferData::setRpmControl(int16_t values[])
 {
-    if (index<0 || index >= MOTOR_NUM)
-    {
-        return false;
-    }
-    else
-    {
-        rpmControlVals[index] = value;
-        return true;
-    }
+    memcpy(rpmControlVals, values, sizeof(rpmControlVals[0])*MOTOR_NUM);
+    return true;
 }
 
-bool TransferData::getRpmControl(int index, int& value)
+bool TransferData::setVoltage(float value)
 {
-    if (index<0 || index>=MOTOR_NUM)
-    {
-        return false;
-    }
-    else
-    {
-        value = rpmControlVals[index];
-        return true;
-    }
+    voltageData = value;
+    return true;
+}
+
+bool TransferData::getRpmControl(int16_t values[])
+{
+    memcpy(values, rpmControlVals, sizeof(rpmControlVals[0])*MOTOR_NUM);
+    return true;
 }

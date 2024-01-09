@@ -52,10 +52,10 @@ class MotorController
     long tickStartDistance {0L}; // Ticks driven since begin of distancemeasure
 
     // Motor controlling
-    int pwmPin;
-    int dirPin;
+    int pwmPin {};
+    int dirPin {};
     float motorSpeed {0}; // Wanted motor speed in rpm
-    float speedCorrection; // Correction output from PID (how to change pwm, not new pwm)
+    float speedCorrection {}; // Correction output from PID (how to change pwm, not new pwm)
     int curPWM {0}; // Current PWM signal
 
     // Should have been static, but objects are not independent then?
