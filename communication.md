@@ -1,4 +1,43 @@
 # Communication standards for EDR RCJ2024
+## Teensy to Pi
+Communication method: I2C
+
+Information from teensy to Pi:
+- Motor data
+  - Speed
+  - Position - Position since last call to startDistanceMeasure
+- ToF data
+- IMU Data
+- Colour sensor data
+- Battery voltage
+
+Information from Pi to teensy:
+- Motor control values
+  - Wanted speed
+  - Acceleration limits?
+
+### Concrete implementation
+The two computers are synchronized. Communication (and some more things) happen like this:
+
+<!-- Websequencediagrams code for the following image (could also use js-sequence-diagrams)
+title Communication: Teensy-Pi
+Pi->Teensy: Write control data
+note right of Teensy: While waiting, run motor control loop
+Pi->Teensy: Write control data end
+note right of Teensy: Use the control data
+Pi->Teensy: I want to read data
+Teensy->Pi: Data
+note right of Teensy: While sending data, read all other sensors\n(and perform misc. tasks)
+Pi->Teensy: I have read all that I want
+note right of Teensy: Continue reading sensors if needed
+note right of Teensy: Update the data read variable (byte array)
+note right of Teensy: Wait for new control data write (go back to top) -->
+
+
+![Communication diagram](./Teensy-Pi%20communication.png)
+
+
+
 ## Vision to Navigation
 Communication method: Socket communication
 
