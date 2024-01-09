@@ -43,8 +43,8 @@ class TofCollection
         DFRobot_MCP23017* ioExpander;
         TofVl53l0x l0xArr[L0X_NUM] {};
         TofVl53l1x l1xArr[L1X_NUM] {};
-        const int L0X_SAMPLING_TIME {20000};
-        const int L1X_SAMPLING_TIME {20000};
+        const int L0X_SAMPLING_TIME {20};
+        const int L1X_SAMPLING_TIME {20};
 
         struct TofData
         {
@@ -55,7 +55,7 @@ class TofCollection
         TofData tofData[TOF_NUM] {};
 
         // Array to store all sensor addresses
-        const int START_ADDR {0x29};
+        const int START_ADDR {0x2A};
         uint8_t addresses[TOF_NUM] {};
         // Compute the addresses
         // Starts at 0x29 (default address) and increments by one for each sensor

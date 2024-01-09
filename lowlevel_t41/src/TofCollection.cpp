@@ -9,6 +9,17 @@ int TofCollection::init()
 {
     // Determine I2C addresses to set
     fillAddr();
+
+    // Set sensor values
+    for (int i=0;i<L0X_NUM;++i)
+    {
+        l0xArr[i].setVars(addresses[i], pins[i], L0X_SAMPLING_TIME, ioExpander);
+    }
+
+    for (int i=0;i<L1X_NUM;++i)
+    {
+        l1xArr[i].setVars(addresses[L0X_NUM+i], pins[L0X_NUM+i], L1X_SAMPLING_TIME, ioExpander);
+    }
     // Prepare sensors to set addresses
     resetSensors();
     disableSensors();
@@ -18,7 +29,7 @@ int TofCollection::init()
     // Init all sensors with addresses
     for (int i=0;i<L0X_NUM;++i)
     {
-        if (!l0xArr[i].init(addresses[i], pins[i], L0X_SAMPLING_TIME, ioExpander))
+        if (!l0xArr[i].init())
         {
             ++failNum;
         }
@@ -26,7 +37,7 @@ int TofCollection::init()
 
     for (int i=0;i<L1X_NUM;++i)
     {
-        if (!l1xArr[i].init(addresses[L0X_NUM+i], pins[L0X_NUM+i], L1X_SAMPLING_TIME, ioExpander))
+        if (!l1xArr[i].init())
         {
             ++failNum;
         }
@@ -40,6 +51,7 @@ void TofCollection::resetSensors()
     for (int i=0;i<L0X_NUM;++i)
     {
         l0xArr[i].reset();
+        
     }
 
     for (int i=0;i<L1X_NUM;++i)
@@ -107,6 +119,13 @@ bool TofCollection::update()
             }
         }
     }
+
+    // for (int i=0;i<TOF_NUM;++i)
+    // {
+    //     Serial.print(i);Serial.print(":");Serial.print(" dataRdy=");Serial.print(tofData[i].dataRdy);Serial.print("    distance=");Serial.print(distances[i]);
+    // }
+    // Serial.println("");
+    // Serial.print("Sensors not ready: ");Serial.println(sensorsNotReady);
     
 
     if (sensorsNotReady != 0)

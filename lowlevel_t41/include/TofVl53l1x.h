@@ -14,8 +14,10 @@ class TofVl53l1x
         void enable();
         // Reset the sensor (OBS: Blocking)
         void reset();
+        // Set the necessary variables
+        void setVars(int addr, DFRobot_MCP23017::ePin_t pin, int samplingTime, DFRobot_MCP23017* ioExpander);
         // Perform all necessary initialization (includes setting address)
-        bool init(int addr, DFRobot_MCP23017::ePin_t pin, int samplingTime, DFRobot_MCP23017* ioExpander);
+        bool init();
 
         // Updates the sensor value.
         // Returns:
@@ -31,6 +33,8 @@ class TofVl53l1x
         const int TIMEOUT_TIME {500};
         // Time for 1 measurement (microseconds)
         const int TIMING_BUDGET {20000};
+        // Time between measurements
+        int samplingTime {};
 
         VL53L1X sensor {};
         DFRobot_MCP23017* ioExpander {};

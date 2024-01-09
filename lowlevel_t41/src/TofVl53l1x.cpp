@@ -6,24 +6,28 @@ TofVl53l1x::TofVl53l1x()
 
 }
 
-
-bool TofVl53l1x::init(int addr, DFRobot_MCP23017::ePin_t pin, int samplingTime, DFRobot_MCP23017* ioExpander)
+void TofVl53l1x::setVars(int addr, DFRobot_MCP23017::ePin_t pin, int samplingTime, DFRobot_MCP23017* ioExpander)
 {
     i2cAddr = addr;
     this->ioExpander = ioExpander;
     xShutPin = pin;
+    this->samplingTime = samplingTime;
+}
 
+bool TofVl53l1x::init()
+{
     enable();
     delay(10);
 
     sensor.setTimeout(TIMEOUT_TIME);
     if (!sensor.init())
     {
-        Serial.println("[VL53L0X] Initialization failed");
+        Serial.println("[VL53L1X] Initialization failed");
+        return false;
     }
 
     // Address setting
-    sensor.setAddress(addr);
+    sensor.setAddress(i2cAddr);
 
     // Parameter setting
     sensor.setDistanceMode(VL53L1X::Short); // Short distance mode
