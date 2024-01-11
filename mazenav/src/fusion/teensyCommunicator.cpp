@@ -17,6 +17,76 @@ bool TeensyCommunicator::initiate()
     return true;
 }
 
+
+void TeensyCommunicator::runLoop()
+{
+    writeSettings();
+
+    readFrequent();
+
+}
+
+bool TeensyCommunicator::writeSettings()
+{
+    transData.composeSettings();
+    if (!i2cComm.writeRegister(reg_controlVals, transData.SETTING_LEN, transData.controlArr))
+    {
+        return false;
+    }
+
+    uint8_t dataWritten[] {1};
+    if (!i2cComm.writeRegister(reg_dataWritten, 1, dataWritten))
+    {
+        return false;
+    }
+
+    return true;
+
+}
+
+bool TeensyCommunicator::readFrequent()
+{
+    // Check data ready. Max loop limit implemented.
+    bool cont = false; // Whether to continue or not
+    while (cont==false)
+    {
+        // static int iterations {0};
+        cont = checkRdy();
+        // ++iterations;
+        // if (iterations>20)
+        // {
+        //     cont = true;
+        // }
+    }
+
+    if (!i2cComm.readRegister(reg_byteArr, transData.DATA_LEN, transData.byteArr))
+    {
+        return false;
+    }
+    uint8_t dataRead[] {1};
+    if (!i2cComm.writeRegister(reg_dataRead, 1, dataRead))
+    {
+        return false;
+    }
+    transData.decompose();
+    return true;
+}
+
+bool TeensyCommunicator::checkRdy()
+{
+    uint8_t result[] {0};
+    i2cComm.readRegister(reg_rdyFlag, 1, result);
+    if (result[0]==1)
+    {
+        return true;
+    }
+    else
+    {
+        return false;
+    }
+}
+
+
 void TeensyCommunicator::testI2C()
 {
 }
@@ -24,25 +94,25 @@ void TeensyCommunicator::testI2C()
 void TeensyCommunicator::test()
 {
     // transData.test();
-    uint8_t byteArray[transData.DATA_LEN] {};
-    uint8_t dataRdy[] {0};
-    while (dataRdy[0] != 1)
-    {
-        i2cComm.readRegister(reg_rdyFlag, 1, dataRdy);
-    }
-    i2cComm.readRegister(reg_byteArr, transData.DATA_LEN, byteArray);
-    memcpy(transData.byteArr, byteArray, transData.DATA_LEN);
-    transData.decompose();
-    float real = 0;
-    float i = 0;
-    float j = 0;
-    float k = 0;
-    transData.getIMU(0, TransferData::imu_real, real);
-    transData.getIMU(0, TransferData::imu_i, i);
-    transData.getIMU(0, TransferData::imu_j, j);
-    transData.getIMU(0, TransferData::imu_k, k);
+    // uint8_t byteArray[transData.DATA_LEN] {};
+    // uint8_t dataRdy[] {0};
+    // while (dataRdy[0] != 1)
+    // {
+    //     i2cComm.readRegister(reg_rdyFlag, 1, dataRdy);
+    // }
+    // i2cComm.readRegister(reg_byteArr, transData.DATA_LEN, byteArray);
+    // memcpy(transData.byteArr, byteArray, transData.DATA_LEN);
+    // transData.decompose();
+    // float real = 0;
+    // float i = 0;
+    // float j = 0;
+    // float k = 0;
+    // transData.getIMU(0, TransferData::imu_real, real);
+    // transData.getIMU(0, TransferData::imu_i, i);
+    // transData.getIMU(0, TransferData::imu_j, j);
+    // transData.getIMU(0, TransferData::imu_k, k);
     
-    std::cout << "real=" << real << "  i=" << i << "  j=" << j << "  k=" << k << "\n";
+    // std::cout << "real=" << real << "  i=" << i << "  j=" << j << "  k=" << k << "\n";
     // int motorSpeeds = 0;
     // for (int i=0;i<4;++i)
     // {

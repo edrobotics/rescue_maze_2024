@@ -17,21 +17,17 @@ class TeensyCommunicator
         TeensyCommunicator(uint8_t portNum, uint8_t addr);
 
         bool initiate();
+
+        // Run this loop to update data once. It compiles and decompiles the data when appropriate.
+        void runLoop();
+        
+        // Testing
         void testI2C();
         void test();
 
         TransferData transData {};
 
         // The registers on the teensy
-        enum i2cRegisters
-        {
-            reg_writeRdyFlag = 0,
-            reg_rpmVals = 2,
-            reg_rdyFlag = 10,
-            reg_byteArr = 12,
-            reg_infreqArr = 76,
-            reg_num,
-        };
 
         // Motor and wheel stuff
         // bool setWheelSpeed(float rpm);
@@ -40,6 +36,20 @@ class TeensyCommunicator
 
     private:
         i2cCommunicator i2cComm;
+        enum i2cRegisters
+        {
+            reg_dataWritten = 0,
+            reg_dataRead = 1,
+            reg_controlVals = 2,
+            reg_rdyFlag = 10,
+            reg_byteArr = 12,
+            reg_infreqArr = 76,
+            reg_num,
+        };
+        bool writeSettings();
+        bool readFrequent();
+        bool readInfrequent();
+        bool checkRdy();
 
 
 };

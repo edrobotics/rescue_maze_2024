@@ -25,16 +25,20 @@ Pi->Teensy: Write control data
 note right of Teensy: While waiting, run motor control loop
 Pi->Teensy: Write control data end
 note right of Teensy: Use the control data
+Pi->Teensy: Check if data is ready
+Teensy->Pi: Respond if ready or not (if it has\nbeen updated since last read)
 Pi->Teensy: I want to read data
 Teensy->Pi: Data
 note right of Teensy: While sending data, read all other sensors\n(and perform misc. tasks)
 Pi->Teensy: I have read all that I want
+note right of Teensy: Set data ready flag to 0
 note right of Teensy: Continue reading sensors if needed
 note right of Teensy: Update the data read variable (byte array)
+note right of Teensy: Set data ready flag to 1
 note right of Teensy: Wait for new control data write (go back to top) -->
 
 
-![Communication diagram](./Teensy-Pi%20communication.png)
+![Communication diagram](./teensy-pi_communication.png)
 
 
 

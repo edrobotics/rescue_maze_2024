@@ -42,12 +42,17 @@ bool Robot::init()
 
 void Robot::updateLoop()
 {
-    if (communicator.check())
+    // Wait until control data is written
+    while(!communicator.checkWrite())
     {
-        communicator.updateSettings();
-        setMotors();
+        updateMotors();
+        delay(1);
     }
+    // Update the settings once new data is received (also use this data for motors)
+    communicator.updateSettings();
+    setMotors();
 
+    // Update all sensors while also updating the motors every so often
         updateMotors();
     updateBatVol();
         updateMotors();
@@ -58,6 +63,7 @@ void Robot::updateLoop()
     getMotors();
         updateMotors();
 
+    // Set the newly recorded data as accessible to the pi
     communicator.updateByteArray();
 }
 

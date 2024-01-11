@@ -15,8 +15,10 @@ class Communicator
         // Performs all required initialization
         void init();
 
-        // Checks if new data is available (cheap, only checks local flag)
-        bool check();
+        // Checks if RPi is finished writing new data
+        bool checkWrite();
+        // Checks if RPi is finished reading data
+        bool checkRead();
 
         // Compose the TransferData byteArray and update the registers with it
         void updateByteArray();
@@ -45,8 +47,10 @@ class Communicator
         // Controlling the teensy
         struct Settings
         {
-            uint8_t writeRdyFlag = 1; // Whether the data can be written or not // REG0
-            uint8_t filler1 = 0; // Reserved to fill memory up to 2-byte boundary // REG1
+            // uint8_t writeRdyFlag = 1; // Whether the data can be written or not
+            uint8_t dataWritten {0}; // Set by RPi to indicate whether done or not data has finished writing // REG0
+            uint8_t dataRead {0}; // Set by RPi to indicate whether or not data has finished reading // REG1
+            // uint8_t filler1 = 0; // Reserved to fill memory up to 2-byte boundary // REG2
             uint8_t controlArr[CONTROL_DATA_LEN] {0}; // REG 2-9
         };
 
@@ -63,8 +67,6 @@ class Communicator
         Settings settings {};
         Registers registers {};
         
-        // 1 if new settings available, otherwise 0
-        uint8_t newDataAvail = 0;
 
         // I2C stuff
         I2CRegisterSlave i2cSlave = I2CRegisterSlave(Slave1, (uint8_t*)&settings, sizeof(Settings), (uint8_t*)&registers, sizeof(Registers));

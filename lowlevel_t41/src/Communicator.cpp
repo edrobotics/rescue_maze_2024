@@ -8,12 +8,16 @@ Communicator::Communicator(int port)
 void Communicator::onReadISR(uint8_t regNum)
 {
     // Reset the ready flag to tell the master that the newest data has been read.
-    registers.dataRdyFlag = 0;
+    // registers.dataRdyFlag = 0;
 }
 
 void Communicator::onWriteISR(uint8_t regNum, size_t numBytes)
 {
-    newDataAvail = 1;
+    // If the pi has said that it has read all data, reset the flag so that it can be set next time
+    if (settings.dataRead==1)
+    {
+        registers.dataRdyFlag = 0;
+    }
 }
 
 void Communicator::init()
@@ -28,11 +32,11 @@ void Communicator::init()
     Serial.println("[Communicator] I2C initialized");
 }
 
-bool Communicator::check()
+bool Communicator::checkWrite()
 {
-    if (newDataAvail==1)
+    if (settings.dataWritten==1)
     {
-        newDataAvail = 0;
+        settings.dataWritten = 0;
         return true;
     }
     else
