@@ -2,7 +2,8 @@
 
 
 TeensyCommunicator communicator = TeensyCommunicator(1, 0x69);
-TransferData transDat = TransferData{};
+
+TestSensor sens0 {&communicator};
 
 void fusion::main()
 {
@@ -28,7 +29,10 @@ void fusion::main()
     // std::cout << "RPM3 has the value: " << rpm3 << "\n";
     while (true)
     {
-        communicator.test();
+        // Note: Not really correct, but I do not want to deal with multithreading right now.
+        communicator.runLoop();
+        sens0.updateVals();
+        sens0.printVals();
     }
     
 }

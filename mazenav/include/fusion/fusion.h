@@ -1,6 +1,10 @@
 #pragma once
-#include <fusion/teensyCommunicator.h>
+#include <thread>
+
+
 #include "TransferData/TransferData.h"
+#include "fusion/teensyCommunicator.h"
+#include "fusion/TestSensor.h"
 
 namespace fusion
 {

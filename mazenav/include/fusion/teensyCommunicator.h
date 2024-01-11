@@ -19,6 +19,7 @@ class TeensyCommunicator
         bool initiate();
 
         // Run this loop to update data once. It compiles and decompiles the data when appropriate.
+        // Should be run as its own thread
         void runLoop();
         
         // Testing
