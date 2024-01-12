@@ -4,7 +4,8 @@
 
 #include "TransferData/TransferData.h"
 #include "fusion/teensyCommunicator.h"
-#include "fusion/TestSensor.h"
+
+#include "Imu.h"
 
 namespace fusion
 {

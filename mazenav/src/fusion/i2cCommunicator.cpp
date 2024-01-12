@@ -85,14 +85,14 @@ bool i2cCommunicator::writeReg(int file, uint8_t addr, uint8_t reg, uint8_t size
 
     packets.msgs  = messages;
     packets.nmsgs = 1;
-    std::cout << "Before write\n";
+    // std::cout << "Before write\n";
     if (ioctl(file, I2C_RDWR, &packets) < 0)
     {
-        std::cout << "Aborted\n";
-        std::cout << "Errno: " << errno << "  with explanation " << strerror(errno) << "\n";
+        // std::cout << "Aborted\n";
+        // std::cout << "Errno: " << errno << "  with explanation " << strerror(errno) << "\n";
         return false;
     }
-    std::cout << "After successful write\n";
+    // std::cout << "After successful write\n";
 
     return true;
 }

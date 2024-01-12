@@ -1,9 +1,9 @@
 #include <fusion/fusion.h>
 
 
-TeensyCommunicator communicator = TeensyCommunicator(1, 0x69);
+TeensyCommunicator communicator {1, 0x69};
 
-TestSensor sens0 {&communicator};
+Imu imu0 {&communicator};
 
 void fusion::main()
 {
@@ -21,7 +21,7 @@ void fusion::main()
     // int tof0 = 0;
     // int tof5 = 0;
     // int rpm3 = 0;
-    // transDat.getTof(0, tof0);
+    // transDat.getTof(0, tof0);https://www.youtube.com/watch?v=9keeDyFxzY4
     // transDat.getTof(5, tof5);
     // transDat.getRPM(3, rpm3);
     // std::cout << "TOF0 has the value: " << tof0 << "\n";
@@ -31,8 +31,8 @@ void fusion::main()
     {
         // Note: Not really correct, but I do not want to deal with multithreading right now.
         communicator.runLoop();
-        sens0.updateVals();
-        sens0.printVals();
+        imu0.updateVals();
+        imu0.printVals(true);
     }
     
 }
