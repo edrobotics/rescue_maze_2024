@@ -1,17 +1,11 @@
 #include <globalNav/globalNav.h>
 
+using namespace communication;
+using communication::driveCommand;
+
 namespace globalNav
 {
 	int leftIterator = 0;
-	mutex* mxWalls;
-	mutex* mxComm;
-
-	enum command
-	{
-		drive,
-		turnRight,
-		turnLeft
-	};
 
 	struct wallInfo
 	{
@@ -26,7 +20,7 @@ namespace globalNav
 
 	}
 
-	command makeDecision(wallInfo wInfo)
+	driveCommand makeDecision(wallInfo wInfo)
 	{
 		if (!wInfo.left && leftIterator < 2)
 		{
@@ -34,17 +28,17 @@ namespace globalNav
 			return turnLeft;
 		}
 		leftIterator = 0;
-		if (!wInfo.front) return drive;
+		if (!wInfo.front) return driveForward;
 		return turnRight;
 	}
 
-	void main(mutex* mutexWalls, mutex* mutexComm)
+	void main(Communicator communicator)
 	{
-		mxWalls = mutexWalls;
-		mxComm = mutexComm;
+		// mxWalls = mutexWalls;
+		// mxComm = mutexComm;
 		while (true)
 		{
-			makeDecision(getInfo());
+			communicator.navigationComm.pushCommand(makeDecision(getInfo()));
 		}
 	}
 

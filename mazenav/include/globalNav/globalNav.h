@@ -1,9 +1,8 @@
 #pragma once
 
 #include <cstdint>
-#include <mutex> 
+#include <communicator/communicator.h>
 
-using namespace globalNav;
 using namespace std;
 
 namespace globalNav
@@ -45,6 +44,6 @@ namespace globalNav
         uint16_t info;
     };
 
-    void main(mutex& mxWalls, mutex& mxComm);
+    void main(communication::Communicator communicator);
 }
 
