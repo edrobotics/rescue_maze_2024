@@ -1,13 +1,51 @@
 #include <globalNav/globalNav.h>
 
-using namespace globalNav;
-
 namespace globalNav
 {
+	int leftIterator = 0;
+	mutex* mxWalls;
+	mutex* mxComm;
 
-	void main()
+	enum command
+	{
+		drive,
+		turnRight,
+		turnLeft
+	};
+
+	struct wallInfo
+	{
+		bool front;
+		bool left;
+		bool back;
+		bool right;
+	};
+
+	wallInfo getInfo()
 	{
 
+	}
+
+	command makeDecision(wallInfo wInfo)
+	{
+		if (!wInfo.left && leftIterator < 2)
+		{
+			leftIterator++;
+			return turnLeft;
+		}
+		leftIterator = 0;
+		if (!wInfo.front) return drive;
+		return turnRight;
+	}
+
+	void main(mutex* mutexWalls, mutex* mutexComm)
+	{
+		mxWalls = mutexWalls;
+		mxComm = mutexComm;
+		while (true)
+		{
+			makeDecision(getInfo());
+		}
 	}
 
 	tile::tile(uint8_t x, uint8_t y)

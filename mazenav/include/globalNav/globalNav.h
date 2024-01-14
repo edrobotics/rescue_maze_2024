@@ -1,6 +1,10 @@
 #pragma once
 
 #include <cstdint>
+#include <mutex> 
+
+using namespace globalNav;
+using namespace std;
 
 namespace globalNav
 {
@@ -41,6 +45,6 @@ namespace globalNav
         uint16_t info;
     };
 
-    void main();
+    void main(mutex& mxWalls, mutex& mxComm);
 }
 
