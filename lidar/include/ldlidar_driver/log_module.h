@@ -34,7 +34,7 @@
 #ifndef __linux__
 #include <windows.h>
 #else
-//#include <pthread.h>
+#include <pthread.h>
 #include <stdarg.h>
 #define printf_s(fileptr,str)  (fprintf(fileptr,"%s",str))
 #define __in
