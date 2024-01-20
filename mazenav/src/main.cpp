@@ -3,14 +3,18 @@
 #include <globalNav/globalNav.h>
 #include <localNav/localNav.h>
 
-using namespace std;
+#include "communicator/communicator.h"
+
+// Object used for communication
+communication::Communicator comm {};
+
 
 int main()
 {
     
-    thread fusionT = thread(fusion::main);
-    thread globNavT = thread(globalNav::main);
-    thread locNavT = thread(localNav::main);
+    std::thread fusionT = std::thread(fusion::main);
+    std::thread globNavT = std::thread(globalNav::main, &comm);
+    std::thread locNavT = std::thread(localNav::main);
 
     fusionT.join();
     globNavT.join();

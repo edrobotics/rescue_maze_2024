@@ -44,6 +44,6 @@ namespace globalNav
         uint16_t info;
     };
 
-    void main(communication::Communicator communicator);
+    void main(communication::Communicator* communicator);
 }
 

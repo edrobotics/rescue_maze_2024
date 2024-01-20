@@ -32,13 +32,13 @@ namespace globalNav
 		return turnRight;
 	}
 
-	void main(Communicator communicator)
+	void main(Communicator* communicator)
 	{
 		// mxWalls = mutexWalls;
 		// mxComm = mutexComm;
 		while (true)
 		{
-			communicator.navigationComm.pushCommand(makeDecision(getInfo()));
+			communicator->navigationComm.pushCommand(makeDecision(getInfo()));
 		}
 	}
 
