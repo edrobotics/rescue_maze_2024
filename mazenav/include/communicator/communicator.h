@@ -1,6 +1,7 @@
 #pragma once
 #include <queue>
 #include <mutex>
+#include "communicator/RobotPose.h"
 
 namespace communication
 {
@@ -30,10 +31,26 @@ namespace communication
         std::queue<driveCommand> commands;
     };
 
+    class PoseCommunicator
+    {
+        public:
+            PoseCommunicator();
+            // Sets the robot pose
+            void setPose(RobotPose pose);
+
+            // Gets the robot pose
+            RobotPose getPose();
+        
+        private:
+            RobotPose pose {};
+            std::mutex mtx_pose;
+    };
+
     // Class containing the data that we want to share
     class Communicator
     {
         public:
         Navigation navigationComm;
+        PoseCommunicator poseComm {};
     };
 }
