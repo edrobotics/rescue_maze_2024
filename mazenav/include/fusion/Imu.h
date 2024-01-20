@@ -3,6 +3,8 @@
 #include <math.h>
 #include <iomanip>
 #include <iostream>
+#include "fusion/mutexes.h"
+#include <mutex>
 
 #include "fusion/teensyCommunicator.h"
 
@@ -43,7 +45,7 @@ class Imu
         Quaternion quatVals {};
         TeensyCommunicator* communicator;
 
-        // Converts a quaternion into euler angles with YZX rotation order
+        // Converts a quaternion into euler angles with sensor local YZX rotation order, global convention XZY rotation order
         EulerAngle quaternionToEuler(Quaternion q);
         EulerAngle radToDeg(EulerAngle angle);
 

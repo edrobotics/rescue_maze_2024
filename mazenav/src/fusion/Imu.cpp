@@ -7,7 +7,9 @@ Imu::Imu(TeensyCommunicator* communicator)
 
 void Imu::updateVals()
 {
+    mtx_transData_freqData.lock();
     communicator->transData.getIMU(0, vals);
+    mtx_transData_freqData.unlock();
     quatVals.real = vals[TransferData::imu_real];
     quatVals.i = vals[TransferData::imu_i];
     quatVals.j = vals[TransferData::imu_j];
@@ -37,21 +39,29 @@ Imu::EulerAngle Imu::quaternionToEuler(Quaternion q)
     // YZX rotation sequence is used
 
 
-    EulerAngle returnData {};
+    EulerAngle localData {};
 
     // Code taken/inspired from here: https://web.archive.org/web/20140824191842/http://bediyap.com/programming/convert-quaternion-to-euler-rotations/
     // Note: I switched z and y as they seemed to be swapped. Then it worked perfectly. But why?
 
     double r31 = -2*(q.j*q.k - q.real*q.i);
     double r32 = q.real*q.real - q.i*q.i + q.j*q.j - q.k*q.k;
-    returnData.x = atan2(r31, r32);
+    localData.x = atan2(r31, r32);
 
     double r21 = 2*(q.i*q.j + q.real*q.k);
-    returnData.z = asin(r21);
+    localData.z = asin(r21);
 
     double r11 = -2*(q.i*q.k - q.real*q.j);
     double r12 = q.real*q.real + q.i*q.i - q.j*q.j - q.k*q.k;
-    returnData.y = atan2(r11, r12);
+    localData.y = atan2(r11, r12);
+
+    EulerAngle returnData {};
+
+    // Change from sensor local coordinate system to global coordinate system conventions. New rotation order is XZY
+    returnData.x = -localData.y;
+    returnData.y = localData.x;
+    returnData.z = localData.z;
+
 
     return returnData;
 
