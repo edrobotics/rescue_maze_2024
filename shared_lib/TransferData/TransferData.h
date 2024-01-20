@@ -67,19 +67,19 @@ class TransferData
         bool setRpmControl(int16_t values[]);
 
 
+        static const int TOF_NUM = 7;
+        static const int COL_NUM = 2;
+        static const int IMU_NUM = 1;
+        static const int MOTOR_NUM = 4;
     private:
         // Teensy to pi
 
-        static const int TOF_NUM = 7;
         uint16_t tofData[TOF_NUM] {0};
 
-        static const int COL_NUM = 2;
         uint16_t colData[COL_NUM][col_num] {0};
 
-        static const int IMU_NUM = 1;
         float imuData[IMU_NUM][imu_num] {0};
 
-        static const int MOTOR_NUM = 4;
         int16_t rpmData[MOTOR_NUM] {0};
         int16_t posData[MOTOR_NUM] {0};
 
