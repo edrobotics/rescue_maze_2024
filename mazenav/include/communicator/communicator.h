@@ -34,7 +34,6 @@ namespace communication
     class PoseCommunicator
     {
         public:
-            PoseCommunicator();
             // Sets the robot pose
             void setPose(RobotPose pose);
 
