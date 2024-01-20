@@ -1,4 +1,4 @@
-#include <communicator.h>
+#include "communicator/communicator.h"
 
 namespace communication
 {
@@ -9,13 +9,17 @@ namespace communication
         commands_mutex.unlock();
     }
 
-    driveCommand Navigation::getCommand()
+    driveCommand Navigation::getCommand(bool pop)
     {
         driveCommand dC;
         commands_mutex.lock();
         if (!commands.empty())
         {
             dC = commands.front();
+            if (pop)
+            {
+                commands.pop();
+            }
         }
         else
         {
