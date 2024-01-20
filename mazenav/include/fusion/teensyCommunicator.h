@@ -3,10 +3,12 @@
 #include <vector>
 #include <stdint.h>
 #include <thread>
+#include <mutex>
 #include <chrono>
 
 #include "fusion/i2cCommunicator.h"
 #include "TransferData/TransferData.h"
+#include "fusion/mutexes.h"
 
 // For communicating with teensy. Backbone for many sensor-classes.
 class TeensyCommunicator
@@ -21,6 +23,8 @@ class TeensyCommunicator
         // Run this loop to update data once. It compiles and decompiles the data when appropriate.
         // Should be run as its own thread
         void runLoop();
+        // Loops the runLoop forever
+        void runLoopLooper();
         
         // Testing
         void testI2C();

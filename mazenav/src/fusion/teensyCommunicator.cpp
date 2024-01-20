@@ -23,12 +23,21 @@ void TeensyCommunicator::runLoop()
     writeSettings();
 
     readFrequent();
+}
 
+void TeensyCommunicator::runLoopLooper()
+{
+    while(true)
+    {
+        runLoop();
+    }
 }
 
 bool TeensyCommunicator::writeSettings()
 {
+    mtx_transData_controlData.lock();
     transData.composeSettings();
+    mtx_transData_controlData.unlock(); // Operating on byte array after this
     if (!i2cComm.writeRegister(reg_controlVals, transData.SETTING_LEN, transData.controlArr))
     {
         return false;
@@ -68,7 +77,10 @@ bool TeensyCommunicator::readFrequent()
     {
         return false;
     }
+
+    mtx_transData_freqData.lock();
     transData.decompose();
+    mtx_transData_freqData.unlock();
     return true;
 }
 
