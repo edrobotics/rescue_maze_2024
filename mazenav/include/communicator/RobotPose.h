@@ -6,6 +6,7 @@
 
 class RobotPose
 {
+    public:
     // XYZ Positional coordinates (translation)
     int t_x {0};
     int t_y {0};
