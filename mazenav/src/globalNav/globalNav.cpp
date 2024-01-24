@@ -1,7 +1,7 @@
 #include <globalNav/globalNav.h>
 
 using namespace communication;
-using communication::driveCommand;
+using communication::DriveCommand;
 
 namespace globalNav
 {
@@ -20,7 +20,7 @@ namespace globalNav
 
 	}
 
-	driveCommand makeDecision(wallInfo wInfo)
+	DriveCommand makeDecision(wallInfo wInfo)
 	{
 		if (!wInfo.left && leftIterator < 2)
 		{

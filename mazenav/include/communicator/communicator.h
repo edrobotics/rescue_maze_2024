@@ -6,14 +6,14 @@
 namespace communication
 {
     // Possible drive commands that can be issued from global navigation to local navigation
-    enum driveCommand
+    enum DriveCommand
     {
         driveForward,
         turnLeft,
         turnRight,
         turnBack,
         noAction,
-        command_num,
+        driveCommand_num,
     };
 
     // Methods for interacting with the communication
@@ -21,14 +21,14 @@ namespace communication
     {
         public:
         // Pushes a command to the command queue
-        void pushCommand(driveCommand command);
+        void pushCommand(DriveCommand command);
         // Gets the next command from the command queue
         // pop - false if it should not modify the queue, true if the first element should be removed
-        driveCommand getCommand(bool pop);
+        DriveCommand getCommand(bool pop);
 
         private:
         std::mutex commands_mutex;
-        std::queue<driveCommand> commands;
+        std::queue<DriveCommand> commands;
     };
 
     class PoseCommunicator

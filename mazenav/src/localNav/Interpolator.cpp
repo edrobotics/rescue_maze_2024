@@ -1,33 +1,17 @@
 #include "localNav/Interpolator.h"
 
 
-std::vector<int> Interpolator::linear(int startVal, int endVal, int resolution)
+std::vector<int> Interpolator::linear(int startVal, int endVal, int steps)
 {
     std::vector<int> retVal {};
     // Set the increment
-    int increment = resolution * ((startVal<=endVal) ? 1 : -1);
+    double increment = (endVal-startVal)/static_cast<double>(steps);
 
     // Computation
-    bool done {false};
-    for (int i=startVal; !done; i+=increment)
+    for (int i=1; i<(steps+1); ++i)
     {
-        retVal.push_back(i);
-        if (startVal<=endVal)
-        {
-            if (i>=endVal)
-            {
-                done = true;
-            }
-        }
-        else
-        {
-            if (i<=endVal)
-            {
-                done = true;
-            }
-        }
+        retVal.push_back(static_cast<int>(startVal + i*increment));
     }
-
 
     return retVal;
 

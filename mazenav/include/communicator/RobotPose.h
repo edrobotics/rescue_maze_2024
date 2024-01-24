@@ -1,5 +1,6 @@
 #pragma once
 
+#include <cmath>
 
 // General information about coordinate system:
 // Left-handed coordinate system with its origin in the lower left corner of the tile, eg. positive X and Z point towards the current tile.
@@ -15,5 +16,7 @@ class RobotPose
     // Euler angles (XZY Rotation order)
     double r_x {0}; 
     double r_y {0}; 
-    double r_z {0}; 
+    double r_z {0};
+
+    static double calcDistance2d(RobotPose pose1, RobotPose pose2);
 };

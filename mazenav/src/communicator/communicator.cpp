@@ -19,16 +19,16 @@ namespace communication
         return returnData;
     }
 
-    void Navigation::pushCommand(driveCommand command)
+    void Navigation::pushCommand(DriveCommand command)
     {
         commands_mutex.lock();
         commands.push(command);
         commands_mutex.unlock();
     }
 
-    driveCommand Navigation::getCommand(bool pop)
+    DriveCommand Navigation::getCommand(bool pop)
     {
-        driveCommand dC;
+        DriveCommand dC;
         commands_mutex.lock();
         if (!commands.empty())
         {
@@ -40,7 +40,7 @@ namespace communication
         }
         else
         {
-            dC = driveCommand::noAction;
+            dC = DriveCommand::noAction;
         }
         commands_mutex.unlock();
 
