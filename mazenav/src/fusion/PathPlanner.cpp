@@ -14,10 +14,14 @@ void PathPlanner::setGlobalPath(std::vector<communication::DriveCommand> globalP
 
 void PathPlanner::calculate(RobotPose startPose)
 {
+    // Add initial keypose
     path.addKeyPose(startPose);
+    
+    // Add the remaining keyposes
     RobotPose curPose {startPose};
-    for (auto move: globalPath)
+    for (communication::DriveCommand move : globalPath)
     {
+        #warning Will not work currently. Need to figure out transforms
         switch (move)
         {
             case communication::driveForward:
