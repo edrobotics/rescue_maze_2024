@@ -11,6 +11,9 @@ class MotorControllers
         class MotorSpeeds
         {
             public:
+            MotorSpeeds();
+            MotorSpeeds(int rf, int lf, int rb, int lb);
+
             int rf {0};
             int lf {0};
             int rb {0};

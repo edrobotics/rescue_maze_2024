@@ -11,3 +11,11 @@ void Sensors::update()
     imu0.updateVals();
     tofs.updateVals();
 }
+
+void Sensors::print()
+{
+    imu0.printVals(false);
+    std::cout << "    ";
+    tofs.printVals(false);
+    std::cout << "\n";
+}

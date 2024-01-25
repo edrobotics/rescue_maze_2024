@@ -12,6 +12,9 @@ class Sensors
 
         void update();
 
+        // Print out the sensor values in a nice format
+        void print();
+
         Imu imu0;
         Tof tofs;
 

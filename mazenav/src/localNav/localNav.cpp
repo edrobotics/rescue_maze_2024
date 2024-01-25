@@ -2,7 +2,7 @@
 
 void testTransforms();
 
-void localNav::main()
+void localNav::main(communication::Communicator* globComm)
 {
     testTransforms();
 }

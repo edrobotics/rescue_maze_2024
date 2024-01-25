@@ -1,22 +1,47 @@
 #include <fusion/fusion.h>
 
 
-TeensyCommunicator communicator {1, 0x69};
+TeensyCommunicator tComm {1, 0x69};
 
-MotorControllers motors {&communicator};
-Sensors sensors {&communicator};
+MotorControllers motors {&tComm};
+Sensors sensors {&tComm};
 
-void fusion::main()
+void fusion::main(communication::Communicator* globComm)
 {
-    communicator.initiate();
+    tComm.initiate();
 
     // Create hardware communication thread. Will run indefinetely
-    std::thread hardwareCommunicator(&TeensyCommunicator::runLoopLooper, &communicator);
+    std::thread hardwareCommunicator(&TeensyCommunicator::runLoopLooper, &tComm);
     
     while (true)
     {
+        motors.setSpeeds = MotorControllers::MotorSpeeds(50, 50, 50, 50);
+        motors.updateVals();
+
+        std::chrono::time_point timeFlag = std::chrono::steady_clock::now();
+        while(std::chrono::steady_clock::now()-timeFlag < std::chrono::milliseconds(1000))
+        {
+            motors.updateVals();
+            sensors.update();
+            std::this_thread::sleep_for(std::chrono::milliseconds(1));
+            motors.printSpeeds();
+        }
+
+
+        motors.setSpeeds = MotorControllers::MotorSpeeds(0, 0, 0, 0);
+        motors.updateVals();
+
+        timeFlag = std::chrono::steady_clock::now();
+        while(std::chrono::steady_clock::now()-timeFlag < std::chrono::milliseconds(1000))
+        {
+            motors.updateVals();
+            sensors.update();
+            std::this_thread::sleep_for(std::chrono::milliseconds(1));
+            motors.printSpeeds();
+        }
         // Update the sensors
-        sensors.update();
+
+        // sensors.print();
 
         // Update the pose (To be done)
     }

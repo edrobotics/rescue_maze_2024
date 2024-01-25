@@ -32,14 +32,14 @@ class Tof
 
         enum TofID
         {
-            tof_lf,
-            tof_lb,
-            tof_rf,
-            tof_rb,
-            tof_fl,
-            tof_fr,
-            tof_b,
-            tof_num,
+            tof_lf = 2,
+            tof_lb = 1,
+            tof_rf = 3,
+            tof_rb = 0,
+            tof_fl = 5,
+            tof_fr = 6,
+            tof_b  = 4,
+            tof_num = 7,
         };
 
         TofData tofData {};

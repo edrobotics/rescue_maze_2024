@@ -22,6 +22,8 @@ void TeensyCommunicator::runLoop()
 {
     writeSettings();
 
+    // Read the frequently updated sensors
+    // Waits for the data to be ready
     readFrequent();
 }
 
@@ -29,7 +31,16 @@ void TeensyCommunicator::runLoopLooper()
 {
     while(true)
     {
-        runLoop();
+        // auto t1 {std::chrono::high_resolution_clock::now()};
+        // for (int i=0;i<100;++i)
+        // {
+            runLoop();
+        // }
+        // auto t2 {std::chrono::high_resolution_clock::now()};
+        // // auto ms_int = std::chrono::duration_cast<std::chrono::milliseconds>(t2-t1);
+        // std::chrono::duration<double, std::milli> ms_double = t2-t1;
+        // std::cout << ms_double.count()/static_cast<double>(100) << "ms\n";
+
     }
 }
 
@@ -55,7 +66,7 @@ bool TeensyCommunicator::writeSettings()
 
 bool TeensyCommunicator::readFrequent()
 {
-    // Check data ready. Max loop limit implemented.
+    // Check data ready.
     bool cont = false; // Whether to continue or not
     while (cont==false)
     {
