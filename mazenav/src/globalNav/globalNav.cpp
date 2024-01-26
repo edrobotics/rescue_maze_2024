@@ -34,12 +34,10 @@ namespace globalNav
 
 	void main(Communicator* communicator)
 	{
-		// mxWalls = mutexWalls;
-		// mxComm = mutexComm;
-		while (true)
-		{
-			communicator->navigationComm.pushCommand(makeDecision(getInfo()));
-		}
+		// while (true)
+		// {
+		// 	communicator->navigationComm.pushCommand(makeDecision(getInfo()));
+		// }
 	}
 
 	tile::tile(uint8_t x, uint8_t y)
