@@ -22,7 +22,7 @@ else
 fi
 
 
-g++ -g -std=gnu++17 `find src -iregex ".*\.cpp"` `find ../shared_lib -iregex ".*\.cpp"` -I./include/ -I../shared_lib/ -I/usr/local/boost_1_82_0/ -o ./build/mazenav -Og $envDefine #use O3 or O2 if not working (previously Ofast)
+g++ -g -std=gnu++17 -pedantic -Wall -Wextra `find src -iregex ".*\.cpp"` `find ../shared_lib -iregex ".*\.cpp"` -I./include/ -I../shared_lib/ -I/usr/local/boost_1_82_0/ -o ./build/mazenav -Og $envDefine #use O3 or O2 if not working (previously Ofast)
 chmod +x ./build/mazenav
 
 echo "compiled successfully (maybe)"
