@@ -17,7 +17,7 @@ namespace globalNav
 
 	wallInfo getInfo()
 	{
-
+		return wallInfo();
 	}
 
 	DriveCommand makeDecision(wallInfo wInfo)
