@@ -46,6 +46,6 @@ class Tof
 
     private:
         TeensyCommunicator* communicator;
-        uint16_t vals[tof_num] {0};;
+        uint16_t vals[tof_num] {0};
 
 };

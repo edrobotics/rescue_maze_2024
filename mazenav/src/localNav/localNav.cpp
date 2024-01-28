@@ -28,7 +28,7 @@ void testTransforms()
     std::cout << "\n" << "\n" << "\n";
 
     // Move the local tile one step right and rotate 90deg clockwise
-    Transform moveAndRotate {300, 0, 0, 0, 0, -90};
+    Transform moveAndRotate {0, 300, 0, 0, 0, -M_PI_2};
     localTile.incrementTransfrom(moveAndRotate);
 
     globalRobot = robot.transformTo(world);

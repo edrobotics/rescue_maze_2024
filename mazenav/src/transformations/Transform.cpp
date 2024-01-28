@@ -28,8 +28,8 @@ Transform Transform::operator+ (Transform& t2)
 
 Transform Transform::operator+= (Transform& t2)
 {
-    this->pos_x += t2.pos_x;
-    this->pos_y += t2.pos_y;
+    this->pos_x += t2.pos_x*cos(this->rot_z)-t2.pos_y*sin(this->rot_z);
+    this->pos_y += t2.pos_y*cos(this->rot_z)+t2.pos_x*sin(this->rot_z);
     this->pos_z += t2.pos_z;
 
     this->rot_x += t2.rot_x;
@@ -41,8 +41,8 @@ Transform Transform::operator+= (Transform& t2)
 
 Transform Transform::operator-= (Transform& t2)
 {
-    this->pos_x -= t2.pos_x;
-    this->pos_y -= t2.pos_y;
+    this->pos_x -= t2.pos_x*cos(this->rot_z)-t2.pos_y*sin(this->rot_z);
+    this->pos_y -= t2.pos_y*cos(this->rot_z)+t2.pos_x*sin(this->rot_z);
     this->pos_z -= t2.pos_z;
 
     this->rot_x -= t2.rot_x;

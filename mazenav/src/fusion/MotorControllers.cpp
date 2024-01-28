@@ -20,7 +20,7 @@ MotorControllers::MotorSpeeds::MotorSpeeds()
 
 void MotorControllers::updateVals()
 {
-    int16_t values[] {};
+    int16_t values[motor_num] {};
     values[motor_rf] = readSpeeds.rf;
     values[motor_lf] = readSpeeds.lf;
     values[motor_rb] = readSpeeds.rb;
