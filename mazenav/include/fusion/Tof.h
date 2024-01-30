@@ -5,7 +5,7 @@
 #include <mutex>
 #include "fusion/mutexes.h"
 
-#include "fusion/teensyCommunicator.h"
+#include "fusion/TeensyCommunicator.h"
 
 class Tof
 {

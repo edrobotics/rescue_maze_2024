@@ -7,7 +7,8 @@
 #include <chrono>
 
 #include "fusion/i2cCommunicator.h"
-#include "TransferData/TransferData.h"
+// #include "TransferData/TransferData.h"
+#include "fusion/TransferDataWrapper.h"
 #include "fusion/mutexes.h"
 
 // For communicating with teensy. Backbone for many sensor-classes.
@@ -30,7 +31,7 @@ class TeensyCommunicator
         void testI2C();
         void test();
 
-        TransferData transData {};
+        TransferDataWrapper transData {};
 
         // The registers on the teensy
 

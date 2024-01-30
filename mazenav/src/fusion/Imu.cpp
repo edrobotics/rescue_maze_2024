@@ -7,9 +7,7 @@ Imu::Imu(TeensyCommunicator* communicator)
 
 void Imu::updateVals()
 {
-    mtx_transData_freqData.lock();
-    communicator->transData.getIMU(0, vals);
-    mtx_transData_freqData.unlock();
+    communicator->transData.tsGetIMU(0, vals);
     quatVals.real = vals[TransferData::imu_real];
     quatVals.i = vals[TransferData::imu_i];
     quatVals.j = vals[TransferData::imu_j];

@@ -176,9 +176,19 @@ void TransferData::getByteArr(uint8_t data[])
     memcpy(data, byteArr, DATA_LEN);
 }
 
+void TransferData::setByteArr(uint8_t data[])
+{
+    memcpy(byteArr, data, DATA_LEN);
+}
+
 void TransferData::getControlArr(uint8_t data[])
 {
     memcpy(data, controlArr, SETTING_LEN);
+}
+
+void TransferData::setControlArr(uint8_t data[])
+{
+    memcpy(controlArr, data, SETTING_LEN);
 }
 
 

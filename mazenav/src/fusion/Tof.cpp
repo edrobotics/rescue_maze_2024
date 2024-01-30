@@ -9,7 +9,7 @@ void Tof::updateVals()
 {
     // Read vals
     mtx_transData_freqData.lock();
-    communicator->transData.getTof(vals);
+    communicator->transData.tsGetTof(vals);
     mtx_transData_freqData.unlock();
 
     tofData.b = vals[tof_b];

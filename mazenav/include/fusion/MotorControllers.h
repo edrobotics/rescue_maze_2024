@@ -1,6 +1,6 @@
 #pragma once
 
-#include "fusion/teensyCommunicator.h"
+#include "fusion/TeensyCommunicator.h"
 #include "fusion/mutexes.h"
 
 class MotorControllers

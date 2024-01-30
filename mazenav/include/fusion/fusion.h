@@ -2,8 +2,8 @@
 #include <thread>
 #include <mutex>
 
-#include "TransferData/TransferData.h" // Should ideally not be needed here
-#include "fusion/teensyCommunicator.h" // For communication with teensy
+// #include "TransferData/TransferData.h" // Should ideally not be needed here
+#include "fusion/TeensyCommunicator.h" // For communication with teensy
 #include "communicator/communicator.h" // For global communication
 // #include "fusion/mutexes.h" // Might not be needed
 

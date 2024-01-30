@@ -1,4 +1,4 @@
-#include <fusion/teensyCommunicator.h>
+#include "fusion/TeensyCommunicator.h"
 
 TeensyCommunicator::TeensyCommunicator(uint8_t portNum, uint8_t addr)
     : i2cComm{portNum, addr}
@@ -46,10 +46,13 @@ void TeensyCommunicator::runLoopLooper()
 
 bool TeensyCommunicator::writeSettings()
 {
-    mtx_transData_controlData.lock();
-    transData.composeSettings();
-    mtx_transData_controlData.unlock(); // Operating on byte array after this
-    if (!i2cComm.writeRegister(reg_controlVals, transData.SETTING_LEN, transData.controlArr))
+    transData.tsComposeSettings();
+
+    uint8_t data [transData.W_SETTING_LEN] {};
+
+    transData.tsGetControlArr(data);
+    
+    if (!i2cComm.writeRegister(reg_controlVals, transData.W_SETTING_LEN, data))
     {
         return false;
     }
@@ -79,7 +82,9 @@ bool TeensyCommunicator::readFrequent()
         // }
     }
 
-    if (!i2cComm.readRegister(reg_byteArr, transData.DATA_LEN, transData.byteArr))
+    uint8_t indata [transData.W_DATA_LEN] {};
+
+    if (!i2cComm.readRegister(reg_byteArr, transData.W_DATA_LEN, indata))
     {
         return false;
     }
@@ -88,10 +93,10 @@ bool TeensyCommunicator::readFrequent()
     {
         return false;
     }
+    
+    transData.tsSetByteArr(indata);
+    transData.tsDecompose();
 
-    mtx_transData_freqData.lock();
-    transData.decompose();
-    mtx_transData_freqData.unlock();
     return true;
 }
 

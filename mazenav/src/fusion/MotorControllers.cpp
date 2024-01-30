@@ -26,13 +26,9 @@ void MotorControllers::updateVals()
     values[motor_rb] = readSpeeds.rb;
     values[motor_lb] = readSpeeds.lb;
 
-    mtx_transData_controlData.lock();
-    communicator->transData.setRpmControl(values);
-    mtx_transData_controlData.unlock();
-    mtx_transData_freqData.lock();
-    communicator->transData.getRPM(speeds);
-    communicator->transData.getPos(distances);
-    mtx_transData_freqData.unlock();
+    communicator->transData.tsSetRpmControl(values);
+    communicator->transData.tsGetRPM(speeds);
+    communicator->transData.tsGetPos(distances);
 
     readSpeeds.rf = speeds[motor_rf];
     readSpeeds.lf = speeds[motor_lf];

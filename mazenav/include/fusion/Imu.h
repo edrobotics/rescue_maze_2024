@@ -6,7 +6,7 @@
 #include "fusion/mutexes.h"
 #include <mutex>
 
-#include "fusion/teensyCommunicator.h"
+#include "fusion/TeensyCommunicator.h"
 
 class Imu
 {

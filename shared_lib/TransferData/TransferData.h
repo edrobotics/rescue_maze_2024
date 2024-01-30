@@ -22,7 +22,9 @@ class TransferData
         void decomposeSettings();
 
         void getByteArr(uint8_t data[]);
+        void setByteArr(uint8_t data[]);
         void getControlArr(uint8_t data[]);
+        void setControlArr(uint8_t data[]);
 
         static const int DATA_LEN = 64; // Data length in bytes
         static const int SETTING_LEN = 8;
