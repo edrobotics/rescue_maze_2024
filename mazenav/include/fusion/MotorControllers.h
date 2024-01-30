@@ -42,6 +42,8 @@ class MotorControllers
 
         // Sets the latest control speeds and gets new data from teensy
         void updateVals();
+        void setVals();
+        void getVals();
 
         // Variables to store the latest values
         MotorSpeeds setSpeeds {};

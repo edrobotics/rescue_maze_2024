@@ -15,8 +15,10 @@ class Sensors
         // Print out the sensor values in a nice format
         void print();
 
+        // All initialized in constructor
         Imu imu0;
         Tof tofs;
+        MotorControllers motors;
 
 
     private:

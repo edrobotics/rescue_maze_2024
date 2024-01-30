@@ -1,7 +1,7 @@
 #include "fusion/Sensors.h"
 
 Sensors::Sensors(TeensyCommunicator* communicator)
-    : imu0 {communicator}, tofs {communicator}
+    : imu0 {communicator}, tofs {communicator}, motors {communicator}
 {
     this->communicator = communicator;
 }

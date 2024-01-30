@@ -20,13 +20,23 @@ MotorControllers::MotorSpeeds::MotorSpeeds()
 
 void MotorControllers::updateVals()
 {
+    setVals();
+    getVals();
+}
+
+void MotorControllers::setVals()
+{
     int16_t values[motor_num] {};
-    values[motor_rf] = readSpeeds.rf;
-    values[motor_lf] = readSpeeds.lf;
-    values[motor_rb] = readSpeeds.rb;
-    values[motor_lb] = readSpeeds.lb;
+    values[motor_rf] = setSpeeds.rf;
+    values[motor_lf] = setSpeeds.lf;
+    values[motor_rb] = setSpeeds.rb;
+    values[motor_lb] = setSpeeds.lb;
 
     communicator->transData.tsSetRpmControl(values);
+}
+
+void MotorControllers::getVals()
+{
     communicator->transData.tsGetRPM(speeds);
     communicator->transData.tsGetPos(distances);
 
@@ -40,6 +50,7 @@ void MotorControllers::updateVals()
     readDistances.rb = distances[motor_rb];
     readDistances.lb = distances[motor_lb];
 }
+
 
 void MotorControllers::printSpeeds()
 {
