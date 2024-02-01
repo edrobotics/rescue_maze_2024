@@ -24,21 +24,33 @@ Transform CoordinateFrame::getRootTransform()
     }
 }
 
-Transform CoordinateFrame::transformTo(CoordinateFrame& destFrame)
+Transform CoordinateFrame::getTransformTo(CoordinateFrame* destFrame)
 {
     Transform t1 {getRootTransform()};
-    Transform t2 {destFrame.getRootTransform()};
+    Transform t2 {destFrame->getRootTransform()};
     return t1-t2;
 }
 
-void CoordinateFrame::applyTransform(Transform& tf)
+void CoordinateFrame::transformTo(CoordinateFrame* destFrame)
+{
+    transform = getTransformTo(destFrame);
+    parent = destFrame;
+}
+
+void CoordinateFrame::applyTransform(Transform tf)
 {
     transform = tf;
 }
 
-void CoordinateFrame::incrementTransfrom(Transform& tf)
+void CoordinateFrame::incrementTransfrom(Transform tf)
 {
     transform+=tf;
+}
+
+double CoordinateFrame::calcDist2d(CoordinateFrame f1, CoordinateFrame f2)
+{
+    Transform res {f2.transform-f1.transform};
+    return sqrt(res.pos_x*res.pos_x + res.pos_y*res.pos_y);
 }
 
 std::ostream& operator << (std::ostream& os, CoordinateFrame& frame)

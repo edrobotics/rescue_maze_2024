@@ -15,11 +15,15 @@ class Transform
     double rot_y {0};
     double rot_z {0};
 
+    static double calcDist2d(Transform tf1, Transform tf2);
+
     // Sum of the transforms
     Transform operator+ (Transform& t2);
     // Get arg1 in relation to arg2 (transform from arg2 to arg1)
     Transform operator- (Transform& t2);
+    // Returns where you land if you add t2
     Transform operator+= (Transform& t2);
+    // Returns where you land if you subtract t2
     Transform operator-= (Transform& t2);
 };
 

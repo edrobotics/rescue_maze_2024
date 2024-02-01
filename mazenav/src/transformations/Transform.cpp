@@ -15,6 +15,12 @@ Transform::Transform(double p_x, double p_y, double p_z, double r_x, double r_y,
     rot_z = r_z;
 }
 
+double Transform::calcDist2d(Transform tf1, Transform tf2)
+{
+    Transform resTf {tf2-tf1};
+    return sqrt(resTf.pos_x*resTf.pos_x + resTf.pos_y*resTf.pos_y);
+}
+
 Transform Transform::operator- (Transform& t2)
 {
     return *this-=t2;
