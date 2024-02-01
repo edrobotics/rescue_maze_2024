@@ -1,7 +1,9 @@
 #pragma once
 #include <queue>
 #include <mutex>
+
 #include "communicator/RobotPose.h"
+#include "fusion/MotorControllers.h"
 
 namespace communication
 {
@@ -45,11 +47,27 @@ namespace communication
             std::mutex mtx_pose;
     };
 
+    class MotorControllerCommunicator
+    {
+        public:
+            // Sets the speeds that should be set to the motors
+            void setSpeeds(MotorControllers::MotorSpeeds speeds);
+
+            // Reads the speeds that should be set to the motors
+            MotorControllers::MotorSpeeds getSpeeds();
+
+        private:
+            MotorControllers::MotorSpeeds speeds {};
+            std::mutex mtx_speeds;
+
+    };
+
     // Class containing the data that we want to share
     class Communicator
     {
         public:
         Navigation navigationComm;
         PoseCommunicator poseComm {};
+        MotorControllerCommunicator motors{};
     };
 }

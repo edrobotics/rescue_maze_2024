@@ -1,6 +1,7 @@
 #pragma once
 #include <thread>
 #include <mutex>
+#include <chrono>
 
 // #include "TransferData/TransferData.h" // Should ideally not be needed here
 #include "fusion/TeensyCommunicator.h" // For communication with teensy
@@ -15,4 +16,7 @@
 namespace fusion
 {    
     void main(communication::Communicator* globComm);
+
+    void motorDriveLoop(communication::Communicator* gCom, MotorControllers* mot);
+    void motorDriveLoopLooper(communication::Communicator* gCom, MotorControllers* mot);
 }

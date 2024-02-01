@@ -8,9 +8,7 @@ Tof::Tof(TeensyCommunicator* communicator)
 void Tof::updateVals()
 {
     // Read vals
-    mtx_transData_freqData.lock();
     communicator->transData.tsGetTof(vals);
-    mtx_transData_freqData.unlock();
 
     tofData.b = vals[tof_b];
     tofData.lb = vals[tof_lb];

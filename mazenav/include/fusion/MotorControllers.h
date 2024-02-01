@@ -1,7 +1,8 @@
 #pragma once
 
 #include "fusion/TeensyCommunicator.h"
-#include "fusion/mutexes.h"
+// #include "fusion/mutexes.h"
+#include <mutex>
 
 class MotorControllers
 {
@@ -40,15 +41,21 @@ class MotorControllers
             motor_num,
         };
 
-        // Sets the latest control speeds and gets new data from teensy
+        // Sets the latest control speeds and gets new data from teensycommunicator
         void updateVals();
+        // Sets the latest control speeds to teensycommunicator
         void setVals();
+        // Gets the latest data from teensycommunicator
         void getVals();
 
+        void setSpeeds(MotorSpeeds speeds);
+        MotorSpeeds getSpeeds();
+        Distances getDistances();
+
         // Variables to store the latest values
-        MotorSpeeds setSpeeds {};
-        MotorSpeeds readSpeeds {};
-        Distances readDistances {};
+        MotorSpeeds controlSpeeds {};
+        MotorSpeeds motorSpeeds {};
+        Distances motorDistances {};
 
         void printSpeeds();
         void printDistances();
@@ -57,5 +64,10 @@ class MotorControllers
         TeensyCommunicator* communicator;
         int16_t distances[motor_num] {};
         int16_t speeds[motor_num] {};
+
+        std::mutex mtx_speedSetter;
+        std::mutex mtx_speedGetter;
+        std::mutex mtx_distanceGetter;
+
 
 };

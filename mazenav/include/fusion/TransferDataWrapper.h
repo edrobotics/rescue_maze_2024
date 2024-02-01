@@ -36,4 +36,7 @@ class TransferDataWrapper : private TransferData
         bool tsSetRpmControl(int16_t values[]);
     
     private:
+    std::mutex mtx_freqData;
+    std::mutex mtx_controlData;
+    std::mutex mtx_infreqData;
 };

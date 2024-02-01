@@ -1,12 +1,22 @@
 #include <localNav/localNav.h>
 
+void testDriving(KinematicDriver* driver);
 void testTransforms();
 
 void localNav::main(communication::Communicator* globComm)
 {
-    testTransforms();
+    // testTransforms();
+    KinematicDriver driver {globComm};
+    testDriving(&driver);
 }
 
+void testDriving(KinematicDriver* driver)
+{
+    while(true)
+    {
+        driver->testComm();
+    }
+}
 
 void testTransforms()
 {

@@ -27,36 +27,67 @@ void MotorControllers::updateVals()
 void MotorControllers::setVals()
 {
     int16_t values[motor_num] {};
-    values[motor_rf] = setSpeeds.rf;
-    values[motor_lf] = setSpeeds.lf;
-    values[motor_rb] = setSpeeds.rb;
-    values[motor_lb] = setSpeeds.lb;
+    mtx_speedSetter.lock();
+    values[motor_rf] = controlSpeeds.rf;
+    values[motor_lf] = controlSpeeds.lf;
+    values[motor_rb] = controlSpeeds.rb;
+    values[motor_lb] = controlSpeeds.lb;
+    mtx_speedSetter.unlock();
 
     communicator->transData.tsSetRpmControl(values);
 }
 
 void MotorControllers::getVals()
 {
+    // Speeds
+    mtx_speedGetter.lock();
+
     communicator->transData.tsGetRPM(speeds);
+
+    motorSpeeds.rf = speeds[motor_rf];
+    motorSpeeds.lf = speeds[motor_lf];
+    motorSpeeds.rb = speeds[motor_rb];
+    motorSpeeds.lb = speeds[motor_lb];
+
+    mtx_speedGetter.unlock();
+
+    // Distances
+    mtx_distanceGetter.lock();
+
     communicator->transData.tsGetPos(distances);
 
-    readSpeeds.rf = speeds[motor_rf];
-    readSpeeds.lf = speeds[motor_lf];
-    readSpeeds.rb = speeds[motor_rb];
-    readSpeeds.lb = speeds[motor_lb];
-
-    readDistances.rf = distances[motor_rf];
-    readDistances.lf = distances[motor_lf];
-    readDistances.rb = distances[motor_rb];
-    readDistances.lb = distances[motor_lb];
+    motorDistances.rf = distances[motor_rf];
+    motorDistances.lf = distances[motor_lf];
+    motorDistances.rb = distances[motor_rb];
+    motorDistances.lb = distances[motor_lb];
+    
+    mtx_distanceGetter.unlock();
 }
 
 
 void MotorControllers::printSpeeds()
 {
-    std::cout << "rf=" << readSpeeds.rb << "  ";
-    std::cout << "lf=" << readSpeeds.lf << "  ";
-    std::cout << "rb=" << readSpeeds.rb << "  ";
-    std::cout << "lb=" << readSpeeds.lb << "  ";
+    mtx_speedGetter.lock();
+    std::cout << "rf=" << motorSpeeds.rb << "  ";
+    std::cout << "lf=" << motorSpeeds.lf << "  ";
+    std::cout << "rb=" << motorSpeeds.rb << "  ";
+    std::cout << "lb=" << motorSpeeds.lb << "  ";
     std::cout << "\n";
+    mtx_speedGetter.unlock();
+}
+
+
+MotorControllers::MotorSpeeds MotorControllers::getSpeeds()
+{
+    return motorSpeeds;
+}
+
+MotorControllers::Distances MotorControllers::getDistances()
+{
+    return motorDistances;
+}
+
+void MotorControllers::setSpeeds(MotorSpeeds speeds)
+{
+    this->controlSpeeds = speeds;
 }
