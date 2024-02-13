@@ -47,6 +47,10 @@ class CoordinateFrame
     void transformLevelTo(CoordinateFrame* destFrame, int level1, int level2);
     void transformUpTo(CoordinateFrame* destFrame);
 
+    // Move this CF but keep parent and children's global coordinates the same.
+    // tf - the transform describing relative movement of the frame
+    void ghostMove(Transform tf);
+
     // Set the transform
     void applyTransform(Transform tf);
 

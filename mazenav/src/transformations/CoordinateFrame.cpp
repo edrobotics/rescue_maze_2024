@@ -208,6 +208,16 @@ void CoordinateFrame::transformUpTo(CoordinateFrame* destFrame)
 }
 
 
+void CoordinateFrame::ghostMove(Transform tf)
+{
+    incrementTransfrom(tf);
+    for (auto child: children)
+    {
+        child->incrementTransfrom(-tf);
+    }
+}
+
+
 void CoordinateFrame::applyTransform(Transform tf)
 {
     transform = tf;

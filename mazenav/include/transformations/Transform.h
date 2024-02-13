@@ -25,6 +25,9 @@ class Transform
     Transform operator+= (Transform& t2);
     // Returns where you land if you subtract t2
     Transform operator-= (Transform& t2);
+    // Invert the transform
+    Transform operator-() const;
+
 };
 
 std::ostream& operator << (std::ostream& os, Transform& tf);

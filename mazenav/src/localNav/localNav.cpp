@@ -40,8 +40,8 @@ void testTfsys()
     // Move the local tile one step right and rotate 90deg clockwise
     Transform moveAndRotate {0, 300, 0, 0, 0, -M_PI_2};
     Transform forward {0, 300, 0, 0, 0, 0};
-    localTile.incrementTransfrom(moveAndRotate);
     localTile.incrementTransfrom(forward);
+    localTile.ghostMove(forward);
 
     globalRobot = robot.getTransformRootTo(&world);
 

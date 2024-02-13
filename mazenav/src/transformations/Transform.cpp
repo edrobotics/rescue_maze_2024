@@ -59,6 +59,11 @@ Transform Transform::operator-= (Transform& t2)
 
 }
 
+Transform Transform::operator-() const
+{
+    return {-pos_x, -pos_y, -pos_z, -rot_x, -rot_y, -rot_z};
+}
+
 
 std::ostream& operator << (std::ostream& os, Transform& tf)
 {
