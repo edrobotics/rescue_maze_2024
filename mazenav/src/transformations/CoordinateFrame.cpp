@@ -24,16 +24,73 @@ Transform CoordinateFrame::getRootTransform()
     }
 }
 
-Transform CoordinateFrame::getTransformTo(CoordinateFrame* destFrame)
+
+Transform CoordinateFrame::getLevelTransform(int level)
+{
+    // The last level to return
+    if (level == 1)
+    {
+        return transform;
+    }
+    
+    // You have gone too far
+    if (level<=0)
+    {
+        return getRootTransform();
+    }
+    
+    // Normal behaviour.
+    return parent->getLevelTransform(level-1);
+}
+
+Transform CoordinateFrame::getTransformRootTo(CoordinateFrame* destFrame)
 {
     Transform t1 {getRootTransform()};
     Transform t2 {destFrame->getRootTransform()};
     return t1-t2;
 }
 
+Transform CoordinateFrame::getTransformLevelTo(CoordinateFrame* destFrame, int level1, int level2)
+{
+
+    Transform t1 {};
+    Transform t2 {};
+
+    // Invalid levels or intentional. Just get the root for compatibility reasons.
+    if (level1<0 || level2<0)
+    {
+        return getTransformRootTo(destFrame);
+    }
+    else
+    {
+        t1 = getLevelTransform(level1);
+        t2 = destFrame->getLevelTransform(level2);
+        return t1-t2;
+    }
+
+}
+
+Transform CoordinateFrame::getTransformUpTo(CoordinateFrame* destFrame)
+{
+    
+    // We are there
+    if (parent==destFrame)
+    {
+        return transform;
+    }
+
+    // We are at the root transform and cannot continue any longer. Should never happen! (Legitimate cases caught above)
+    assert(parent!=nullptr);
+    
+    
+    return parent->getTransformUpTo(destFrame);
+    
+}
+
+#warning update with transform variants
 void CoordinateFrame::transformTo(CoordinateFrame* destFrame)
 {
-    transform = getTransformTo(destFrame);
+    transform = getTransformRootTo(destFrame);
     parent = destFrame;
 }
 

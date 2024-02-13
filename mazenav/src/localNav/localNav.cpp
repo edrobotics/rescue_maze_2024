@@ -29,7 +29,7 @@ void testTransforms()
     Transform roboTrans {150, 150, 0, 0, 0, 0};
     CoordinateFrame robot {&localTile, roboTrans};
     
-    Transform globalRobot {robot.getTransformTo(&world)};
+    Transform globalRobot {robot.getTransformRootTo(&world)};
 
     // // Print frames
     std::cout << "localTile:   " << localTile << "\n";
@@ -41,7 +41,7 @@ void testTransforms()
     Transform moveAndRotate {0, 300, 0, 0, 0, -M_PI_2};
     localTile.incrementTransfrom(moveAndRotate);
 
-    globalRobot = robot.getTransformTo(&world);
+    globalRobot = robot.getTransformRootTo(&world);
 
     // Print robot global frame and check if it is correct
     std::cout << "localTile:   " << localTile << "\n";

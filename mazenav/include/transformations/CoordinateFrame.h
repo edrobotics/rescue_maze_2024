@@ -2,6 +2,7 @@
 
 #include "transformations/Transform.h"
 #include <iomanip>
+#include <cassert>
 
 class CoordinateFrame
 {
@@ -12,7 +13,14 @@ class CoordinateFrame
     Transform transform {};
 
     // Get the transform between this frame and the destination frame = get the position of this frame in relation to destFrame
-    Transform getTransformTo(CoordinateFrame* destFrame);
+    // Transversal up to the root frame
+    Transform getTransformRootTo(CoordinateFrame* destFrame);
+    // Transversal for level1 and level 2 steps - you need know the frame tree and specify the levels. With levels specified wrong, transform will be incorrect.
+    // level1 - how many steps to travel up for the object being acted on
+    // level2 - same as level1 but for destFrame
+    Transform getTransformLevelTo(CoordinateFrame* destFrame, int level1, int level2);
+    // Transform straight up the tree until you get to destFrame
+    Transform getTransformUpTo(CoordinateFrame* destFrame);
 
     // Set a new parent and change the transform to be relative that new parent
     void transformTo(CoordinateFrame* destFrame);
@@ -27,7 +35,10 @@ class CoordinateFrame
     static double calcDist2d(CoordinateFrame f1, CoordinateFrame f2);
 
     private:
+    // Get the transform up to root CF.
     Transform getRootTransform();
+    // Get the transform <level> steps up. A level of 1 means just getting the transform of the CF.
+    Transform getLevelTransform(int level);
 
 };
 
