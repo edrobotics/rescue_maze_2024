@@ -1,13 +1,13 @@
-#include <localNav/localNav.h>
+#include "localNav/localNav.h"
 
 void testDriving(KinematicDriver* driver);
-void testTransforms();
+void testTfsys();
 
 void localNav::main(communication::Communicator* globComm)
 {
-    // testTransforms();
-    KinematicDriver driver {globComm};
-    testDriving(&driver);
+    testTfsys();
+    // KinematicDriver driver {globComm};
+    // testDriving(&driver);
 }
 
 void testDriving(KinematicDriver* driver)
@@ -18,7 +18,7 @@ void testDriving(KinematicDriver* driver)
     }
 }
 
-void testTransforms()
+void testTfsys()
 {
     // Create initial frames
 
@@ -39,7 +39,9 @@ void testTransforms()
 
     // Move the local tile one step right and rotate 90deg clockwise
     Transform moveAndRotate {0, 300, 0, 0, 0, -M_PI_2};
+    Transform forward {0, 300, 0, 0, 0, 0};
     localTile.incrementTransfrom(moveAndRotate);
+    localTile.incrementTransfrom(forward);
 
     globalRobot = robot.getTransformRootTo(&world);
 
@@ -47,4 +49,17 @@ void testTransforms()
     std::cout << "localTile:   " << localTile << "\n";
     std::cout << "localRobot:  " << robot << "\n";
     std::cout << "globalRobot: " << globalRobot << "\n";
+
+    // localTile.printChildNum();
+    // std::vector<CoordinateFrame*> frames;
+    // for (int i=0;i<10;++i)
+    // {
+    //     frames.push_back(new CoordinateFrame{&localTile, Transform{}});
+    //     localTile.printChildNum();
+    // }
+    // localTile.printChildNum();
+    // localTile.deleteChildren();
+    // localTile.printChildNum();
+    std::cout << "DONE" << "\n";
+
 }

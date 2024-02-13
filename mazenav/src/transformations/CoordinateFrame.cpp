@@ -2,8 +2,8 @@
 
 
 CoordinateFrame::CoordinateFrame(CoordinateFrame* parentFrame, Transform tf)
-: parent {parentFrame}
 {
+    setParent(parentFrame);
     transform = tf;
 }
 
@@ -12,33 +12,129 @@ CoordinateFrame::CoordinateFrame(CoordinateFrame* parentFrame)
     CoordinateFrame{parentFrame, Transform{}};
 }
 
+
+CoordinateFrame::~CoordinateFrame()
+{
+    // Delete all children of this CF
+    deleteChildren();
+
+    // Unregister this CF as a child of the parent
+    unregisterMeAsChild();
+}
+
+
+CoordinateFrame::CoordinateFrame(const CoordinateFrame& frame)
+{
+    // transform = frame.transform;
+    // parent = frame.parent;
+    // children = frame.children;
+    *this = frame;
+}
+
+CoordinateFrame CoordinateFrame::operator=(const CoordinateFrame& otherFrame)
+{
+    transform = otherFrame.transform;
+    parent = otherFrame.parent;
+    children = otherFrame.children;
+
+    return *this;
+}
+
+
+
+
+void CoordinateFrame::deleteChildren()
+{
+    
+    while (!children.empty())
+    {
+        CoordinateFrame* tmp = children.front();
+        children.erase(children.begin());
+        delete tmp;
+    }
+
+    // children.clear();
+}
+
+void CoordinateFrame::printChildNum()
+{
+    std::cout << "Child num is: " << children.size() << '\n';
+}
+
+
+CoordinateFrame* CoordinateFrame::getParent()
+{
+    return parent;
+}
+
+void CoordinateFrame::setParent(CoordinateFrame* newParent)
+{
+    // Unregister child from parent
+    unregisterMeAsChild();
+
+    // Change the parent
+    parent = newParent;
+
+    // Re-register the child with the new parent
+    registerMeAsChild();
+}
+
+void CoordinateFrame::registerChild(CoordinateFrame* child)
+{
+    // Add the child
+    children.push_back(child);
+}
+
+void CoordinateFrame::unregisterChild(CoordinateFrame* child)
+{
+    // Find the child and erase it
+    children.erase(std::remove(children.begin(), children.end(), child), children.end());
+}
+
+void CoordinateFrame::registerMeAsChild()
+{
+    if (parent!=nullptr)
+    {
+        parent->registerChild(this);
+    }
+
+}
+
+void CoordinateFrame::unregisterMeAsChild()
+{
+    if (parent!=nullptr)
+    {
+        parent->unregisterChild(this);
+    }
+
+}
+
+
 Transform CoordinateFrame::getRootTransform()
 {
     if (parent==nullptr) // We are at the root and cannot traverse further up the tree
     {
         return transform;
     }
-    else
-    {
-        return parent->getRootTransform() + transform;
-    }
+    
+    return parent->getRootTransform() + transform;
 }
 
 
 Transform CoordinateFrame::getLevelTransform(int level)
 {
-    // The last level to return
-    if (level == 1)
+    // The last level to return (or reached end of tree)
+    if (level == 1 || parent==nullptr)
     {
         return transform;
     }
     
-    // You have gone too far
+    // Invalid input - fallback to root transform
     if (level<=0)
     {
         return getRootTransform();
     }
-    
+
     // Normal behaviour.
     return parent->getLevelTransform(level-1);
 }
@@ -87,12 +183,30 @@ Transform CoordinateFrame::getTransformUpTo(CoordinateFrame* destFrame)
     
 }
 
-#warning update with transform variants
-void CoordinateFrame::transformTo(CoordinateFrame* destFrame)
+// void CoordinateFrame::transformTo(CoordinateFrame* destFrame)
+// {
+//     transform = getTransformRootTo(destFrame);
+//     parent = destFrame;
+// }
+
+void CoordinateFrame::transformRootTo(CoordinateFrame* destFrame)
 {
     transform = getTransformRootTo(destFrame);
-    parent = destFrame;
+    setParent(destFrame);
 }
+
+void CoordinateFrame::transformLevelTo(CoordinateFrame* destFrame, int level1, int level2)
+{
+    transform = getTransformLevelTo(destFrame, level1, level2);
+    setParent(destFrame);
+}
+
+void CoordinateFrame::transformUpTo(CoordinateFrame* destFrame)
+{
+    transform = getTransformUpTo(destFrame);
+    setParent(destFrame);
+}
+
 
 void CoordinateFrame::applyTransform(Transform tf)
 {

@@ -39,7 +39,7 @@ void Path::interpolate()
         // Fill up the interpolated steps vector
         for (int i=0;i<steps-1;++i) // steps-1 because the last step is the first step in the next keyframe/pathsegment
         {
-            CoordinateFrame pushbackFrame {(keyFrames.front().parent)};
+            CoordinateFrame pushbackFrame {(keyFrames.front().getParent())};
             pushbackFrame.transform.pos_x = t_x[i];
             pushbackFrame.transform.pos_y = t_y[i];
             pushbackFrame.transform.rot_z = r_z[i];

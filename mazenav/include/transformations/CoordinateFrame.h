@@ -3,14 +3,33 @@
 #include "transformations/Transform.h"
 #include <iomanip>
 #include <cassert>
+#include <vector>
+#include <algorithm>
 
 class CoordinateFrame
 {
     public:
     CoordinateFrame(CoordinateFrame* parentFrame, Transform tf);
     CoordinateFrame(CoordinateFrame* parentFrame);
-    CoordinateFrame* parent;
+
+    ~CoordinateFrame();
+
+    // Copy constructor
+    CoordinateFrame(const CoordinateFrame& frame);
+    // Assignment operator
+    CoordinateFrame operator=(const CoordinateFrame& otherFrame);
+
     Transform transform {};
+
+    // gets the parent of the object
+    CoordinateFrame* getParent();
+    // Sets the parent of the object
+    void setParent(CoordinateFrame* newParent);
+
+    void deleteChildren();
+    void printChildNum();
+
+    // std::vector<CoordinateFrame*> getChildren();
 
     // Get the transform between this frame and the destination frame = get the position of this frame in relation to destFrame
     // Transversal up to the root frame
@@ -23,7 +42,10 @@ class CoordinateFrame
     Transform getTransformUpTo(CoordinateFrame* destFrame);
 
     // Set a new parent and change the transform to be relative that new parent
-    void transformTo(CoordinateFrame* destFrame);
+    // void transformTo(CoordinateFrame* destFrame);
+    void transformRootTo(CoordinateFrame* destFrame);
+    void transformLevelTo(CoordinateFrame* destFrame, int level1, int level2);
+    void transformUpTo(CoordinateFrame* destFrame);
 
     // Set the transform
     void applyTransform(Transform tf);
@@ -35,6 +57,21 @@ class CoordinateFrame
     static double calcDist2d(CoordinateFrame f1, CoordinateFrame f2);
 
     private:
+    // The parent CF
+    CoordinateFrame* parent {};
+    // The children CF
+    std::vector<CoordinateFrame*> children;
+
+    // Register a child in the current object
+    void registerChild(CoordinateFrame* child);
+    // Register the current object as a child in the parent
+    void registerMeAsChild();
+
+    // Unregister a child in the current object
+    void unregisterChild(CoordinateFrame* child);
+    // Unregister this object from the parent
+    void unregisterMeAsChild();
+
     // Get the transform up to root CF.
     Transform getRootTransform();
     // Get the transform <level> steps up. A level of 1 means just getting the transform of the CF.
@@ -43,3 +80,4 @@ class CoordinateFrame
 };
 
 std::ostream& operator << (std::ostream& os, CoordinateFrame& frame);
+

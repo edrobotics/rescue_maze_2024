@@ -28,7 +28,7 @@ void PathPlanner::fillKeyFrames(CoordinateFrame sFrame, std::vector<communicatio
     CoordinateFrame curFrame {sFrame};
     for (communication::DriveCommand move : globPath)
     {
-        curFrame.parent = &(path.keyFrames.back());
+        curFrame.setParent(&(path.keyFrames.back()));
 
         switch (move)
         {
@@ -45,7 +45,7 @@ void PathPlanner::fillKeyFrames(CoordinateFrame sFrame, std::vector<communicatio
                 break;
         }
         // Change the relative commands in globalPath to absolute coordinates with help of the transform system
-        curFrame.transformTo(&sFrame);
+        curFrame.transformUpTo(&sFrame);
         path.addKeyFrame(curFrame);
     }
 
