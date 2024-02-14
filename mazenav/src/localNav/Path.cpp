@@ -16,14 +16,14 @@ void Path::interpolate()
 
         // Interpolation
 
-        CoordinateFrame startFrame {*iter};
+        CoordinateFrame startFrame {iter->getWithoutChildren()};
         ++iter; // Increment the iterator.
         // Check if end iterator has been reached?
         if (iter==keyFrames.end())
         {
             break;
         }
-        CoordinateFrame endFrame {*iter};
+        CoordinateFrame endFrame {iter->getWithoutChildren()};
 
         // Determine number of steps
         double distance = CoordinateFrame::calcDist2d(startFrame, endFrame);
@@ -39,7 +39,7 @@ void Path::interpolate()
         // Fill up the interpolated steps vector
         for (int i=0;i<steps-1;++i) // steps-1 because the last step is the first step in the next keyframe/pathsegment
         {
-            CoordinateFrame pushbackFrame {(keyFrames.front().getParent())};
+            CoordinateFrame pushbackFrame {&parentFrame};
             pushbackFrame.transform.pos_x = t_x[i];
             pushbackFrame.transform.pos_y = t_y[i];
             pushbackFrame.transform.rot_z = r_z[i];
@@ -48,5 +48,5 @@ void Path::interpolate()
 
     }
 
-    interpolatedFrames.push_back(keyFrames.back()); // Set the last keypose as the last interpolated pose
+    interpolatedFrames.push_back(keyFrames.back().getWithoutChildren()); // Set the last keypose as the last interpolated pose
 };

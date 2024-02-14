@@ -10,6 +10,8 @@ class Path
 
         void interpolate();
 
+        CoordinateFrame parentFrame {nullptr};
+
         // The key frames that the robot should hit during the path. The frames are relative the first path point
         std::vector<CoordinateFrame> keyFrames {};
         void addKeyFrame(CoordinateFrame frame);
@@ -20,7 +22,7 @@ class Path
         // The resolution for the interpolation (maybe as argument instead?)
 
     private:
-        // Default resolution for interpolation
+        // Default resolution for interpolation. [unit]/step
         int interpolRes {1};
         // Interpolate between points with the given resolution.
         void interpolate(int res);

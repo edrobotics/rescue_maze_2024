@@ -41,6 +41,17 @@ CoordinateFrame CoordinateFrame::operator=(const CoordinateFrame& otherFrame)
 }
 
 
+CoordinateFrame CoordinateFrame::getWithoutChildren()
+{
+    // Do a copy
+    CoordinateFrame childless {*this};
+
+    // Remove the children
+    childless.stripChildren();
+
+    // Return the child-less copy
+    return childless;
+}
 
 
 void CoordinateFrame::deleteChildren()
@@ -235,7 +246,8 @@ void CoordinateFrame::incrementTransfrom(Transform tf)
 
 double CoordinateFrame::calcDist2d(CoordinateFrame f1, CoordinateFrame f2)
 {
-    Transform res {f2.transform-f1.transform};
+    // Transform res {f2.transform-f1.transform};
+    Transform res {f2.getTransformLevelTo(&f1, 1, 1)};
     return sqrt(res.pos_x*res.pos_x + res.pos_y*res.pos_y);
 }
 

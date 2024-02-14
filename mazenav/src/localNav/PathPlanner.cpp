@@ -1,8 +1,13 @@
 #include "localNav/PathPlanner.h"
 
-void PathPlanner::setPath(Path path)
+// void PathPlanner::setPath(Path path)
+// {
+//     this->path = path;
+// }
+
+void PathPlanner::setStartFrame(CoordinateFrame frame)
 {
-    this->path = path;
+    startFrame = frame.getWithoutChildren();
 }
 
 void PathPlanner::setGlobalPath(std::vector<communication::DriveCommand> globalPath)
@@ -14,18 +19,21 @@ void PathPlanner::setGlobalPath(std::vector<communication::DriveCommand> globalP
 void PathPlanner::calculate()
 {
     // Add initial keypose
-    path.addKeyFrame(startFrame);
+    // path.addKeyFrame(startFrame);
     
     // Add the remaining keyposes.
-    fillKeyFrames(startFrame, globalPath);
+    fillKeyFrames(globalPath);
 
     // Interpolate between these coordinates
     path.interpolate();
 }
 
-void PathPlanner::fillKeyFrames(CoordinateFrame sFrame, std::vector<communication::DriveCommand>& globPath)
+void PathPlanner::fillKeyFrames(std::vector<communication::DriveCommand>& globPath)
 {
-    CoordinateFrame curFrame {sFrame};
+    CoordinateFrame* pathParent {&(startFrame)};
+    path.parentFrame = pathParent->getWithoutChildren();
+    CoordinateFrame curFrame {pathParent};
+    path.addKeyFrame(curFrame);
     for (communication::DriveCommand move : globPath)
     {
         curFrame.setParent(&(path.keyFrames.back()));
@@ -45,8 +53,13 @@ void PathPlanner::fillKeyFrames(CoordinateFrame sFrame, std::vector<communicatio
                 break;
         }
         // Change the relative commands in globalPath to absolute coordinates with help of the transform system
-        curFrame.transformUpTo(&sFrame);
+        curFrame.transformUpTo(pathParent);
         path.addKeyFrame(curFrame);
     }
 
+}
+
+Path PathPlanner::getPath()
+{
+    return path;
 }

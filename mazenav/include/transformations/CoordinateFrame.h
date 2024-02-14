@@ -19,6 +19,12 @@ class CoordinateFrame
     // Assignment operator
     CoordinateFrame operator=(const CoordinateFrame& otherFrame);
 
+    // Enables child-less copying. Returns the current object but without children.
+    CoordinateFrame getWithoutChildren();
+    // Strip the children from this object, but keep them in memory for everyone else
+    void stripChildren();
+
+
     Transform transform {};
 
     // gets the parent of the object
@@ -28,8 +34,6 @@ class CoordinateFrame
 
     // Delete the children
     void deleteChildren();
-    // Strip the children from this object, but keep them in memory for everyone else
-    void stripChildren();
     // Print the number of children of the object
     void printChildNum();
 
