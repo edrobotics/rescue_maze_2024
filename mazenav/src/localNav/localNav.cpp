@@ -20,6 +20,9 @@ void testDriving(KinematicDriver* driver)
 
 void testTfsys()
 {
+
+    // Transform::test();
+
     // Create initial frames
 
     Transform tf1 {};
@@ -38,10 +41,10 @@ void testTfsys()
     std::cout << "\n" << "\n" << "\n";
 
     // Move the local tile one step right and rotate 90deg clockwise
-    Transform moveAndRotate {0, 300, 0, 0, 0, -M_PI_2};
+    Transform moveAndRotate {0, 300, 0, 0, 0, M_PI_2};
     Transform forward {0, 300, 0, 0, 0, 0};
-    localTile.incrementTransfrom(forward);
-    localTile.ghostMove(forward);
+    // localTile.incrementTransfrom(moveAndRotate);
+    localTile.ghostMove(moveAndRotate);
 
     globalRobot = robot.getTransformRootTo(&world);
 

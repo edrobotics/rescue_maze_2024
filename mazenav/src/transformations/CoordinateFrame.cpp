@@ -56,6 +56,11 @@ void CoordinateFrame::deleteChildren()
     // children.clear();
 }
 
+void CoordinateFrame::stripChildren()
+{
+    children.clear();
+}
+
 void CoordinateFrame::printChildNum()
 {
     std::cout << "Child num is: " << children.size() << '\n';
@@ -211,9 +216,9 @@ void CoordinateFrame::transformUpTo(CoordinateFrame* destFrame)
 void CoordinateFrame::ghostMove(Transform tf)
 {
     incrementTransfrom(tf);
-    for (auto child: children)
+    for (auto& child: children)
     {
-        child->incrementTransfrom(-tf);
+        child->applyTransform(tf.inverse()+child->transform);
     }
 }
 

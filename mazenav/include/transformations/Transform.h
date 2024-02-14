@@ -17,6 +17,11 @@ class Transform
 
     static double calcDist2d(Transform tf1, Transform tf2);
 
+    // Return the inverse of the transform
+    Transform inverse();
+
+    static bool test();
+
     // Sum of the transforms
     Transform operator+ (Transform& t2);
     // Get arg1 in relation to arg2 (transform from arg2 to arg1)
