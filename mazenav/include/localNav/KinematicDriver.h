@@ -1,6 +1,7 @@
 #pragma once
 #include "communicator/communicator.h"
 #include "fusion/MotorControllers.h"
+#include "GlobalConstants.h"
 
 #include <chrono>
 #include <thread>
@@ -10,19 +11,21 @@
 class KinematicDriver
 {
     public:
-    KinematicDriver(communication::Communicator* globComm);
+        KinematicDriver(communication::Communicator* globComm);
 
-    // Set the speeds to the hardware interface
-    void setSpeeds();
+        // Set the speeds to the hardware interface
+        void setSpeeds();
 
-    // Calculate motor speeds from robot translational and rotational speed.
-    void calcSpeeds(int tSpeed, int rSpeed);
+        // Calculate motor speeds from robot translational and rotational speed.
+        // tSpeed - translational speed, mm/s
+        // rSpeed - rotational speed, rad/s
+        void calcSpeeds(int tSpeed, int rSpeed);
 
-    // Test communication
-    void testComm();
+        // Test communication
+        void testComm();
 
 
     private:
-    communication::Communicator* globComm {};
-    MotorControllers::MotorSpeeds motorSpeeds {};
+        communication::Communicator* globComm {};
+        MotorControllers::MotorSpeeds motorSpeeds {};
 };

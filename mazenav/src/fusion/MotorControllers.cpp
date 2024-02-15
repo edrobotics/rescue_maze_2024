@@ -18,6 +18,16 @@ MotorControllers::MotorSpeeds::MotorSpeeds()
     MotorSpeeds {0, 0, 0, 0};
 }
 
+double MotorControllers::MotorSpeeds::toRadians(int rpm)
+{
+    return static_cast<double>(rpm)*M_PI/30;
+}
+
+int MotorControllers::MotorSpeeds::toRpm(double radians)
+{
+    return static_cast<int>(radians*30/M_PI);
+}
+
 void MotorControllers::updateVals()
 {
     setVals();

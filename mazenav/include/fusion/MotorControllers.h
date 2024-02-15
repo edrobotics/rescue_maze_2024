@@ -3,6 +3,7 @@
 #include "fusion/TeensyCommunicator.h"
 // #include "fusion/mutexes.h"
 #include <mutex>
+#include <cmath>
 
 class MotorControllers
 {
@@ -20,8 +21,8 @@ class MotorControllers
             int rb {0};
             int lb {0};
 
-            void toRadians();
-            void toRpm();
+            static double toRadians(int rpm);
+            static int toRpm(double radians);
         };
 
         struct Distances
