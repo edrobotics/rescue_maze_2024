@@ -1,17 +1,4 @@
 #include <opencv2/opencv.hpp>
-// #include <opencv2/imgcodecs.hpp>
-// #include <opencv2/imgproc.hpp>
-// #include <opencv2/highgui.hpp>
-
-// #include <pcl/console/parse.h>
-// #include <pcl/point_cloud.h> // for PointCloud
-// #include <pcl/common/io.h> // for copyPointCloud
-// #include <pcl/point_types.h>
-// #include <pcl/sample_consensus/ransac.h>
-// #include <pcl/sample_consensus/sac_model_plane.h>
-// #include <pcl/sample_consensus/sac_model_sphere.h>
-// #include <pcl/visualization/pcl_visualizer.h>
-// #include <pcl/2d/convolution.h>
 
 #include <ldlidar_driver/ldlidar_driver_linux.h>
 
@@ -80,12 +67,12 @@
 using namespace std;
 using namespace ldlidar;
 using namespace cv;
-// using namespace pcl;
 
 double piMod(double mod);
 double pi2Mod(double mod);
 int tileMod(int mod, double modCenter);
 
+//Straight line class, just a straight line with extra information calculated
 class SLine
 {
     public:
@@ -102,75 +89,29 @@ class SLine
             endPoint = linePoints[0];
         }
 
-        midPoint = (startPoint+endPoint)/2;
-
         orientation = piMod(atan2((endPoint.y - startPoint.y), (endPoint.x - startPoint.x)));
         length = norm(endPoint - startPoint);
 
         //From transformation: distance(P,θ,(x0,y0)) = |cos(θ)(Py-y0)-sin(θ)(Px-xθ)|
         double minDistance = cos(orientation) * (startPoint.y - ORIGIN_Y) - sin(orientation) * (startPoint.x - ORIGIN_X);
-        // double minDistanceAbs = abs(cos(orientation) * (startPoint.y - ORIGIN_Y) - sin(orientation) * (startPoint.x - ORIGIN_X));
 
-        //Min dist point transformed x = 0, since it is always the closest point
         // double startXTransformed = (startPoint.y - ORIGIN_Y) * sin(orientation) + (startPoint.x - ORIGIN_X) * cos(orientation);
         // double endXTransformed = (endPoint.y - ORIGIN_Y) * sin(orientation) + (endPoint.x - ORIGIN_X) * cos(orientation);
-
-        // cout << startPoint.x << "; " << startPoint.y << " | " << endPoint.x << "; " << endPoint.y << " at " << orientation*180/M_PI << "⁰ gives min: " << minDistanceAbs << "and x:s " << startXTransformed << "; " << endXTransformed << endl;
-        // if (min(startXTransformed, endXTransformed) < 0 && max(startXTransformed, endXTransformed) > 0)
-        // {
-        //     cout << "picked full: ";
-            // distanceFromOrigin = minDistanceAbs;
-            closestToOrigin = Point(minDistance * cos(orientation + M_PI/2) + ORIGIN_X, minDistance * sin(orientation + M_PI/2) + ORIGIN_Y);
-        //     closestIsMin = true;
-        // }
-        // else
-        // {
-        //     cout << "picked end: ";
-        //     distanceFromOrigin = min(norm(startPoint - ORIGIN), norm(endPoint - ORIGIN));
-        //     double startToOrigin = norm(startPoint - ORIGIN);
-        //     double endToOrigin = norm(endPoint - ORIGIN);
-
-        //     if (startToOrigin < endToOrigin)
-        //     {
-        //         distanceFromOrigin = startToOrigin;
-        //         closestToOrigin = startPoint;
-        //     }
-        //     else
-        //     {
-        //         distanceFromOrigin = endToOrigin;
-        //         closestToOrigin = endPoint;
-        //     }
-        //     closestIsMin = false;
-        // }
-        // cout << distanceFromOrigin << endl;
+        // if NOT (min(startXTransformed, endXTransformed) < 0 && max(startXTransformed, endXTransformed) > 0) -> line is less probable
+        closestToOrigin = Point(minDistance * cos(orientation + M_PI/2) + ORIGIN_X, minDistance * sin(orientation + M_PI/2) + ORIGIN_Y);
     }
-    double orientation;
-    double length;
+    double orientation; //The orientation of the line, in radians, compared to the X-axis and between M_PI/2 and -M_PI/2
+    double length; //The length of the line
 
-    Point startPoint;
-    Point endPoint;
-    Point midPoint;
+    Point startPoint; //The starting point of the line
+    Point endPoint; //The endpoint of the line
 
-    // double distanceFromOrigin;
-    Point closestToOrigin;
-    // bool closestIsMin;
+    Point closestToOrigin; //The point that would be closest to the origin if the line was infinitly long
 };
-
-// enum side
-// {
-//     front,
-//     left,
-//     back,
-//     right
-// };
-
-// void linesToSegments(SLine& line, vector<cv::Vec<cv::Point, 2>>& out);
 
 Point transformPoint(Point p, Point origin, double angle);
 
 Vec<Point, 2> transformLine(SLine line, Point origin, double angle);
-
-// side findSide(Point transformedMidPoint);
 
 void writeFile(Points2D& points);
 
@@ -180,15 +121,17 @@ Points2D pointsFromTxt(string path);
 
 bool mergeLineSegments(const Vec<Point, 2>& line_i, const Vec<Point, 2>& line_j, Vec<Point, 2>& output, double angleThresh = M_PI/6, double distThresh = 100, bool extraLogging = false);
 
-// void LineMod(SLine &&line) // Rvalue reference - use in main program?
-// {
+int main() //Expandera mer i riktningen åt senare och tidigare punkter? (om de är sorterade efter vinkel i point2d)
+{           //Read/write intensity in txt
 
-// }
+    // *** STARTUP ***
+    //Pre-calculate the wall endpoints on tiles
+    int tileEndPointsXY[TILE_READ_AMOUNT+1];
+    for (size_t i = 0; i < TILE_READ_AMOUNT+1; i++)
+    {
+        tileEndPointsXY[i] = 300 * i - 300*(TILE_READ_AMOUNT)/2;
+    }
 
-int main() //TESTA FÖRSTORING AV PUNKTER??? , expandera mer i riktningen åt senare och tidigare punkter (om de är sorterade efter vinkel i point2d)
-{//https://stackoverflow.com/questions/59769762/line-detection-in-2d-point-cloud
-//https://winwood.matt.how/2015/04/27/processing-lidar.html or ICP
-//Read/write intensity in txt
     #ifndef CODE_READ_FILE_IMG
     #ifdef CODE_READ_LIDAR
     //Connecting and starting
@@ -222,7 +165,7 @@ int main() //TESTA FÖRSTORING AV PUNKTER??? , expandera mer i riktningen åt se
 
     Mat image = imread(BASEIMGPATH, IMREAD_GRAYSCALE);
 
-    //Paint all lidar points on image by modifying pixels
+    //Paint all lidar points on image by modifying pixels in the image
     for (size_t i = 0; i < points.size(); i++)
     {
       if (points[i].x > -ORIGIN_X && points[i].x < ORIGIN_X && points[i].y > -ORIGIN_Y && points[i].y < ORIGIN_Y)
@@ -242,14 +185,12 @@ int main() //TESTA FÖRSTORING AV PUNKTER??? , expandera mer i riktningen åt se
     cvtColor(dst, cdstP, COLOR_GRAY2BGR); //copy to cdstP which displays
     #endif
 
-    // auto begin1 = std::chrono::system_clock::now();
-    // auto begin2 = std::chrono::system_clock::now();
+    auto houghStart = std::chrono::high_resolution_clock::now();
 
     vector<Vec4i> linesP; //detection output
     HoughLinesP(dst, linesP, 5, CV_PI/180, 20, 100, 100);//line detection
 
-    // auto end1 = std::chrono::system_clock::now();
-
+    auto mergeStart = std::chrono::high_resolution_clock::now();
 
     //**************************************   MERGE    **************************************//
 
@@ -296,6 +237,8 @@ int main() //TESTA FÖRSTORING AV PUNKTER??? , expandera mer i riktningen åt se
         }
     }
     cout << combinedLines.size() << " -clines, plines- " << linesP.size() << endl;
+
+    auto orientStart = std::chrono::high_resolution_clock::now();
 
     //**************************************   POSE    **************************************//
 
@@ -371,47 +314,23 @@ int main() //TESTA FÖRSTORING AV PUNKTER??? , expandera mer i riktningen åt se
     cout << "Orientation: " << orientation*180/M_PI << "⁰; basetot: " << baseAvg*180/M_PI << "⁰; perptot: " << perpAvg*180/M_PI <<
     "⁰, longest: " << anaLines[longestLineIndex].orientation*180/M_PI << endl;
 
+    auto coordStart = std::chrono::high_resolution_clock::now();
+
     vector<Point> renderPoint;
-
-    // double leftWallTot = 0;
-    // int leftWallAmt = 0;
-
-    // double rightWallTot = 0;
-    // int rightWallAmt = 0;
-
-    // double frontWallTot = 0;
-    // int frontWallAmt = 0;
-
-    // double backWallTot = 0;
-    // int backWallAmt = 0;
 
     double xPosTot = 0;
     double yPosTot = 0;
     int xPosAmt = 0;
     int yPosAmt = 0;
 
-    // vector<Vec<Point, 2>> allWalls;
-    // bool leftWall = false, rightWall = false, frontWall = false, backWall = false;
-
     // vector<Vec<Point, 2>> xWallLines;
     // vector<Vec<Point, 2>> yWallLines;
 
     for (auto i = wallLines.begin(); i != wallLines.end(); i++)
     {
-        // Vec<Point, 2> snappedLine = transformLine(wallLines[i], ORIGIN , orientation);
-        // double angDiff = wallLines[i].orientation;
-        // while (angDiff > M_PI/2) angDiff -= M_PI/2;
-        // while (angDiff < 0) angDiff += M_PI/2;
-
         Point midPoint = transformPoint(i->closestToOrigin, ORIGIN, orientation);
         circle(cdstP, midPoint+ORIGIN, 10, Scalar(255, 255, 100), 10);
         cout << "MIDPOS: " << midPoint.x << ", " << midPoint.y << " ,, grad " << i->orientation * 180/M_PI << "->" << abs(piMod(orientation - i->orientation)) * 180/M_PI << flush;
-
-        // int xAway;
-        // int yAway;
-
-        // vector<Vec<Point, 2>> segments = linesToSegments(*i);
-        // linesToSegments(*i, allWalls);
 
         double angleDiffAbs = abs(piMod(orientation - i->orientation));
         if (angleDiffAbs >= M_PI_4)
@@ -460,49 +379,7 @@ int main() //TESTA FÖRSTORING AV PUNKTER??? , expandera mer i riktningen åt se
                 cout << "._.yn" << yPosPart << endl;
             }
         }
-        //First find updown leftright
-        
-        // side lSide = findSide(midPoint);
-
-        // switch (lSide)
-        // {
-        //     case side::front: //y positive
-        //         frontWallTot += fmod(midPoint.y + MODOFFSET_ORIGIN_Y, 300);
-        //         frontWallAmt++;
-        //         break;
-        //     case side::left:
-        //         leftWallTot += fmod(midPoint.x + MODOFFSET_ORIGIN_X, 300);
-        //         leftWallAmt++;
-        //         break;
-        //     case side::back:
-        //         backWallTot += fmod(midPoint.y - MODOFFSET_ORIGIN_Y, 300);
-        //         backWallAmt++;
-        //         break;
-        //     case side::right: // x positive
-        //         rightWallTot += fmod(midPoint.x - MODOFFSET_ORIGIN_X, 300);
-        //         rightWallAmt++;
-        //         break;
-        //     default:
-        //         break;
-        // }
-
-        // if (transformed.x % 300)
-        // {
-
-        // }
     }
-
-    // double leftWallAvg = 0;
-    // if (leftWallAmt > 0) leftWallAvg = leftWallTot/leftWallAmt;
-
-    // double rightWallAvg = 0;
-    // if (rightWallAmt > 0) rightWallAvg = rightWallTot/rightWallAmt;
-
-    // double frontWallAvg = 0;
-    // if (frontWallAmt > 0) frontWallAvg = frontWallTot/frontWallAmt;
-
-    // double backWallAvg = 0;
-    // if (backWallAmt > 0) backWallAvg = backWallTot/backWallAmt;
 
     double xPosAvg = 0;
     if (xPosAmt > 0) 
@@ -519,120 +396,20 @@ int main() //TESTA FÖRSTORING AV PUNKTER??? , expandera mer i riktningen åt se
 		if (yPosAvg < 0) yPosAvg+=300;
 	}
     else cout << "ERROR NO YPOS CONTRIB" << endl;
-
-    // cout << "x " << xPs << ", l " << leftWallAvg << ", b " << backWallAvg << ", r " << rightWallAvg << endl;
-
-    // double xPosRelative = 0;
-    // double yPosRelative = 0;
-    // double xPosContributors = 0;
-    // double yPosContributors = 0;
-
-    // if (leftWallAvg > 0)
-    // {
-    //     xPosRelative += leftWallAvg;
-    //     xPosContributors++;
-    // }
-    // if (rightWallAvg > 0)
-    // {
-    //     xPosRelative += 300 - rightWallAvg;
-    //     xPosContributors++;
-    // }
-    // if (frontWallAvg > 0)
-    // {
-    //     yPosRelative += frontWallAvg;
-    //     yPosContributors++;
-    // }
-    // if (backWallAvg > 0)
-    // {
-    //     yPosRelative += 300 - backWallAvg;
-    //     yPosContributors++;
-    // }
-    
-    // if (xPosAmt != 0)
-    //     xPosRelative /= xPosContributors;
-    // else
-    //     cout << "NO X CONTRIB" << endl;
-
-    // if (yPosContributors != 0)
-    //     yPosRelative /= yPosContributors;
-    // else
-    //     cout << "NO Y CONTRIB" << endl;
-    
-    // if (xPosContributors == 0 && yPosContributors == 0)
-    // {
-    //     cout << "ERROR POS ABSOLUTE" << endl;
-    // }
     
     cout << "POS: " << xPosAvg << ", " << yPosAvg << endl;
 
     Point relativePosition = Point(xPosAvg, yPosAvg);
     
-    // for (int i = 0; i < allWalls.size(); i++)
-    // {
-    //     // int x = allWalls[i][0].x;
-    //     // int y = allWalls[i][0].y;
-    //     // if ()
-    //     //if left oriented -> do the stuff {check mod 30 on closest/<any> point in transformed y}
-    //     //if updown > other stuff {check mod 30 on closest/<any> point in transformed x}
-    //     //Get avareges in both these directions - pehaps weighted with how close and lighter if shorter than 30 (-> remainder from line seg.)
-    //     //this gets our position
-
-
-    //     //void GetMod() {
-    //     int modX = allWalls[i][0].x % 30;
-    //     int modY = allWalls[i][0].y % 30;
-    //     //SWITCH IS LIKELY DONE IN GETMOD, SINCE WALLS CAN BE UPDOWN AND LEFTRIGHT
-    //     //{
-    //     // enum relOrient
-    //     // {
-    //     //     leftRight,
-    //     //     upDown,
-    //     //     both,
-    //     //     neither
-    //     // };
-    //     // relOrient side /*= OrientationCheck(allWalls[i], orientation)*/;
-
-    //     // switch (side)
-    //     // {
-    //     //     case both:
-    //     //         //LRTot += GetModDistanceLR(x) {check mod 30 on closest/<any> point in transformed y}
-    //     //         //LRAmount++;
-    //     //         //UDTot += GetModDistanceUD(x) {check mod 30 on closest/<any> point in transformed x}
-    //     //         //UDAmount++;
-    //     //         break;
-    //     //     case leftRight:
-    //     //         //LRTot += GetModDistanceLR(x) {check mod 30 on closest/<any> point in transformed y}
-    //     //         //LRAmount++;
-    //     //         break;
-    //     //     case upDown:
-    //     //         //UDTot += GetModDistanceUD(x) {check mod 30 on closest/<any> point in transformed x}
-    //     //         //UDAmount++;
-    //     //         break;
-    //     //     default:
-    //     //         break;
-    //     // }
-    //     //}
-    // }
+    auto wallStart = std::chrono::high_resolution_clock::now();
 
     //"construct tile system"
     // Get wall locations by seeing how the walls are in relation to the tile system
 
-    Vec<bool, 4> map[TILE_READ_AMOUNT][TILE_READ_AMOUNT] = {{{false, false, false, false}}}; //4,4 is middle - place walls in possible or likely based on general likeliness
-
-    int tileEndPointsXY[TILE_READ_AMOUNT+1];
-    for (size_t i = 0; i < TILE_READ_AMOUNT+1; i++)
-    {
-        tileEndPointsXY[i] = 300 * i - 300*(TILE_READ_AMOUNT)/2;
-        // for (size_t j = 0; j < TILE_READ_AMOUNT+1; j++)
-        // {
-        //     // tileEndPoints[]
-        //     tileEndPoints[i][j] = Point(300*i - 300*(TILE_READ_AMOUNT)/2, 300*j - 300*(TILE_READ_AMOUNT)/2);
-        // }
-    }
+    Vec<bool, 4> relMap[TILE_READ_AMOUNT][TILE_READ_AMOUNT] = {{{false, false, false, false}}}; //4,4 is middle - place walls in possible or likely based on general likeliness
 
     for (auto i = wallLines.begin(); i != wallLines.end(); i++)
     {
-        //Split up into l and r lines?
         //Check the closest wall endpoints to line endpoints, draw lines between
 
         Point startPointRebased = transformPoint(i->startPoint, ORIGIN, orientation) - relativePosition + Point(150, 150); // + OR - ??
@@ -640,10 +417,6 @@ int main() //TESTA FÖRSTORING AV PUNKTER??? , expandera mer i riktningen åt se
         renderPoint.push_back(startPointRebased+ORIGIN);
         renderPoint.push_back(endPointRebased+ORIGIN);
 
-        // int minDiffStartX;
-        // int minDiffStartY;
-        // int minDiffEndX;
-        // int minDiffEndY;
         int minDiffStartXIndex = -1;
         int minDiffStartYIndex = -1;
         int minDiffEndXIndex = -1;
@@ -673,8 +446,8 @@ int main() //TESTA FÖRSTORING AV PUNKTER??? , expandera mer i riktningen åt se
 				bool setNext = minDiffEndXIndex > 0;
 				for (int j = smallerIndex; j < largerIndex; j++)
 				{
-					map[j][minDiffEndXIndex][1] = true;
-					if(setNext) map[j][minDiffEndXIndex-1][3] = true;
+					relMap[j][minDiffEndXIndex][1] = true;
+					if(setNext) relMap[j][minDiffEndXIndex-1][3] = true;
 				}
 			}
 			else if (minDiffEndYIndex == minDiffStartYIndex)
@@ -684,47 +457,22 @@ int main() //TESTA FÖRSTORING AV PUNKTER??? , expandera mer i riktningen åt se
 				bool setNext = minDiffEndYIndex > 0;
 				for (int j = smallerIndex; j < largerIndex; j++)
 				{
-					map[minDiffEndYIndex][j][0] = true;
-					if(setNext) map[minDiffEndYIndex-1][j][2] = true;
+					relMap[minDiffEndYIndex][j][0] = true;
+					if(setNext) relMap[minDiffEndYIndex-1][j][2] = true;
 				}
 			}
 			else
 				cout << "line not straight" << endl; //Line was not in one column or row, but multiple
-            //Do actual stuff
-			//There is a wall between
         }
-
-        //Pre-calculate wall endpoints, then add robot pos to each wall line end point and compare
-
-        //EX::
-        
-        //      *     * ----*-
-        //                 ^
-        //      ,          |
-        //      *     *     *
-        //      | <- only these would count
-        //      |
-        //      *     *     * <- wall endpoint
-        //      
     }
 
-    // for (auto i = yWallLines.begin(); i != yWallLines.end(); i++)
-    // {
-    //     //copy xWallLines code
-    // }
-
-    //foreach wall in walls { tile[getWallMostLikelyPosition(robotPose)] = getWallLeftDownUpRight }
-
-    // cout << leftWall << " - left, " << rightWall << " - right, " << frontWall << " - front, " << backWall << " - back" << endl;
-
-    //iterate through transformed walls and see where they fit
-
-
-
-    // auto end2 = std::chrono::system_clock::now();
-    // std::cout << "First part:" << std::chrono::duration_cast<std::chrono::milliseconds>(end1-begin1).count() << "ms" << '\n';
-    // std::cout << "Full analysis:" << std::chrono::duration_cast<std::chrono::milliseconds>(end2-begin2).count() << "ms" << std::endl;
-    // std::cout << "Merge:" << std::chrono::duration_cast<std::chrono::milliseconds>(end2-end1).count() << "ms" << '\n';
+    auto end = std::chrono::high_resolution_clock::now();
+    std::cout << "Hough:" << std::chrono::duration_cast<std::chrono::microseconds>(mergeStart-houghStart).count() << "us" << '\n';
+    std::cout << "Merge:" << std::chrono::duration_cast<std::chrono::microseconds>(orientStart-mergeStart).count() << "us" << '\n';
+    std::cout << "Orient:" << std::chrono::duration_cast<std::chrono::microseconds>(coordStart-orientStart).count() << "us" << '\n';
+    std::cout << "Coords:" << std::chrono::duration_cast<std::chrono::microseconds>(wallStart-coordStart).count() << "us" << '\n';
+    std::cout << "Walls:" << std::chrono::duration_cast<std::chrono::microseconds>(end-wallStart).count() << "us" << '\n';
+    std::cout << "Full analysis:" << std::chrono::duration_cast<std::chrono::microseconds>(end-houghStart).count() << "us" << std::endl;
     Mat relativeImg = imread(BASEIMGPATH);
 
     #ifdef SHOW_PLINES
@@ -762,9 +510,6 @@ int main() //TESTA FÖRSTORING AV PUNKTER??? , expandera mer i riktningen åt se
     line(relativeImg, Point(0, ORIGIN_Y), Point(IMG_SIZE_X, ORIGIN_Y), Scalar(200,200,200));
     line(relativeImg, Point(ORIGIN_X, 0), Point(ORIGIN_X, IMG_SIZE_Y), Scalar(200,200,200));
 
-    // line(cdstP, Point(0, ORIGIN_Y - yPosRelative), Point(IMG_SIZE_X, ORIGIN_Y - yPosRelative), Scalar(200,100,200));
-    // line(cdstP, Point(ORIGIN_X - xPosRelative, 0), Point(ORIGIN_X - xPosRelative, IMG_SIZE_Y), Scalar(200,100,200));
-    // yPosAvg = xPosAvg = 0;
     for (int i = 0; i < 2000; i += 300)
     {
         line(cdstP, transformPoint(Point(0, ORIGIN_Y + yPosAvg - i), ORIGIN, -orientation)+ORIGIN, transformPoint(Point(IMG_SIZE_X, ORIGIN_Y + yPosAvg - i), ORIGIN, -orientation)+ORIGIN, Scalar(200,100,200));
@@ -782,23 +527,16 @@ int main() //TESTA FÖRSTORING AV PUNKTER??? , expandera mer i riktningen åt se
 	{
 		for (size_t j = 0; j < TILE_READ_AMOUNT; j++)
 		{
-			if (map[j][i][0])
+			if (relMap[j][i][0])
 				line(relativeImg, Point(i*300 - 300*TILE_READ_AMOUNT/2, j*300 - 300*TILE_READ_AMOUNT/2)+ORIGIN, Point((i+1)*300 - 300*TILE_READ_AMOUNT/2, j*300 - 300*TILE_READ_AMOUNT/2)+ORIGIN, Scalar(255, 255, 255), 3);
-			if (map[j][i][1])
+			if (relMap[j][i][1])
 				line(relativeImg, Point(i*300 - 300*TILE_READ_AMOUNT/2, j*300 - 300*TILE_READ_AMOUNT/2)+ORIGIN, Point(i*300 - 300*TILE_READ_AMOUNT/2, (j+1)*300 - 300*TILE_READ_AMOUNT/2)+ORIGIN, Scalar(255, 255, 255), 3);
-			if (map[j][i][2])
+			if (relMap[j][i][2])
 				line(relativeImg, Point((i+1)*300 - 300*TILE_READ_AMOUNT/2, (j+1)*300 - 300*TILE_READ_AMOUNT/2)+ORIGIN, Point((i+1-1)*300 - 300*TILE_READ_AMOUNT/2, (j+1)*300 - 300*TILE_READ_AMOUNT/2)+ORIGIN, Scalar(255, 255, 255), 3);
-			if (map[j][i][3])
+			if (relMap[j][i][3])
 				line(relativeImg, Point((i+1)*300 - 300*TILE_READ_AMOUNT/2, (j+1)*300 - 300*TILE_READ_AMOUNT/2)+ORIGIN, Point((i+1)*300 - 300*TILE_READ_AMOUNT/2, (j+1-1)*300 - 300*TILE_READ_AMOUNT/2)+ORIGIN, Scalar(255, 255, 255), 3);
 		}
 	}
-
-    // for (size_t i = 0; i < allWalls.size(); i++)
-    // {
-    //     line(cdstP, allWalls[i][0], allWalls[i][1], Scalar(255, 255, 0), 5, LINE_AA);
-    //     cout << "Allwalls " << i << "; 1: " << allWalls[i][0].x << ", " << allWalls[i][0].y << "; 2: " << allWalls[i][1].x << "," << allWalls[i][0].x << ";; l= " << norm(allWalls[i][0] - allWalls[i][1]) << endl;
-    // }
-    // cout << allWalls.size() << endl;
 
     circle(cdstP, Point(ORIGIN_X, ORIGIN_Y), 5, Scalar(255, 120, 255), 3);
     circle(relativeImg, Point(ORIGIN_X, ORIGIN_Y) - relativePosition + Point(150, 150), 5, Scalar(255, 120, 255), 3);
@@ -845,100 +583,6 @@ Point transformPoint(Point p, Point origin, double angle)
     return Point(transformedX, transformedY);
 }
 
-Vec<Point, 2> transformLine(SLine line, Point origin, double angle)
-{
-    // Point midPoint = transformPoint(line.midPoint, origin, angle);
-    // int halfLength = round(line.length/2);
-    Point startPoint = transformPoint(line.startPoint, origin, angle);
-    Point endPoint = transformPoint(line.endPoint, origin, angle);
-    return {startPoint, endPoint};
-    // Point endPoint = transformPoint(Point(midPoint.x + halfLength, midPoint.y), midPoint, angle);
-    // Point startPoint =
-    // return {midPoint};
-}
-
-// side findSide(Point transformedMidPoint)
-// {
-//     transformedMidPoint -= ORIGIN;
-//     if (abs(transformedMidPoint.x) > abs(transformedMidPoint.y))
-//     {
-//         cout << transformedMidPoint.x << endl;
-//         if (transformedMidPoint.x > 0)
-//         {
-//             return side::right;
-//         }
-//         else
-//         {
-//             cout << "l\n";
-//             return side::left;
-//         }
-//     }
-//     else
-//     {
-//         if (transformedMidPoint.y > 0)
-//         {
-//             return side::front;
-//         }
-//         else
-//         {
-//             return side::back;
-//         }
-//     }
-// }
-
-// void linesToSegments(SLine& line, vector<cv::Vec<cv::Point, 2>>& out)
-// {
-//     // if (fmod(line.length, 30) > lineLengthDivergence * round(line.length/30))
-//     // {
-//     // }
-
-//     int direction;
-
-//     //Get closest line config <if low is closer, remainder is in high>. Basically - find endpoints and go from closer to further
-//     double remainingLength = line.length;
-
-//     Point start;
-//     Point end;
-//     // int segmentNum = 1;
-
-//     if (norm(line.endPoint) > norm(line.startPoint))
-//     {
-//         end = line.startPoint;
-//         //if(maybeRampDirection) { putRemainderInThatDirection }
-//         //get points
-//         // direction = 1;
-//         for (int i = 1; line.length - i*300 >= 0; i++)
-//         {
-//             start = end;
-//             // Point start = transformPoint(Point(i*30,0), Point(0,0), line.orientation);
-//             Point end = start + transformPoint(Point(300, 0), Point(0,0), -line.orientation);
-//             out.push_back({start, end});
-//             // for (int i = 0; i < static_cast<int>(floor(fmod(line.length, 300))); i++)
-//             // {
-//             // }
-//             // segmentNum++;
-//         }
-//     }
-//     else
-//     {
-//         end = line.endPoint;
-//         for (int i = 1; line.length - i*300 >= 0; i++)
-//         {
-//             start = end;
-//             Point end = start + transformPoint(Point(300, 0), Point(0,0), -line.orientation);
-//             out.push_back({start, end});
-//         }
-//     }
-
-//     if (remainingLength >= 200)
-//     {
-//         start = end;
-//         end = line.endPoint;
-//         out.push_back({start+ORIGIN, end+ORIGIN});
-//     }
-
-//     //Get line configuration 1 (from low to high, remainder in high)
-//     //Get line configuration 2 (from high to low, remainder in low)
 // }
 
 void writeFile(Points2D& points) //Write points to txt file
