@@ -43,13 +43,14 @@ Points2D LidarDataGetter::getData()
     Points2D points;
     ldInterface.GetLaserScanData(points);
     cout << points.size() << " points\n";
-    createCoords(points);
     lastLidarUseTime = std::chrono::system_clock::now();
 
     return points;
     #elif defined(CODE_READ_FILE_TXT)
-    return pointsFromTxt(SCANTXT_PATH);
+    Points2D points = pointsFromTxt(SCANTXT_PATH);
     #endif //CODE_READ_LIDAR
+    createCoords(points);
+    return points;
 }
 
 void LidarDataGetter::createCoords(Points2D& points) //Convert "right hand" polar to cartesian

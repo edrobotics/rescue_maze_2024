@@ -39,7 +39,7 @@ class LineAnalyser
         cv::Point closestToOrigin; //The point that would be closest to the origin if the line was infinitly long
     };
 
-    int orientation;
+    double orientation;
     cv::Point position;
     std::array<std::array<cv::Vec<bool, 4>, TILE_READ_AMOUNT>, TILE_READ_AMOUNT> relMap  = {{{false, false, false, false}}};
 

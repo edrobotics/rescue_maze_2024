@@ -32,6 +32,7 @@ using namespace cv;
 
 int main() //Expandera mer i riktningen åt senare och tidigare punkter? (om de är sorterade efter vinkel i point2d)
 {           //Read/write intensity in txt
+            //!!! MIDPOS: SOMETHING IS EXTREMELY SLOW
 
     // *** STARTUP ***
     //Pre-calculate the wall endpoints on tiles

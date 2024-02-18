@@ -7,6 +7,7 @@ LineMaker::LineMaker(ldlidar::Points2D& points, cv::Mat& debugOut)
 {
     vector<Vec4i> linesP; //detection output
     drawLines(points, linesP, debugOut);
+    cout << linesP.size() << " Plines" << endl;
 
     mergeLines(linesP, combinedLines);
 }
@@ -28,7 +29,6 @@ void LineMaker::drawLines(ldlidar::Points2D& points, std::vector<cv::Vec4i>& lin
     }
 
     cv::dilate(dst, dst, getStructuringElement(MorphShapes::MORPH_ELLIPSE, cv::Size(3, 3)));
-
     HoughLinesP(dst, linesOut, 5, CV_PI/180, 20, 100, 100);//line detection
 
     cvtColor(dst, debugOut, COLOR_GRAY2BGR);

@@ -88,7 +88,7 @@ void LineAnalyser::calcOrientation()
     //Form orientation averages
     double baseAvg = baseAngle + baseLineAngDiffSum/baseLineAmount;
     double perpAvg = perpAngle + perpLineAngDiffSum/perpLineAmount;
-    double orientation;
+
     if (perpLineAmount > 0)
 	{
         orientation = (baseAvg + pi2Mod(perpAvg + M_PI/2))/2;
@@ -99,7 +99,7 @@ void LineAnalyser::calcOrientation()
 	}
 	orientation = orientation - round(baseAngle*2*M_1_PI)*M_PI_2; //It is now an angle against the x-axis???
     cout << "Orientation: " << orientation*180/M_PI << "⁰; basetot: " << baseAvg*180/M_PI << "⁰; perptot: " << perpAvg*180/M_PI << "⁰, longest: " << anaLines[longestLineIndex].orientation*180/M_PI << endl;
-
+    cout << "or" << orientation << endl;
     orientationCalced = true;
 }
 
@@ -119,7 +119,7 @@ void LineAnalyser::calcPosition()
     {
         Point midPoint = transformPoint(i->closestToOrigin, ORIGIN, orientation);
         // circle(showLines, midPoint+ORIGIN, 10, Scalar(255, 255, 100), 10);
-        cout << "MIDPOS: " << midPoint.x << ", " << midPoint.y << " ,, grad " << i->orientation * 180/M_PI << "->" << abs(piMod(orientation - i->orientation)) * 180/M_PI << flush;
+        // cout << "MIDPOS: " << midPoint.x << ", " << midPoint.y << " ,, grad " << i->orientation * 180/M_PI << "->" << abs(piMod(orientation - i->orientation)) * 180/M_PI << endl;
 
         double angleDiffAbs = abs(piMod(orientation - i->orientation));
         if (angleDiffAbs >= M_PI_4)
