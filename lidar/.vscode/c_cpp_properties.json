@@ -3,9 +3,6 @@
         {
             "name": "Linux",
             "includePath": [
-                "/usr/include/pcl-1.12/",
-                "/usr/include/eigen3/",
-                "/usr/include/vtk-9.1/",
                 "/usr/include/opencv4/",
                 "${workspaceFolder}/**"
             ],
