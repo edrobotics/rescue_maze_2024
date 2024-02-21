@@ -1,9 +1,9 @@
-#include <lidarLineAnalyser.h>
+#include <lidar/lidarLineAnalyser.h>
 
 using namespace cv;
 using namespace std;
 
-LineAnalyser::LineAnalyser(vector<Vec<Point, 2>> lines)
+LidarLineAnalyser::LidarLineAnalyser(vector<Vec<Point, 2>> lines)
 {
     //Convert to SLines
     for (auto i = lines.begin(); i != lines.end(); i++)
@@ -16,25 +16,25 @@ LineAnalyser::LineAnalyser(vector<Vec<Point, 2>> lines)
     // calcMap();
 }
 
-double LineAnalyser::getOrientation()
+double LidarLineAnalyser::getOrientation()
 {
     if (!orientationCalced) calcOrientation();
     return orientation;
 }
 
-Point LineAnalyser::getTilePosition()
+Point LidarLineAnalyser::getTilePosition()
 {
     if (!positionCalced) calcPosition();
     return position;
 }
 
-array<array<Vec<bool, 4>, TILE_READ_AMOUNT>, TILE_READ_AMOUNT> LineAnalyser::getMap()
+array<array<Vec<bool, 4>, TILE_READ_AMOUNT>, TILE_READ_AMOUNT> LidarLineAnalyser::getMap()
 {
     if (!mapCalced) calcMap();
     return relMap;
 }
 
-void LineAnalyser::calcOrientation()
+void LidarLineAnalyser::calcOrientation()
 {
     //Find longest line, which we assume is a wall
 
@@ -103,7 +103,7 @@ void LineAnalyser::calcOrientation()
     orientationCalced = true;
 }
 
-void LineAnalyser::calcPosition()
+void LidarLineAnalyser::calcPosition()
 {
     if (!orientationCalced) calcOrientation();
 
@@ -192,7 +192,7 @@ void LineAnalyser::calcPosition()
     positionCalced = true;
 }
 
-void LineAnalyser::calcMap()
+void LidarLineAnalyser::calcMap()
 {
     if (!orientationCalced) calcOrientation();
     if (!positionCalced) calcPosition();
@@ -264,7 +264,7 @@ void LineAnalyser::calcMap()
     mapCalced = true;
 }
 
-LineAnalyser::SLine::SLine(Vec<Point, 2> linePoints)
+LidarLineAnalyser::SLine::SLine(Vec<Point, 2> linePoints)
 {
     
     if (linePoints[0].x <= linePoints[1].x)

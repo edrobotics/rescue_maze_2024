@@ -8,13 +8,14 @@
 
 #include <ldlidar_driver/ldlidar_datatype.h>
 
-#include <lidarCoordinate.h>
-#include <lidarFiles.h>
+#include <lidar/lidarCoordinate.h>
+#include <lidar/lidarFiles.h>
 
-class LineMaker
+class LidarLineMaker
 {
     public:
-    LineMaker(ldlidar::Points2D& points, cv::Mat& debugOut);
+    LidarLineMaker(ldlidar::Points2D& points);
+    LidarLineMaker(ldlidar::Points2D& points, cv::Mat& debugOut);
 
     /** @brief Gets lines that were formed by the points
      * @retval The lines
@@ -24,7 +25,7 @@ class LineMaker
     private:
     std::vector<cv::Vec<cv::Point, 2>> combinedLines;
     
-    void drawLines(ldlidar::Points2D& points, std::vector<cv::Vec4i>& linesOut, cv::Mat& debugOut);
+    cv::Mat drawLines(ldlidar::Points2D& points, std::vector<cv::Vec4i>& linesOut);
     void mergeLines(std::vector<cv::Vec4i>& lines, std::vector<cv::Vec<cv::Point, 2>>& out);
 
     /** @brief Merges lines if they are within thresholds

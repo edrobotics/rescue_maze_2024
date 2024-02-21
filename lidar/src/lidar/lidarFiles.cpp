@@ -1,4 +1,4 @@
-#include <lidarFiles.h>
+#include <lidar/lidarFiles.h>
 
 using namespace std;
 using namespace ldlidar;

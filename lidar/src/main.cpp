@@ -7,9 +7,9 @@
 #include <math.h>
 // #include <thread>
 
-#include <lidarDataGetter.h>
-#include <lidarLineAnalyser.h>
-#include <lidarLineMaker.h>
+#include <lidar/lidarDataGetter.h>
+#include <lidar/lidarLineAnalyser.h>
+#include <lidar/lidarLineMaker.h>
 
 #define CODE_ANALYSIS
 
@@ -50,11 +50,11 @@ int main() //Expandera mer i riktningen åt senare och tidigare punkter? (om de 
     auto start = std::chrono::high_resolution_clock::now();
 
     Mat showLines;
-    LineMaker lMaker(points, showLines);
+    LidarLineMaker lMaker(points, showLines);
 
     vector<Vec<Point, 2>> combinedLines = lMaker.getLines();
 
-    LineAnalyser lAnalyser(combinedLines);    
+    LidarLineAnalyser lAnalyser(combinedLines);
 
     // auto end = std::chrono::high_resolution_clock::now();
     // std::cout << "Hough:" << std::chrono::duration_cast<std::chrono::microseconds>(mergeStart-houghStart).count() << "µs" << '\n';

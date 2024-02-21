@@ -7,7 +7,7 @@
 
 #include <ldlidar_driver/ldlidar_driver_linux.h>
 
-#include <lidarFiles.h>
+#include <lidar/lidarFiles.h>
 
 // #define CODE_READ_LIDAR
 

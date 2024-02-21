@@ -7,14 +7,14 @@
 
 #include <opencv2/opencv.hpp>
 
-#include <lidarCoordinate.h>
+#include <lidar/lidarCoordinate.h>
 
 #define TILE_READ_AMOUNT 9 //MUST BE ODD
 
-class LineAnalyser
+class LidarLineAnalyser
 {
     public:
-    LineAnalyser(std::vector<cv::Vec<cv::Point, 2>> lines);
+    LidarLineAnalyser(std::vector<cv::Vec<cv::Point, 2>> lines);
 
     double getOrientation();
     cv::Point getTilePosition();

@@ -1,23 +1,33 @@
-#include <lidarLineMaker.h>
+#include <lidar/lidarLineMaker.h>
 
 using namespace std;
 using namespace cv;
 
-LineMaker::LineMaker(ldlidar::Points2D& points, cv::Mat& debugOut)
+LidarLineMaker::LidarLineMaker(ldlidar::Points2D& points)
 {
     vector<Vec4i> linesP; //detection output
-    drawLines(points, linesP, debugOut);
+    drawLines(points, linesP);
     cout << linesP.size() << " Plines" << endl;
 
     mergeLines(linesP, combinedLines);
 }
 
-vector<Vec<Point, 2>> LineMaker::getLines()
+LidarLineMaker::LidarLineMaker(ldlidar::Points2D& points, cv::Mat& debugOut)
+{
+    vector<Vec4i> linesP; //detection output
+    cvtColor(drawLines(points, linesP), debugOut, COLOR_GRAY2BGR);
+
+    cout << linesP.size() << " Plines" << endl;
+
+    mergeLines(linesP, combinedLines);
+}
+
+vector<Vec<Point, 2>> LidarLineMaker::getLines()
 {
     return combinedLines;
 }
 
-void LineMaker::drawLines(ldlidar::Points2D& points, std::vector<cv::Vec4i>& linesOut, cv::Mat& debugOut)
+cv::Mat LidarLineMaker::drawLines(ldlidar::Points2D& points, std::vector<cv::Vec4i>& linesOut)
 {
     Mat dst = imread(BASEIMGPATH, IMREAD_GRAYSCALE);
 
@@ -30,11 +40,10 @@ void LineMaker::drawLines(ldlidar::Points2D& points, std::vector<cv::Vec4i>& lin
 
     cv::dilate(dst, dst, getStructuringElement(MorphShapes::MORPH_ELLIPSE, cv::Size(3, 3)));
     HoughLinesP(dst, linesOut, 5, CV_PI/180, 20, 100, 100);//line detection
-
-    cvtColor(dst, debugOut, COLOR_GRAY2BGR);
+    return dst;
 }
 
-void LineMaker::mergeLines(vector<Vec4i>& lines, vector<Vec<Point, 2>>& out)
+void LidarLineMaker::mergeLines(vector<Vec4i>& lines, vector<Vec<Point, 2>>& out)
 {
     for (size_t i = 0; i < lines.size(); i++)
     {
@@ -79,7 +88,7 @@ void LineMaker::mergeLines(vector<Vec4i>& lines, vector<Vec<Point, 2>>& out)
     cout << out.size() << " -clines, plines- " << lines.size() << endl;
 }
 
-bool LineMaker::mergeLineSegments(const Vec<Point, 2>& line_i, const Vec<Point, 2>& line_j, Vec<Point, 2>& output, double angleThresh, double distThresh, bool extraLogging)
+bool LidarLineMaker::mergeLineSegments(const Vec<Point, 2>& line_i, const Vec<Point, 2>& line_j, Vec<Point, 2>& output, double angleThresh, double distThresh, bool extraLogging)
 {
     //Get line length
     double line_i_length = norm(line_i[1] - line_i[0]);
