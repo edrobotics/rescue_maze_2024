@@ -2,6 +2,7 @@
 #include "communicator/communicator.h"
 #include "fusion/MotorControllers.h"
 #include "GlobalConstants.h"
+#include "localNav/PIDController.h"
 
 #include <chrono>
 #include <thread>
@@ -28,4 +29,7 @@ class KinematicDriver
     private:
         communication::Communicator* globComm {};
         MotorControllers::MotorSpeeds motorSpeeds {};
+
+        PIDController tPID {1, 0, 0};
+        PIDController rPID {1, 0, 0};
 };

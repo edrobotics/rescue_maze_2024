@@ -66,7 +66,8 @@ class CoordinateFrame
     void incrementTransfrom(Transform tf);
 
     // Calculate the euclidean distances between two coordinateframes
-    static double calcDist2d(CoordinateFrame f1, CoordinateFrame f2);
+    static double calcDist2d(CoordinateFrame* f1, CoordinateFrame* f2);
+    static double calcDist2dLevel(CoordinateFrame* f1, int level1, CoordinateFrame* f2, int level2);
 
     private:
     // The parent CF

@@ -244,11 +244,15 @@ void CoordinateFrame::incrementTransfrom(Transform tf)
     transform+=tf;
 }
 
-double CoordinateFrame::calcDist2d(CoordinateFrame f1, CoordinateFrame f2)
+double CoordinateFrame::calcDist2d(CoordinateFrame* f1, CoordinateFrame* f2)
 {
-    // Transform res {f2.transform-f1.transform};
-    Transform res {f2.getTransformLevelTo(&f1, 1, 1)};
-    return sqrt(res.pos_x*res.pos_x + res.pos_y*res.pos_y);
+    return calcDist2dLevel(f1, 1, f2, 1);
+}
+
+double CoordinateFrame::calcDist2dLevel(CoordinateFrame* f1, int level1, CoordinateFrame* f2, int level2)
+{
+    Transform res {f2->getTransformLevelTo(f1, level1, level2)};
+    return sqrt(pow(res.pos_x, 2) + pow(res.pos_y, 2));
 }
 
 std::ostream& operator << (std::ostream& os, CoordinateFrame& frame)

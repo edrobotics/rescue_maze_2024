@@ -96,6 +96,15 @@ std::ostream& operator << (std::ostream& os, Transform& tf)
     return os;
 }
 
+
+bool Transform::operator==(const Transform tf) const
+{
+    // If all of these are equal, return true
+    return this->pos_x == tf.pos_x &&
+           this->pos_y == tf.pos_y &&
+           this->rot_z == tf.rot_z;
+}
+
 #include <vector>
 bool Transform::test()
 {

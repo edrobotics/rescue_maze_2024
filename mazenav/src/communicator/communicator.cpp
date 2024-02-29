@@ -3,23 +3,6 @@
 namespace communication
 {
 
-    void PoseCommunicator::setPose(RobotPose pose)
-    {
-        mtx_pose.lock();
-        this->pose = pose;
-        mtx_pose.unlock();
-    }
-
-    RobotPose PoseCommunicator::getPose()
-    {
-        RobotPose returnData {};
-        mtx_pose.lock();
-        returnData = this->pose;
-        mtx_pose.unlock();
-        return returnData;
-    }
-
-
 
     void Navigation::pushCommand(DriveCommand command)
     {

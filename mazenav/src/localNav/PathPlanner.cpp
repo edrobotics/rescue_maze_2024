@@ -25,35 +25,35 @@ void PathPlanner::calculate()
     fillKeyFrames(globalPath);
 
     // Interpolate between these coordinates
-    path.interpolate();
+    // path.interpolate();
 }
 
 void PathPlanner::fillKeyFrames(std::vector<communication::DriveCommand>& globPath)
 {
     CoordinateFrame* pathParent {&(startFrame)};
     path.parentFrame = pathParent->getWithoutChildren();
-    CoordinateFrame curFrame {pathParent};
+    PathFrame curFrame {pathParent};
     path.addKeyFrame(curFrame);
     for (communication::DriveCommand move : globPath)
     {
-        curFrame.setParent(&(path.keyFrames.back()));
+        curFrame.frame.setParent(&(path.keyFrames.back().frame));
 
         switch (move)
         {
             case communication::driveForward:
-                curFrame.incrementTransfrom(tfForward);
+                curFrame.frame.incrementTransfrom(tfForward);
                 break;
             case communication::turnLeft:
-                curFrame.incrementTransfrom(tfLeft);
+                curFrame.frame.incrementTransfrom(tfLeft);
                 break;
             case communication::turnRight:
-                curFrame.incrementTransfrom(tfRight);
+                curFrame.frame.incrementTransfrom(tfRight);
                 break;
             default:
                 break;
         }
         // Change the relative commands in globalPath to absolute coordinates with help of the transform system
-        curFrame.transformUpTo(pathParent);
+        curFrame.frame.transformUpTo(pathParent);
         path.addKeyFrame(curFrame);
     }
 

@@ -2,7 +2,7 @@
 #include <queue>
 #include <mutex>
 
-#include "communicator/RobotPose.h"
+#include "transformations/tfsys.h"
 #include "fusion/MotorControllers.h"
 
 namespace communication
@@ -36,15 +36,17 @@ namespace communication
     class PoseCommunicator
     {
         public:
-            // Sets the robot pose
-            void setPose(RobotPose pose);
-
-            // Gets the robot pose
-            RobotPose getPose();
+            // Thread safety is handled inside of the CoordinateFrame class
+            CoordinateFrame worldFrame {nullptr};
+            CoordinateFrame localTileFrame {&worldFrame};
+            CoordinateFrame robotFrame {&localTileFrame};
+            
+            
         
         private:
-            RobotPose pose {};
-            std::mutex mtx_pose;
+            // std::mutex mtx_world;
+            // std::mutex mtx_localtile;
+            // std::mutex mtx_robot;
     };
 
     class MotorControllerCommunicator
