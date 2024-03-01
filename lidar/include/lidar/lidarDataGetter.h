@@ -20,8 +20,8 @@
 // #define CODE_SAVE_LATEST
 #endif
 
-#define PORT "/dev/ttyUSB0" //COM4?
-#define BAUDRATE 230400U
+#define LIDAR_USBPORT "/dev/ttyUSB0" //COM4?
+#define LIDAR_BAUDRATE 230400U
 
 class LidarDataGetter
 {

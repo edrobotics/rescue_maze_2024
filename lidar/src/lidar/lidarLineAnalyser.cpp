@@ -13,7 +13,7 @@ LidarLineAnalyser::LidarLineAnalyser(vector<Vec<Point, 2>> lines)
 
     // calcOrientation();
     // calcPosition();
-    // calcMap();
+    calcMap();
 }
 
 double LidarLineAnalyser::getOrientation()

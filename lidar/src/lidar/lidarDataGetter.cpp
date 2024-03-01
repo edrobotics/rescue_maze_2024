@@ -6,9 +6,9 @@ using namespace std;
 LidarDataGetter::LidarDataGetter()
 {
     #ifdef CODE_READ_LIDAR
-    if (!ldInterface.Connect(LDType::LD_19, PORT, BAUDRATE))
+    if (!ldInterface.Connect(LDType::LD_19, LIDAR_USBPORT, LIDAR_BAUDRATE))
     {
-      cerr << "Could not connect to lidar on port " + string(PORT) << endl;
+      cerr << "Could not connect to lidar on port " + string(LIDAR_USBPORT) << endl;
       return;
     }
 
