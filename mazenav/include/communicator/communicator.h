@@ -41,6 +41,10 @@ namespace communication
             CoordinateFrame localTileFrame {&worldFrame};
             CoordinateFrame robotFrame {&localTileFrame};
             
+            // Speeds can be represented with coordinateframes. The speeds are relative to the parent object. (unsure if this representation is actually okay)
+            // CoordinateFrame worldSpeed {nullptr};
+            // CoordinateFrame localTileSpeed {&worldSpeed};
+            CoordinateFrame robotSpeed {nullptr};
             
         
         private:
