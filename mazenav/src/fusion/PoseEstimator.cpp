@@ -84,12 +84,58 @@ void PoseEstimator::update(FusionGroup fgroup)
 
 
 
-
+#warning currently a lot of code without the right conditional logic. Do not expect to work at all
 communication::PoseCommunicator PoseEstimator::updateSimple()
 {
     communication::PoseCommunicator resultPose {};
+    communication::PoseCommunicator globalPose {globComm->poseComm};
 
     // This is where the magic happens
+
+    // Check if you can use the absolute values:
+    #warning todo: chekc if usable and then only use if usable
+
+    // Start with the absolute that are useable
+
+    // Increments:
+
+    if (getIsTofXAbsolute())
+    {
+        resultPose.robotFrame.transform.rot_z = getTofZRot();
+        resultPose.robotFrame.transform.pos_x = getTofXTrans();
+    }
+    else
+    {
+        resultPose.robotFrame.transform.rot_z = globalPose.robotFrame.transform.rot_z + getIMURotDiff();
+        if (getIsTofDiff())
+        {
+            resultPose.robotFrame.transform.pos_x = globalPose.robotFrame.transform.pos_x + ( (getWheelTransDiff()+getTofTransDiff())/2 ) * cos(resultPose.robotFrame.transform.rot_z);
+        }
+        else
+        {
+            // What to do here? I cannot update the pose
+        }
+    }
+
+    if (getIsTofYAbsolute())
+    {
+        resultPose.robotFrame.transform.pos_y = getTofYTrans();
+    }
+    else
+    {
+        if (getIsTofDiff())
+        {
+            resultPose.robotFrame.transform.pos_y = globalPose.robotFrame.transform.pos_y + ( (getWheelTransDiff()+getTofTransDiff())/2 ) * sin(resultPose.robotFrame.transform.rot_z);
+        }
+        else
+        {
+            // What to do here? I cannot update the pose
+        }
+    }
+
+    // Bounds checking and tile changes
+    wrapPoseComm(resultPose);
+
 
     return resultPose;
 }
@@ -117,4 +163,18 @@ communication::PoseCommunicator PoseEstimator::updateIMU()
     communication::PoseCommunicator resultPose {};
 
     return resultPose;
+}
+
+
+void PoseEstimator::wrapPoseComm(communication::PoseCommunicator& poseComm)
+{
+    if (poseComm.robotFrame.transform.pos_y > minYPos)
+    {
+        // Either modulo magic or change the "if" to "while"
+    }
+    if (poseComm.robotFrame.transform.pos_y < maxYPos)
+    {
+
+    }
+
 }

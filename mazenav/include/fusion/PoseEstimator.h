@@ -1,7 +1,9 @@
 // This file contains the class that interprets sensor values into the robot pose.
 
 // TODO:
-// Implement the actual fusion. Start simple
+// Write the getter and checker functions for the values and contributions
+// Handle value wrapping
+// Minimize ToF calculations - how?
 // Check the warnings
 // Testing - includes writing test function?
 // More advanced fusing
@@ -77,8 +79,11 @@ class PoseEstimator
 
 
         // High-level pose estimation functions. Return the estimated pose.
+        // Simple fusiongroup
         communication::PoseCommunicator updateSimple();
+        // Lidar fusiongroup
         communication::PoseCommunicator updateLidar();
+        // Lidar+simple fusiongroup
         communication::PoseCommunicator updateLidarSimple();
         // Only gives rotation, not translations
         communication::PoseCommunicator updateIMU();
@@ -87,5 +92,45 @@ class PoseEstimator
 
 
         // Low-level pose estimation helper functions
+        // The distance travelled (diff) since last check or reset
+        double getWheelTransDiff();
+
+        // Estimated rotation diff since last check or reset
+        double getWheelRotDiff();
+
+        // Distance travelled since last check or reset
+        #warning Unclear what distance diff I get from ToF. Should be straight out from the sensor, which this function assumes
+        double getTofTransDiff();
+
+        // Get the absolute Y translation measured by ToF. Not sure if it will work.
+        double getTofYTrans();
+
+        // Get the absolute X translation measured by ToF
+        double getTofXTrans();
+
+        // Get the absolute Z rotation measured by ToF
+        double getTofZRot();
+
+        // Get the Z rotation diff since last check or reset
+        double getIMURotDiff();
+
+
+        // Check usability of values:
+        // For X position and Z rotation
+        bool getIsTofXAbsolute();
+        // For Y position
+        bool getIsTofYAbsolute();
+        // If ToF values are usable for even diff
+        bool getIsTofDiff();
+
+        void wrapPoseComm(communication::PoseCommunicator& posecomm);
+        const int minYPos {0};
+        const int maxYPos {300};
+        const int minXPos {0};
+        const int maxXPos {300};
+        const double minZRot {-M_PI};
+        const double maxZRot {M_PI};
+        const double tileRotThreshhold {M_PI_4}; // 45deg
+
 
 };
