@@ -1,4 +1,4 @@
-#include "fusion/VisionCommunicator.h"
+#include <fusion/VisionCommunicator.h>
 
 using namespace std;
 
@@ -7,7 +7,6 @@ VisionCommunicator::VisionCommunicator()
     struct sockaddr_in address;
     int opt = 1;
     socklen_t addrlen = sizeof(address);
-    const char* hello = "Hello from server";
  
     // Creating socket file descriptor
     if ((listeningSocket = socket(AF_INET, SOCK_STREAM, 0)) < 0) {
@@ -31,13 +30,11 @@ VisionCommunicator::VisionCommunicator()
         perror("VisionCommunicator: bind failed");
         exit(EXIT_FAILURE);
     }
-    if (listen(listeningSocket, 3) < 0) 
-    {
+    if (listen(listeningSocket, 3) < 0) {
         perror("VisionCommunicator: listen");
         exit(EXIT_FAILURE);
     }
-    if ((connectedSocket = accept(listeningSocket, (struct sockaddr*)&address, &addrlen)) < 0) 
-    {
+    if ((clientSocket = accept(listeningSocket, (struct sockaddr*)&address, &addrlen)) < 0) {
         perror("VisionCommunicator: accept");
         exit(EXIT_FAILURE);
     }
@@ -46,34 +43,174 @@ VisionCommunicator::VisionCommunicator()
 VisionCommunicator::~VisionCommunicator()
 {
     // closing the connected socket
-    close(connectedSocket);
+    close(clientSocket);
     // closing the listening socket
     close(listeningSocket);
 }
 
-optional<VisionCommunicator::Victim> VisionCommunicator::getVictim()
+vector<Victim> VisionCommunicator::getVictims()
 {
-    optional<Victim> result;
+    vector<Victim> victimDatas;
+    auto dataOptional = getData();
+    if (!dataOptional) return victimDatas;
 
+    std::vector<std::string> commands = split(dataOptional.value(), '!');
+    if (dataOptional.value()[0] != '!') commands.erase(commands.begin()); //Remove first element, as it did not >start< with a '!'
+
+    for (auto i = commands.begin(); i != commands.end(); i++)
+    {
+        if ((*i).size() < 8) continue;
+        //Process
+        std::vector<std::string> segments = split(*i, ',');
+        struct Victim vicData;
+
+        //Check for !v
+        if (!findChar(segments[1], {'v'})) continue;
+
+        //Check for 'p'/'c' - potential/confirmed
+        auto detType = findChar(segments[2], {'p', 'c'});
+        if (!detType) continue;
+        vicData.confirmed = (detType.value() == 'c');
+
+        //Check type - 'g'/'y'/'r'/'u'/'s'/'h'
+        auto vicType = parseVictimType(segments[3]);
+        if (!vicType) continue;
+        vicData.whichType = vicType.value();
+
+        //Parsing numbers
+        //Check which camera - 0++
+        auto cam = parseInt(segments[4]);
+        if (!cam) continue;
+        vicData.whichCamera = (Victim::RobotCamera)cam.value();
+
+        //Position X int mm (+/-)
+        auto victimX = parseInt(segments[5]);
+        if (!victimX) continue;
+
+        //Position Y int mm (+/-)
+        auto victimY = parseInt(segments[6]);
+        if (!victimY) continue;
+
+        //Unix timestamp
+        auto visionTimestamp = parseLong(segments[7]);
+        if (!visionTimestamp) continue;
+        vicData.timestamp = visionTimestamp.value();
+
+        victimDatas.push_back(vicData);
+    }
+    
     perror("not done");
-    return result;
+    return victimDatas;
 }
 
-string VisionCommunicator::getData()
+optional<string> VisionCommunicator::getData()
 {
+    fd_set rfd;
+    FD_ZERO(&rfd);
+    FD_SET(clientSocket, &rfd);
+
+    int ret = select(clientSocket+1, &rfd, NULL, NULL, &commTimeout);
+    if (ret < 0) {
+        perror("VisionCommunicator: select");
+        return nullopt;
+    }
+    if (ret == 0) {
+        return nullopt;
+    }
+
     ssize_t valread;
     const int bufSize = 1024;
     char buffer[bufSize] = { 0 };
 
-    valread = read(connectedSocket, buffer, bufSize - 1); // subtract 1 for the null terminator at the end
+    valread = read(clientSocket, buffer, bufSize - 1); // subtract 1 for the null terminator at the end
 
-    if (valread == -1)
-    {
+    if (valread < 0) {
         perror("VisionCommunicator: read error");
-        exit (EXIT_FAILURE);
+        // exit (EXIT_FAILURE);
     }
 
     printf("Recived ::%s::\n", buffer);
 
-    return (string)("%s", buffer);
+    return make_optional<string>(("%s", buffer));
+}
+
+vector<string> VisionCommunicator::split(string& split, char deliminator)
+{
+    std::stringstream sStream(split);
+    std::string segment;
+    std::vector<std::string> segList;
+
+    while(std::getline(sStream, segment, deliminator))
+    {
+        segList.push_back(segment);
+    }
+    return segList;
+}
+
+optional<char> VisionCommunicator::findChar(string& searchString, vector<char> chars)
+{
+    for (auto i = searchString.begin(); i != searchString.end(); i++)
+    {
+        for (auto j = chars.begin(); j != chars.end(); j++)
+        {
+            if (*i == *j)
+            {
+                return *j;
+            }
+        }
+    }
+
+    return nullopt;
+}
+
+optional<Victim::VictimType> VisionCommunicator::parseVictimType(string& str)
+{
+    //Check type - 'g'/'y'/'r'/'u'/'s'/'h'
+    for (auto i = str.begin(); i != str.end(); i++)
+    {
+        switch (*i)
+        {
+        case 'g':
+            return Victim::VictimType::Green;
+        case 'y':
+            return Victim::VictimType::Yellow;
+        case 'r':
+            return Victim::VictimType::Red;
+        case 'u':
+            return Victim::VictimType::U;
+        case 's':
+            return Victim::VictimType::S;
+        case 'h':
+            return Victim::VictimType::H;
+        default:
+            break;
+        }
+    }
+    return nullopt;
+}
+
+optional<int> VisionCommunicator::parseInt(string& str)
+{
+    try
+    {
+        return std::stoi(str);
+    }
+    catch(const std::exception& e)
+    {
+        std::cerr << e.what() << '\n';
+    }
+    return nullopt;
+}
+
+optional<long> VisionCommunicator::parseLong(string& str)
+{
+    try
+    {
+        return std::stol(str);
+    }
+    catch(const std::exception& e)
+    {
+        std::cerr << e.what() << '\n';
+    }
+    return nullopt;
 }
