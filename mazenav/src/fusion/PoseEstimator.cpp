@@ -92,44 +92,39 @@ communication::PoseCommunicator PoseEstimator::updateSimple()
 
     // This is where the magic happens
 
-    // Check if you can use the absolute values:
-    #warning todo: chekc if usable and then only use if usable
-
-    // Start with the absolute that are useable
-
-    // Increments:
-
     if (getIsTofXAbsolute())
     {
         resultPose.robotFrame.transform.rot_z = getTofZRot();
-        resultPose.robotFrame.transform.pos_x = getTofXTrans();
+        resultPose.robotFrame.transform.pos_x = getTofXTrans(resultPose.robotFrame.transform.rot_z);
     }
     else
     {
         resultPose.robotFrame.transform.rot_z = globalPose.robotFrame.transform.rot_z + getIMURotDiff();
         if (getIsTofDiff())
         {
-            resultPose.robotFrame.transform.pos_x = globalPose.robotFrame.transform.pos_x + ( (getWheelTransDiff()+getTofTransDiff())/2 ) * cos(resultPose.robotFrame.transform.rot_z);
+            resultPose.robotFrame.transform.pos_x = globalPose.robotFrame.transform.pos_x + ( (getWheelTransDiff()+getTofTransYDiff())/2 ) * cos(resultPose.robotFrame.transform.rot_z);
         }
         else
         {
             // What to do here? I cannot update the pose
+            #warning unhandled
         }
     }
 
     if (getIsTofYAbsolute())
     {
-        resultPose.robotFrame.transform.pos_y = getTofYTrans();
+        resultPose.robotFrame.transform.pos_y = getTofYTrans(resultPose.robotFrame.transform.rot_z, TOF_FY_OFFSET, TOF_FX_OFFSET);
     }
     else
     {
         if (getIsTofDiff())
         {
-            resultPose.robotFrame.transform.pos_y = globalPose.robotFrame.transform.pos_y + ( (getWheelTransDiff()+getTofTransDiff())/2 ) * sin(resultPose.robotFrame.transform.rot_z);
+            resultPose.robotFrame.transform.pos_y = globalPose.robotFrame.transform.pos_y + ( (getWheelTransDiff()+getTofTransYDiff())/2 ) * sin(resultPose.robotFrame.transform.rot_z);
         }
         else
         {
             // What to do here? I cannot update the pose
+            #warning unhandled
         }
     }
 
@@ -166,6 +161,22 @@ communication::PoseCommunicator PoseEstimator::updateIMU()
 }
 
 
+double PoseEstimator::wrapValue(double value, double min, double max)
+{
+    double diffCorr {max-min+1};
+    while (value>max)
+    {
+        value-=diffCorr;
+    }
+    while (value<min)
+    {
+        value+=diffCorr;
+    }
+
+    return value;
+}
+
+
 void PoseEstimator::wrapPoseComm(communication::PoseCommunicator& poseComm)
 {
     if (poseComm.robotFrame.transform.pos_y > minYPos)
@@ -176,5 +187,161 @@ void PoseEstimator::wrapPoseComm(communication::PoseCommunicator& poseComm)
     {
 
     }
+
+}
+
+
+double PoseEstimator::getWheelTransDiff()
+{
+    MotorControllers::Distances motorDistances {sensors.motors.motorDistances};
+    double average = (motorDistances.lb + motorDistances.lf + motorDistances.rf + motorDistances.rb)/4.0;
+    double diff = average-lastWheelTransDiffDist;
+    lastWheelTransDiffDist = average;
+    return diff;
+}
+
+
+double PoseEstimator::getTofTransYDiff()
+{
+    Tof::TofData td {sensors.tofs.tofData};
+    double lfDiff {td.lf-lastTofLF};
+    double lbDiff {td.lf-lastTofLB};
+    double bDiff {td.lf-lastTofB};
+
+    double avgDiff {(lfDiff+lbDiff+bDiff)/3.0};
+
+    lastTofLF = td.lf;
+    lastTofLB = td.lb;
+    lastTofB = td.b;
+
+    return avgDiff;
+    
+}
+
+
+double PoseEstimator::getTofYTrans(double angle, double yoffset, double xoffset)
+{
+    Tof::TofData td {sensors.tofs.tofData};
+    // Get Y distances
+    double lfY {td.lf*cos(angle)};
+    double rfY {td.rf*cos(angle)};
+    double bY {td.b*cos(angle)};
+
+    // Change to robot centre
+    lfY = lfY+yoffset*cos(angle)+xoffset*sin(angle);
+    rfY = rfY+yoffset*cos(angle)+xoffset*sin(angle);
+    bY = bY+yoffset*cos(angle);
+
+    // Wrap values to local tile
+    lfY = wrapValue(lfY, 0, GRID_SIZE-1);
+    rfY = wrapValue(rfY, 0, GRID_SIZE-1);
+    bY = wrapValue(bY, 0, GRID_SIZE-1);
+
+    // Average
+    double average {(lfY+rfY+bY)/3.0};
+
+    return average;
+}
+
+
+double PoseEstimator::getTofXTrans(double angle)
+{
+    Tof::TofData td {sensors.tofs.tofData};
+    double x1 {};
+    double x2 {};
+    double resultX {};
+
+    if (getIsTofXLeft())
+    {
+        x1 = getCentredistanceFromTwoTof(td.lf, td.lb, TOF_SX_OFFSET, angle);
+        if (getIsTofXRight())
+        {
+            x2 = GRID_SIZE - (-getCentredistanceFromTwoTof(td.rf, td.rb, TOF_SX_OFFSET, angle));
+            resultX = (x1+x2)/2.0;
+        }
+        else
+        {
+            resultX = x1;
+        }
+    }
+    else if (getIsTofXRight())
+    {
+        resultX = GRID_SIZE - (-getCentredistanceFromTwoTof(td.rf, td.rb, TOF_SX_OFFSET, angle));
+    }
+    else
+    {
+        // What to do here? Not enough information, should never be here
+        #warning unhandled: cannot compute XTrans with no walls
+    }
+
+    return resultX;
+}
+
+double PoseEstimator::getTofZRot()
+{
+    Tof::TofData td {sensors.tofs.tofData};
+    double angle1 {};
+    double angle2 {};
+    double resultAngle {};
+    if (getIsTofXLeft())
+    {
+        angle1 = getAngleFromTwoTof(td.lf, td.lb, TOF_SY_OFFSET*2);
+        if (getIsTofXRight())
+        {
+            angle2 = -getAngleFromTwoTof(td.rf, td.rb, TOF_SY_OFFSET*2);
+            resultAngle = (angle1+angle2)/2.0;
+        }
+        else
+        {
+            resultAngle = angle1;
+        }
+    }
+    else if (getIsTofXRight())
+    {
+        resultAngle = -getAngleFromTwoTof(td.rf, td.rb, TOF_SY_OFFSET*2);
+    }
+    else
+    {
+        // What to do here? Not enough information, should never be here
+        #warning unhandled: cannot compute rotation with no walls
+    }
+
+    return resultAngle;
+}
+
+double PoseEstimator::getAngleFromTwoTof(double d1, double d2, double yoffset)
+{
+    return atan((d1-d2)/yoffset);
+}
+
+double PoseEstimator::getCentredistanceFromTwoTof(double d1, double d2, double centreoffset, double angle)
+{
+    return ((d1+d2)/2+centreoffset)*cos(angle);
+}
+
+
+
+bool PoseEstimator::getIsTofXAbsolute()
+{
+
+}
+
+bool PoseEstimator::getIsTofXLeft()
+{
+
+}
+
+bool PoseEstimator::getIsTofXRight()
+{
+
+}
+
+bool PoseEstimator::getIsTofYAbsolute()
+{
+
+}
+
+bool PoseEstimator::getIsTofDiff()
+{
 
 }

@@ -4,7 +4,9 @@
 // Write the getter and checker functions for the values and contributions
 // Handle value wrapping
 // Minimize ToF calculations - how?
+// Change diff checker to check individual, required sensors, and not just all.
 // Check the warnings
+// For the first iterations, values might be weird. Initiate all "last values" when initializing object?
 // Testing - includes writing test function?
 // More advanced fusing
 
@@ -16,7 +18,7 @@
 #include "fusion/Sensors.h"
 #include "fusion/TeensyCommunicator.h"
 #include "communicator/communicator.h"
-
+#include "GlobalConstants.h"
 
 class PoseEstimator
 {
@@ -33,6 +35,7 @@ class PoseEstimator
         bool test();
 
         // Describes different fusion groups (combinations of raw data to base pose estimate on)
+        // Maybe the binary stuff is not the best idea...
         enum FusionGroup
         {
             fg_none         = 0,
@@ -94,22 +97,34 @@ class PoseEstimator
         // Low-level pose estimation helper functions
         // The distance travelled (diff) since last check or reset
         double getWheelTransDiff();
+        // Last absolute position for wheels
+        double lastWheelTransDiffDist {};
 
         // Estimated rotation diff since last check or reset
         double getWheelRotDiff();
 
         // Distance travelled since last check or reset
         #warning Unclear what distance diff I get from ToF. Should be straight out from the sensor, which this function assumes
-        double getTofTransDiff();
+        double getTofTransYDiff();
+        double lastTofLB {};
+        double lastTofLF {};
+        double lastTofB {};
 
         // Get the absolute Y translation measured by ToF. Not sure if it will work.
-        double getTofYTrans();
+        // angle - current robot angle
+        // yoffset - robot centre to back/front sensors, Y direction
+        // xoffset - robot centre to front sensor, X direction
+        double getTofYTrans(double angle, double yoffset, double xoffset);
 
         // Get the absolute X translation measured by ToF
-        double getTofXTrans();
+        double getTofXTrans(double angle);
 
         // Get the absolute Z rotation measured by ToF
         double getTofZRot();
+
+        // Helpers for Tof XTrans and ZRot
+        double getAngleFromTwoTof(double d1, double d2, double yoffset);
+        double getCentredistanceFromTwoTof(double d1, double d2, double centreoffset, double angle);
 
         // Get the Z rotation diff since last check or reset
         double getIMURotDiff();
@@ -118,11 +133,19 @@ class PoseEstimator
         // Check usability of values:
         // For X position and Z rotation
         bool getIsTofXAbsolute();
+        bool getIsTofXLeft();
+        bool getIsTofXRight();
         // For Y position
         bool getIsTofYAbsolute();
         // If ToF values are usable for even diff
         bool getIsTofDiff();
 
+        // Wraps the value between lower and upper.
+        // Currently using loops. Can probably be optimised.
+        #warning probably only works for integers?
+        double wrapValue(double value, double lower, double upper);
+
+        // Wrap the pose values into the current tile
         void wrapPoseComm(communication::PoseCommunicator& posecomm);
         const int minYPos {0};
         const int maxYPos {300};
