@@ -1,8 +1,8 @@
 // This file contains the class that interprets sensor values into the robot pose.
 
 // TODO:
-// Write the getter and checker functions for the values and contributions
-// Handle value wrapping
+// /Write the getter and checker functions for the values and contributions
+// /Handle value wrapping
 // Minimize ToF calculations - how?
 // Change diff checker to check individual, required sensors, and not just all.
 // Check the warnings
@@ -142,7 +142,7 @@ class PoseEstimator
 
         // Wraps the value between lower and upper.
         // Currently using loops. Can probably be optimised.
-        #warning probably only works for integers?
+        #warning maybe only works for integer bounds?
         double wrapValue(double value, double lower, double upper);
 
         // Wrap the pose values into the current tile
@@ -154,6 +154,8 @@ class PoseEstimator
         const double minZRot {-M_PI};
         const double maxZRot {M_PI};
         const double tileRotThreshhold {M_PI_4}; // 45deg
+        Transform tf_rotateTileRight {0, GRID_SIZE, 0, 0, 0, -M_PI_2};
+        Transform tf_rotateTileLeft {GRID_SIZE, 0, 0, 0, 0, M_PI_2};
 
 
 };

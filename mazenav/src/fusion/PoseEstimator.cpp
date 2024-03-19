@@ -141,6 +141,8 @@ communication::PoseCommunicator PoseEstimator::updateLidar()
 
     std::cout << "[PoseEstimator][ERROR]: Lidar pose estimation not implemented";
 
+    wrapPoseComm(resultPose);
+
     return resultPose;
 }
 
@@ -150,6 +152,8 @@ communication::PoseCommunicator PoseEstimator::updateLidarSimple()
 
     std::cout << "[PoseEstimator][ERROR]: Lidar+simple pose estimation not implemented";
 
+    wrapPoseComm(resultPose);
+
     return resultPose;
 }
 
@@ -157,18 +161,20 @@ communication::PoseCommunicator PoseEstimator::updateIMU()
 {
     communication::PoseCommunicator resultPose {};
 
+    wrapPoseComm(resultPose);
+
     return resultPose;
 }
 
 
 double PoseEstimator::wrapValue(double value, double min, double max)
 {
-    double diffCorr {max-min+1};
+    double diffCorr {max-min};
     while (value>max)
     {
         value-=diffCorr;
     }
-    while (value<min)
+    while (value<=min)
     {
         value+=diffCorr;
     }
@@ -179,15 +185,40 @@ double PoseEstimator::wrapValue(double value, double min, double max)
 
 void PoseEstimator::wrapPoseComm(communication::PoseCommunicator& poseComm)
 {
-    if (poseComm.robotFrame.transform.pos_y > minYPos)
+    Transform ghostTf {};
+    // Z
+    if (poseComm.robotFrame.transform.rot_z < minZRot)
     {
-        // Either modulo magic or change the "if" to "while"
+        ghostTf.pos_x += GRID_SIZE;
+        ghostTf.rot_z += M_PI_2;
     }
-    if (poseComm.robotFrame.transform.pos_y < maxYPos)
+    else if (poseComm.robotFrame.transform.rot_z >= maxZRot)
     {
-
+        ghostTf.pos_y += GRID_SIZE;
+        ghostTf.rot_z += -M_PI_2;
     }
 
+
+    if (poseComm.robotFrame.transform.pos_x < minXPos)
+    {
+        ghostTf.pos_x += -GRID_SIZE;
+    }
+    else if (poseComm.robotFrame.transform.pos_x >= maxXPos)
+    {
+        ghostTf.pos_x += GRID_SIZE;
+    }
+
+
+    if (poseComm.robotFrame.transform.pos_y < minYPos)
+    {
+        ghostTf.pos_y += -GRID_SIZE;
+    }
+    else if (poseComm.robotFrame.transform.pos_y >= maxYPos)
+    {
+        ghostTf.pos_y += GRID_SIZE;
+    }
+
+    poseComm.localTileFrame.ghostMove(ghostTf);
 }
 
 
