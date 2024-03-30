@@ -99,7 +99,6 @@ vector<Victim> VisionCommunicator::getVictims()
         victimDatas.push_back(vicData);
     }
     
-    perror("not done");
     return victimDatas;
 }
 
@@ -131,7 +130,7 @@ optional<string> VisionCommunicator::getData()
 
     printf("Recived ::%s::\n", buffer);
 
-    return make_optional<string>(("%s", buffer));
+    return make_optional<string>(buffer);
 }
 
 vector<string> VisionCommunicator::split(string& split, char deliminator)
@@ -197,7 +196,7 @@ optional<int> VisionCommunicator::parseInt(string& str)
     }
     catch(const std::exception& e)
     {
-        std::cerr << e.what() << '\n';
+        std::cerr << e.what() << std::endl;
     }
     return nullopt;
 }
