@@ -24,9 +24,8 @@ namespace communication
         public:
         // Pushes a command to the command queue
         void pushCommand(DriveCommand command);
-        // Gets the next command from the command queue
-        // pop - false if it should not modify the queue, true if the first element should be removed
-        DriveCommand getCommand(bool pop);
+        // Gets the next command from the command queue and removes it from the queue
+        DriveCommand popCommand();
 
         private:
         std::mutex mtx_commands;

@@ -11,25 +11,22 @@ namespace communication
         mtx_commands.unlock();
     }
 
-    DriveCommand NavigationCommunicator::getCommand(bool pop)
+    DriveCommand NavigationCommunicator::popCommand()
     {
-        DriveCommand dC;
+        DriveCommand queuedCommand;
         mtx_commands.lock();
         if (!commands.empty())
         {
-            dC = commands.front();
-            if (pop)
-            {
-                commands.pop();
-            }
+            queuedCommand = commands.front();
+            commands.pop();
         }
         else
         {
-            dC = DriveCommand::noAction;
+            queuedCommand = DriveCommand::noAction;
         }
         mtx_commands.unlock();
 
-        return dC;
+        return queuedCommand;
     }
 
     void MotorControllerCommunicator::setSpeeds(MotorControllers::MotorSpeeds speeds)
