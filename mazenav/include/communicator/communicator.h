@@ -8,7 +8,7 @@
 namespace communication
 {
     // Possible drive commands that can be issued from global navigation to local navigation
-    enum DriveCommand
+    enum class DriveCommand
     {
         driveForward,
         turnLeft,
@@ -19,7 +19,7 @@ namespace communication
     };
 
     // Methods for interacting with the communication
-    class Navigation //Rename? - in general also
+    class NavigationCommunicator
     {
         public:
         // Pushes a command to the command queue
@@ -29,7 +29,7 @@ namespace communication
         DriveCommand getCommand(bool pop);
 
         private:
-        std::mutex commands_mutex;
+        std::mutex mtx_commands;
         std::queue<DriveCommand> commands;
     };
 
@@ -72,7 +72,7 @@ namespace communication
     class Communicator
     {
         public:
-        Navigation navigationComm;
+        NavigationCommunicator navigationComm;
         PoseCommunicator poseComm {};
         MotorControllerCommunicator motors{};
     };

@@ -8,7 +8,7 @@
 #include <sstream>
 #include <iostream>
 
-#include <fusion/Victim.h>
+#include "fusion/Victim.h"
 
 #define VISION_PORT 4242
 #define VISION_COMMUNICATION_TIMEOUT_MS 10

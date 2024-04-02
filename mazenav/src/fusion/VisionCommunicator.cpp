@@ -1,4 +1,4 @@
-#include <fusion/VisionCommunicator.h>
+#include "fusion/VisionCommunicator.h"
 
 using namespace std;
 
@@ -70,18 +70,18 @@ vector<Victim> VisionCommunicator::getVictims()
         //Check for 'p'/'c' - potential/confirmed
         auto detType = findChar(segments[2], {'p', 'c'});
         if (!detType) continue;
-        vicData.confirmed = (detType.value() == 'c');
+        vicData.isConfirmed = (detType.value() == 'c');
 
         //Check type - 'g'/'y'/'r'/'u'/'s'/'h'
         auto vicType = parseVictimType(segments[3]);
         if (!vicType) continue;
-        vicData.whichType = vicType.value();
+        vicData.victimType = vicType.value();
 
         //Parsing numbers
         //Check which camera - 0++
         auto cam = parseInt(segments[4]);
         if (!cam) continue;
-        vicData.whichCamera = (Victim::RobotCamera)cam.value();
+        vicData.captureCamera = (Victim::RobotCamera)cam.value();
 
         //Position X int mm (+/-)
         auto victimX = parseInt(segments[5]);
@@ -94,7 +94,7 @@ vector<Victim> VisionCommunicator::getVictims()
         //Unix timestamp
         auto visionTimestamp = parseLong(segments[7]);
         if (!visionTimestamp) continue;
-        vicData.timestamp = visionTimestamp.value();
+        vicData.captureUnixTimestamp = visionTimestamp.value();
 
         victimDatas.push_back(vicData);
     }

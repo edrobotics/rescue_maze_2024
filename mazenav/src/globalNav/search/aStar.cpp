@@ -1,4 +1,4 @@
-#include <aStar.h>
+#include "globalNav/search/aStar.h"
 
 aStar::aStar(/* args */)
 {

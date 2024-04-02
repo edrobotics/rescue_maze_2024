@@ -1,6 +1,6 @@
 #pragma once
 
-#include <tile.h>
+#include "globalNav/search/aStarTile.h"
 
 class aStar
 {

@@ -4,17 +4,17 @@ namespace communication
 {
 
 
-    void Navigation::pushCommand(DriveCommand command)
+    void NavigationCommunicator::pushCommand(DriveCommand command)
     {
-        commands_mutex.lock();
+        mtx_commands.lock();
         commands.push(command);
-        commands_mutex.unlock();
+        mtx_commands.unlock();
     }
 
-    DriveCommand Navigation::getCommand(bool pop)
+    DriveCommand NavigationCommunicator::getCommand(bool pop)
     {
         DriveCommand dC;
-        commands_mutex.lock();
+        mtx_commands.lock();
         if (!commands.empty())
         {
             dC = commands.front();
@@ -27,7 +27,7 @@ namespace communication
         {
             dC = DriveCommand::noAction;
         }
-        commands_mutex.unlock();
+        mtx_commands.unlock();
 
         return dC;
     }

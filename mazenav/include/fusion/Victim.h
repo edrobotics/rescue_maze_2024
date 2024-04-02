@@ -18,10 +18,10 @@ struct Victim
         RightCam = 2
     };
 
-    VictimType whichType;
-    RobotCamera whichCamera;
-    bool confirmed;
-    int x;
-    int y;
-    long timestamp;
+    VictimType victimType;
+    RobotCamera captureCamera;
+    bool isConfirmed;
+    int xPos;
+    int yPos;
+    long captureUnixTimestamp;
 };
