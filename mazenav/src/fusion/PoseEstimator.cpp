@@ -18,7 +18,7 @@ void PoseEstimator::setFusionGroup(FusionGroup fgroup)
 void PoseEstimator::begin()
 {
     stopThread = false;
-    #warning usure whether this is OK or not
+    #warning unsure whether this is OK or not
     updater = std::thread{&PoseEstimator::runLoopLooper, this};
 }
 
@@ -89,50 +89,98 @@ communication::PoseCommunicator PoseEstimator::updateSimple()
 {
     communication::PoseCommunicator resultPose {};
     communication::PoseCommunicator globalPose {globComm->poseComm};
+    communication::PoseCommunicator lastPose {globalPose};
 
     // This is where the magic happens
 
-    if (getIsTofXAbsolute())
+    // Update wheel positions
+    calcWheelDistanceDiffs();
+
+    // Rotation:
+    Average rotAbs {};
+    ConditionalAverageTerm robotAngle {getTofZRot(lastPose.robotFrame.transform.rot_z)};
+    rotAbs.terms.push_back(robotAngle);
+
+    ConditionalAverageTerm wheelRot {getWheelRotDiff()};
+    wheelRot.value += lastPose.robotFrame.transform.rot_z;
+    rotAbs.terms.push_back(wheelRot);
+
+    ConditionalAverageTerm imuRot {getIMURotDiff()};
+    imuRot.value += lastPose.robotFrame.transform.rot_z;
+    rotAbs.terms.push_back(imuRot);
+
+    for (auto& term : rotAbs.terms)
     {
-        resultPose.robotFrame.transform.rot_z = getTofZRot();
-        resultPose.robotFrame.transform.pos_x = getTofXTrans(resultPose.robotFrame.transform.rot_z);
-    }
-    else
-    {
-        resultPose.robotFrame.transform.rot_z = globalPose.robotFrame.transform.rot_z + getIMURotDiff();
-        if (getIsTofDiff())
-        {
-            resultPose.robotFrame.transform.pos_x = globalPose.robotFrame.transform.pos_x + ( (getWheelTransDiff()+getTofTransYDiff())/2 ) * cos(resultPose.robotFrame.transform.rot_z);
-        }
-        else
-        {
-            // What to do here? I cannot update the pose
-            #warning unhandled
-        }
+        wrapValue(term.value, minZRot, maxZRot);
     }
 
-    if (getIsTofYAbsolute())
+    double ang {};
+    try
     {
-        resultPose.robotFrame.transform.pos_y = getTofYTrans(resultPose.robotFrame.transform.rot_z, TOF_FY_OFFSET, TOF_FX_OFFSET);
+        resultPose.robotFrame.transform.rot_z = rotAbs.calc();
+        ang = robotAngle.value;
     }
-    else
+    catch(const std::runtime_error& e)
     {
-        if (getIsTofDiff())
-        {
-            resultPose.robotFrame.transform.pos_y = globalPose.robotFrame.transform.pos_y + ( (getWheelTransDiff()+getTofTransYDiff())/2 ) * sin(resultPose.robotFrame.transform.rot_z);
-        }
-        else
-        {
-            // What to do here? I cannot update the pose
-            #warning unhandled
-        }
+        std::cerr << e.what() << " : " << "Cannot compute robot angle" << '\n';
+        #warning what to do here, with no angle? Also what to do for further angle requirements
+    }
+    
+    
+    // Translation, abs:
+    Average transXAbs {};
+    Average transYAbs {};
+
+    transXAbs.terms.push_back(getTofXTrans(ang));
+    transYAbs.terms.push_back(getTofYTrans(ang, TOF_FY_OFFSET, TOF_FX_OFFSET));
+
+    ConditionalAverageTerm wheelTransX {getWheelTransDiff()};
+    ConditionalAverageTerm wheelTransY {wheelTransX};
+    wheelTransX.value = wheelTransX.value*cos(resultPose.robotFrame.transform.rot_z) + lastPose.robotFrame.transform.pos_x;
+    wheelTransY.value = wheelTransY.value*sin(resultPose.robotFrame.transform.rot_z) + lastPose.robotFrame.transform.pos_y;
+    transXAbs.terms.push_back(wheelTransX);
+    transYAbs.terms.push_back(wheelTransY);
+
+    ConditionalAverageTerm tofTransX {getTofTransYDiff()};
+    ConditionalAverageTerm tofTransY {tofTransX};
+    tofTransX.value = tofTransX.value*cos(resultPose.robotFrame.transform.rot_z) + lastPose.robotFrame.transform.pos_x;
+    tofTransY.value = tofTransY.value*sin(resultPose.robotFrame.transform.rot_z) + lastPose.robotFrame.transform.pos_y;
+    transXAbs.terms.push_back(tofTransX);
+    transYAbs.terms.push_back(tofTransY);
+
+    for (auto& term : transXAbs.terms)
+    {
+        wrapValue(term.value, minXPos, maxXPos);
+    }
+    for (auto& term : transYAbs.terms)
+    {
+        wrapValue(term.value, minYPos, maxYPos);
     }
 
-    // Bounds checking and tile changes
+    try
+    {
+        resultPose.robotFrame.transform.pos_x = transXAbs.calc();
+    }
+    catch(std::runtime_error& e)
+    {
+        std::cerr << e.what() << " : " << "Cannot compute robot X position" << '\n';
+    }
+
+    try
+    {
+        resultPose.robotFrame.transform.pos_y = transYAbs.calc();
+    }
+    catch(std::runtime_error& e)
+    {
+        std::cerr << e.what() << " : " << "Cannot compute robot Y position" << '\n';
+    }
+
+
     wrapPoseComm(resultPose);
 
-
     return resultPose;
+
+    #warning IMPORTANT: tile changes are broken. Some systems fix it themselves before getting the values here, others are dependent on the wrappose. All need to be the same for averaging.
 }
 
 communication::PoseCommunicator PoseEstimator::updateLidar()
@@ -222,123 +270,297 @@ void PoseEstimator::wrapPoseComm(communication::PoseCommunicator& poseComm)
 }
 
 
-double PoseEstimator::getWheelTransDiff()
+
+void PoseEstimator::calcWheelDistanceDiffs()
 {
-    MotorControllers::Distances motorDistances {sensors.motors.motorDistances};
-    double average = (motorDistances.lb + motorDistances.lf + motorDistances.rf + motorDistances.rb)/4.0;
-    double diff = average-lastWheelTransDiffDist;
-    lastWheelTransDiffDist = average;
-    return diff;
+    MotorControllers::Distances motorDistances {};
+    motorDistanceDiffs.lf = motorDistances.lf - lastMotorDistances.lf;
+    motorDistanceDiffs.lb = motorDistances.lb - lastMotorDistances.lb;
+    motorDistanceDiffs.rf = motorDistances.rf - lastMotorDistances.rf;
+    motorDistanceDiffs.rb = motorDistances.rb - lastMotorDistances.rb;
+
+    lastMotorDistances = motorDistances;
+}
+
+ConditionalAverageTerm PoseEstimator::getWheelTransDiff()
+{
+    ConditionalAverageTerm result {0, 0};
+
+    Average avg {};
+
+    avg.terms.push_back(ConditionalAverageTerm{motorDistanceDiffs.lf, 1});
+    avg.terms.push_back(ConditionalAverageTerm{motorDistanceDiffs.lb, 1});
+    avg.terms.push_back(ConditionalAverageTerm{motorDistanceDiffs.rf, 1});
+    avg.terms.push_back(ConditionalAverageTerm{motorDistanceDiffs.rb, 1});
+
+    // Filter out bad values
+    for (auto& term : avg.terms)
+    {
+        if (abs(term.value) > MAX_WHEEL_ODOM_DIFF)
+        {
+            term.weight = 0;
+        }
+        else
+        {
+            term.weight = 1;
+        }
+    }
+    
+    try
+    {
+        result.value = avg.calc();
+        result.weight = 1;
+    }
+    catch (std::runtime_error& e)
+    {
+        // No usable data, so do not use
+        result.weight = 0;
+    }
+
+    return result;
 }
 
 
-double PoseEstimator::getTofTransYDiff()
+ConditionalAverageTerm PoseEstimator::getTofTransYDiff()
 {
+    ConditionalAverageTerm result {0, 0};
+
+    // If angle is too large the sensors see the side walls instead of the one in front
+    #warning this changes with the distance to the wall in front. When we are closer, do we want to accept a greater angle? But how do we know if we are closer?
+    if (abs(globComm->poseComm.robotFrame.transform.rot_z) > MAX_Z_ROTATION_Y_TOF_DIFF)
+    {
+        return result;
+    }
+
+
     Tof::TofData td {sensors.tofs.tofData};
-    double lfDiff {td.lf-lastTofLF};
-    double lbDiff {td.lf-lastTofLB};
-    double bDiff {td.lf-lastTofB};
+    ConditionalAverageTerm flDiff {td.fl-lastTofFL, 1};
+    ConditionalAverageTerm frDiff {td.fr-lastTofFR, 1};
+    ConditionalAverageTerm bDiff {td.b-lastTofB, 1};
 
-    double avgDiff {(lfDiff+lbDiff+bDiff)/3.0};
+    Average avg {};
+    avg.terms.push_back(flDiff);
+    avg.terms.push_back(frDiff);
+    avg.terms.push_back(bDiff);
 
-    lastTofLF = td.lf;
-    lastTofLB = td.lb;
+    for (auto& term : avg.terms)
+    {
+        if (abs(term.value)>MAX_TOF_Y_DIFF)
+        {
+            term.weight = 0;
+        }
+        else
+        {
+            term.weight = 1;
+        }
+    }
+
+    // Check if any values were valid
+    try
+    {
+    result.value = avg.calc();
+    result.weight = 1;
+    }
+    catch (std::runtime_error& e)
+    {
+        // std::cerr << e.what() << '\n';
+        // If not, do not use anything from here
+        result.weight = 0;
+    }
+
+    lastTofFL = td.fl;
+    lastTofFR = td.fr;
     lastTofB = td.b;
 
-    return avgDiff;
-    
+    return result;
 }
 
 
-double PoseEstimator::getTofYTrans(double angle, double yoffset, double xoffset)
+ConditionalAverageTerm PoseEstimator::getTofYTrans(double angle, double yoffset, double xoffset)
 {
+    ConditionalAverageTerm result {0, 0};
+
+    // Check if angle is too great
+    if (abs(angle)>MAX_Z_ROTATION_Y_TOF_ABS)
+    {
+        result.weight = 0;
+        return result;
+    }
+
     Tof::TofData td {sensors.tofs.tofData};
     // Get Y distances
-    double lfY {td.lf*cos(angle)};
-    double rfY {td.rf*cos(angle)};
-    double bY {td.b*cos(angle)};
+    ConditionalAverageTerm flY {td.fl*cos(angle), 1};
+    ConditionalAverageTerm frY {td.fr*cos(angle), 1};
+    ConditionalAverageTerm bY {td.b*cos(angle), 1};
 
     // Change to robot centre
-    lfY = lfY+yoffset*cos(angle)+xoffset*sin(angle);
-    rfY = rfY+yoffset*cos(angle)+xoffset*sin(angle);
-    bY = bY+yoffset*cos(angle);
+    flY.value = flY.value+yoffset*cos(angle)+xoffset*sin(angle);
+    frY.value = frY.value+yoffset*cos(angle)+xoffset*sin(angle);
+    bY.value = bY.value+yoffset*cos(angle);
 
     // Wrap values to local tile
-    lfY = wrapValue(lfY, 0, GRID_SIZE-1);
-    rfY = wrapValue(rfY, 0, GRID_SIZE-1);
-    bY = wrapValue(bY, 0, GRID_SIZE-1);
+    flY.value = wrapValue(flY.value, 0, GRID_SIZE-1);
+    frY.value = wrapValue(frY.value, 0, GRID_SIZE-1);
+    bY.value = wrapValue(bY.value, 0, GRID_SIZE-1);
 
-    // Average
-    double average {(lfY+rfY+bY)/3.0};
+    // Average calculation preparation
+    Average avg {};
+    avg.terms.push_back(flY);
+    avg.terms.push_back(frY);
+    avg.terms.push_back(bY);
 
-    return average;
+    // Check if sensor values can be used
+    for (auto& term : avg.terms)
+    {
+        if (term.value > MAX_TOF_Y_DIST_ABS)
+        {
+            // Reject the term/value
+            term.weight = 0;
+        }
+        else
+        {
+            term.weight = 1;
+        }
+    }
+
+    try
+    {
+        result.value = avg.calc();
+    }
+    catch(std::runtime_error& e)
+    {
+        // std::cerr << e.what() << '\n';
+        // If not usable, do not use
+        result.weight = 0;
+    }
+    
+
+    return result;
 }
 
 
-double PoseEstimator::getTofXTrans(double angle)
+ConditionalAverageTerm PoseEstimator::getTofXTrans(double angle)
 {
+    ConditionalAverageTerm result {0, 0};
+
+    if (abs(angle)>MAX_ZROT_XTRANS_TOF_ABS)
+    {
+        result.weight = 0;
+        return result;
+    }
+
     Tof::TofData td {sensors.tofs.tofData};
     double x1 {};
     double x2 {};
-    double resultX {};
 
     if (getIsTofXLeft())
     {
-        x1 = getCentredistanceFromTwoTof(td.lf, td.lb, TOF_SX_OFFSET, angle);
+        x1 = getCentredistanceFromTwoTof(td.fl, td.fr, TOF_SX_OFFSET, angle);
         if (getIsTofXRight())
         {
             x2 = GRID_SIZE - (-getCentredistanceFromTwoTof(td.rf, td.rb, TOF_SX_OFFSET, angle));
-            resultX = (x1+x2)/2.0;
+            result.value = (x1+x2)/2.0;
         }
         else
         {
-            resultX = x1;
+            result.value = x1;
         }
+
+        result.weight = 1;
     }
     else if (getIsTofXRight())
     {
-        resultX = GRID_SIZE - (-getCentredistanceFromTwoTof(td.rf, td.rb, TOF_SX_OFFSET, angle));
+        result.value = GRID_SIZE - (-getCentredistanceFromTwoTof(td.rf, td.rb, TOF_SX_OFFSET, angle));
+        result.weight = 1;
     }
     else
     {
-        // What to do here? Not enough information, should never be here
-        #warning unhandled: cannot compute XTrans with no walls
+        // std::cerr << "Cannot compute ToF X trans without walls" << "\n";
+        result.weight = 0;
     }
 
-    return resultX;
+    return result;
 }
 
-double PoseEstimator::getTofZRot()
+ConditionalAverageTerm PoseEstimator::getTofZRot(double curAng)
 {
+    ConditionalAverageTerm result {0, 0};
+
+    if (abs(curAng)>MAX_ZROT_XTRANS_TOF_ABS)
+    {
+        result.weight = 0;
+        return result;
+    }
+
     Tof::TofData td {sensors.tofs.tofData};
     double angle1 {};
     double angle2 {};
-    double resultAngle {};
     if (getIsTofXLeft())
     {
-        angle1 = getAngleFromTwoTof(td.lf, td.lb, TOF_SY_OFFSET*2);
+        angle1 = getAngleFromTwoTof(td.fl, td.fr, TOF_SY_OFFSET*2);
         if (getIsTofXRight())
         {
             angle2 = -getAngleFromTwoTof(td.rf, td.rb, TOF_SY_OFFSET*2);
-            resultAngle = (angle1+angle2)/2.0;
+            result.value = (angle1+angle2)/2.0;
         }
         else
         {
-            resultAngle = angle1;
+            result.value = angle1;
         }
+        result.weight = 1;
     }
     else if (getIsTofXRight())
     {
-        resultAngle = -getAngleFromTwoTof(td.rf, td.rb, TOF_SY_OFFSET*2);
+        result.value = -getAngleFromTwoTof(td.rf, td.rb, TOF_SY_OFFSET*2);
+        result.weight = 1;
     }
     else
     {
-        // What to do here? Not enough information, should never be here
-        #warning unhandled: cannot compute rotation with no walls
+        // std::cerr << "Cannot compute ToF Z angle without walls";
+        result.weight = 0;
     }
 
-    return resultAngle;
+    return result;
 }
+
+ConditionalAverageTerm PoseEstimator::getWheelRotDiff()
+{
+    ConditionalAverageTerm result {0, 0};
+
+    #warning not yet implemented
+
+    return result;
+}
+
+
+ConditionalAverageTerm PoseEstimator::getIMURotDiff()
+{
+    ConditionalAverageTerm result {0, 0};
+    double angle {sensors.imu0.angles.z};
+    result.value = angle-lastImuAngle;
+
+    // Check if angle within span
+    #warning assumes that no angle changes > 180 degrees can happen in one iteration
+    if (result.value > M_PI)
+    {
+        result.value = result.value - 2*M_PI;
+    }
+    // Setting to 1 as default
+    result.weight = 1;
+
+    // Check if diff too large
+    if (abs(result.value) > MAX_IMU_Z_ROT_DIFF)
+    {
+        // If data unusable, do not use
+        result.weight = 0;
+    }
+
+    // Return
+    return result;
+
+}
+
+
 
 double PoseEstimator::getAngleFromTwoTof(double d1, double d2, double yoffset)
 {
@@ -352,27 +574,75 @@ double PoseEstimator::getCentredistanceFromTwoTof(double d1, double d2, double c
 
 
 
-bool PoseEstimator::getIsTofXAbsolute()
-{
-
-}
-
 bool PoseEstimator::getIsTofXLeft()
 {
+    Tof::TofData td {sensors.tofs.tofData};
+
+    if (td.lf>WALL_PRESENCE_THRESHOLD_SENSOR)
+    {
+        return false;
+    }
+
+    if (td.lb>WALL_PRESENCE_THRESHOLD_SENSOR)
+    {
+        return false;
+    }
+
+    return true;
 
 }
 
 bool PoseEstimator::getIsTofXRight()
 {
+    Tof::TofData td {sensors.tofs.tofData};
+
+    if (td.rf>WALL_PRESENCE_THRESHOLD_SENSOR)
+    {
+        return false;
+    }
+
+    if (td.rb>WALL_PRESENCE_THRESHOLD_SENSOR)
+    {
+        return false;
+    }
+
+    return true;
 
 }
 
-bool PoseEstimator::getIsTofYAbsolute()
-{
 
-}
+// uint8_t PoseEstimator::getIsTofYDiff()
+// {
+//     // If angle is too large the sensors see the side walls instead of the one in front
+//     static const double MAX_Z_ROTATION_FOR_Y_DIFF {M_PI_4/2.0};
+//     #warning this changes with the distance to the wall in front. When we are closer, do we want to accept a greater angle? But how do we know if we are closer?
+//     if (abs(globComm->poseComm.robotFrame.transform.rot_z) > MAX_Z_ROTATION_FOR_Y_DIFF)
+//     {
+//         return 0;
+//     }
 
-bool PoseEstimator::getIsTofDiff()
-{
+//     // Calculate the diffs
+//     Tof::TofData td {sensors.tofs.tofData};
+//     double diffFL {td.fl-lastTofFL};
+//     double diffFR {td.fr-lastTofFR};
+//     double diffB {td.b - lastTofB};
 
-}
+//     // Max diff limit
+//     static const int MAX_TOF_Y_DIFF {50};
+//     // Check if the diffs are OK
+//     uint8_t returnInt {};
+//     if (abs(diffFL)>MAX_TOF_Y_DIFF)
+//     {
+//         returnInt |= Y_TRANS_DIFF_FL;
+//     }
+//     if (abs(diffFR)>MAX_TOF_Y_DIFF)
+//     {
+//         returnInt |= Y_TRANS_DIFF_FR;
+//     }
+//     if (abs(diffB)>MAX_TOF_Y_DIFF)
+//     {
+//         returnInt |= Y_TRANS_DIFF_B;
+//     }
+
+//     return returnInt;
+// }
