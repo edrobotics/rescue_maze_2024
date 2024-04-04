@@ -5,6 +5,7 @@
 #include <cassert>
 #include <vector>
 #include <algorithm>
+#include <mutex>
 
 class CoordinateFrame
 {
@@ -29,8 +30,8 @@ class CoordinateFrame
 
     // gets the parent of the object
     CoordinateFrame* getParent();
-    // Sets the parent of the object
-    void setParent(CoordinateFrame* newParent);
+    // TS. Sets the parent of the object.
+    void setParentTS(CoordinateFrame* newParent);
 
     // Delete the children
     void deleteChildren();
@@ -69,11 +70,16 @@ class CoordinateFrame
     static double calcDist2d(CoordinateFrame* f1, CoordinateFrame* f2);
     static double calcDist2dLevel(CoordinateFrame* f1, int level1, CoordinateFrame* f2, int level2);
 
+    
+    // Mutex to handle concurrency
+    std::mutex mtx_general {};
+
     private:
     // The parent CF
     CoordinateFrame* parent {};
     // The children CF
     std::vector<CoordinateFrame*> children;
+
 
     // Register a child in the current object
     void registerChild(CoordinateFrame* child);
@@ -86,7 +92,7 @@ class CoordinateFrame
     void unregisterMeAsChild();
 
     // Get the transform up to root CF.
-    Transform getRootTransform();
+    Transform getRootTransformTS();
     // Get the transform <level> steps up. A level of 1 means just getting the transform of the CF.
     Transform getLevelTransform(int level);
 

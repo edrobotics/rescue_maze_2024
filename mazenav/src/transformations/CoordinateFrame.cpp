@@ -3,8 +3,10 @@
 
 CoordinateFrame::CoordinateFrame(CoordinateFrame* parentFrame, Transform tf)
 {
-    setParent(parentFrame);
+    setParentTS(parentFrame);
+    mtx_general.lock();
     transform = tf;
+    mtx_general.unlock();
 }
 
 CoordinateFrame::CoordinateFrame(CoordinateFrame* parentFrame)
@@ -15,11 +17,13 @@ CoordinateFrame::CoordinateFrame(CoordinateFrame* parentFrame)
 
 CoordinateFrame::~CoordinateFrame()
 {
+    mtx_general.lock();
     // Delete all children of this CF
     deleteChildren();
 
     // Unregister this CF as a child of the parent
     unregisterMeAsChild();
+    mtx_general.unlock();
 }
 
 
@@ -33,10 +37,11 @@ CoordinateFrame::CoordinateFrame(const CoordinateFrame& frame)
 
 CoordinateFrame CoordinateFrame::operator=(const CoordinateFrame& otherFrame)
 {
+    mtx_general.lock();
     transform = otherFrame.transform;
     parent = otherFrame.parent;
     children = otherFrame.children;
-
+    mtx_general.unlock();
     return *this;
 }
 
@@ -45,9 +50,12 @@ CoordinateFrame CoordinateFrame::getWithoutChildren()
 {
     // Do a copy
     CoordinateFrame childless {*this};
+    mtx_general.lock();
 
     // Remove the children
     childless.stripChildren();
+
+    mtx_general.unlock();
 
     // Return the child-less copy
     return childless;
@@ -74,7 +82,9 @@ void CoordinateFrame::stripChildren()
 
 void CoordinateFrame::printChildNum()
 {
+    mtx_general.lock();
     std::cout << "Child num is: " << children.size() << '\n';
+    mtx_general.unlock();
 }
 
 
@@ -83,8 +93,9 @@ CoordinateFrame* CoordinateFrame::getParent()
     return parent;
 }
 
-void CoordinateFrame::setParent(CoordinateFrame* newParent)
+void CoordinateFrame::setParentTS(CoordinateFrame* newParent)
 {
+    mtx_general.lock();
     // Unregister child from parent
     unregisterMeAsChild();
 
@@ -93,72 +104,93 @@ void CoordinateFrame::setParent(CoordinateFrame* newParent)
 
     // Re-register the child with the new parent
     registerMeAsChild();
+    mtx_general.unlock();
 }
 
 void CoordinateFrame::registerChild(CoordinateFrame* child)
 {
+    mtx_general.lock();
     // Add the child
     children.push_back(child);
+
+    mtx_general.unlock();
 }
 
 void CoordinateFrame::unregisterChild(CoordinateFrame* child)
 {
+    mtx_general.lock();
     // Find the child and erase it
     children.erase(std::remove(children.begin(), children.end(), child), children.end());
+
+    mtx_general.unlock();
 }
 
 void CoordinateFrame::registerMeAsChild()
 {
+    mtx_general.lock();
     if (parent!=nullptr)
     {
         parent->registerChild(this);
     }
+    mtx_general.unlock();
 
 }
 
 void CoordinateFrame::unregisterMeAsChild()
 {
+    mtx_general.lock();
     if (parent!=nullptr)
     {
         parent->unregisterChild(this);
     }
+    mtx_general.unlock();
 
 }
 
 
-Transform CoordinateFrame::getRootTransform()
+Transform CoordinateFrame::getRootTransformTS()
 {
+    mtx_general.lock();
     if (parent==nullptr) // We are at the root and cannot traverse further up the tree
     {
+        mtx_general.unlock();
         return transform;
     }
-    
-    return parent->getRootTransform() + transform;
+    Transform resultTf {parent->getRootTransformTS() + transform};
+    mtx_general.unlock();
+    return resultTf;
 }
 
 
 Transform CoordinateFrame::getLevelTransform(int level)
 {
+    Transform result {};
     // The last level to return (or reached end of tree)
+    mtx_general.lock();
     if (level == 1 || parent==nullptr)
     {
-        return transform;
+        result = transform;
     }
-    
     // Invalid input - fallback to root transform
-    if (level<=0)
+    else if (level<=0)
     {
-        return getRootTransform();
+        mtx_general.unlock(); // To make getRootTransformTS to work?
+        result = getRootTransformTS();
+        mtx_general.lock();
     }
-
     // Normal behaviour.
-    return parent->getLevelTransform(level-1);
+    else
+    {
+        result = parent->getLevelTransform(level-1);
+    }
+    mtx_general.unlock();
+    return result;
 }
 
 Transform CoordinateFrame::getTransformRootTo(CoordinateFrame* destFrame)
 {
-    Transform t1 {getRootTransform()};
-    Transform t2 {destFrame->getRootTransform()};
+    Transform t1 {getRootTransformTS()};
+    Transform t2 {destFrame->getRootTransformTS()};
     return t1-t2;
 }
 
@@ -184,7 +216,7 @@ Transform CoordinateFrame::getTransformLevelTo(CoordinateFrame* destFrame, int l
 
 Transform CoordinateFrame::getTransformUpTo(CoordinateFrame* destFrame)
 {
-    
+    mtx_general.lock();
     // We are there
     if (parent==destFrame)
     {
@@ -194,8 +226,11 @@ Transform CoordinateFrame::getTransformUpTo(CoordinateFrame* destFrame)
     // We are at the root transform and cannot continue any longer. Should never happen! (Legitimate cases caught above)
     assert(parent!=nullptr);
     
-    
-    return parent->getTransformUpTo(destFrame);
+    Transform resultTf {parent->getTransformUpTo(destFrame)};
+
+    mtx_general.unlock();
+
+    return resultTf;
     
 }
 
@@ -208,29 +243,31 @@ Transform CoordinateFrame::getTransformUpTo(CoordinateFrame* destFrame)
 void CoordinateFrame::transformRootTo(CoordinateFrame* destFrame)
 {
     transform = getTransformRootTo(destFrame);
-    setParent(destFrame);
+    setParentTS(destFrame);
 }
 
 void CoordinateFrame::transformLevelTo(CoordinateFrame* destFrame, int level1, int level2)
 {
     transform = getTransformLevelTo(destFrame, level1, level2);
-    setParent(destFrame);
+    setParentTS(destFrame);
 }
 
 void CoordinateFrame::transformUpTo(CoordinateFrame* destFrame)
 {
     transform = getTransformUpTo(destFrame);
-    setParent(destFrame);
+    setParentTS(destFrame);
 }
 
 
 void CoordinateFrame::ghostMove(Transform tf)
 {
+    mtx_general.lock();
     incrementTransfrom(tf);
     for (auto& child: children)
     {
         child->applyTransform(tf.inverse()+child->transform);
     }
+    mtx_general.unlock();
 }
 
 
@@ -246,6 +283,7 @@ void CoordinateFrame::incrementTransfrom(Transform tf)
 
 double CoordinateFrame::calcDist2d(CoordinateFrame* f1, CoordinateFrame* f2)
 {
+    #warning why level 1 here? Should be noted. Only works if they have the same parent.
     return calcDist2dLevel(f1, 1, f2, 1);
 }
 
@@ -257,7 +295,9 @@ double CoordinateFrame::calcDist2dLevel(CoordinateFrame* f1, int level1, Coordin
 
 std::ostream& operator << (std::ostream& os, CoordinateFrame& frame)
 {
+    frame.mtx_general.lock();
     os << frame.transform;
+    frame.mtx_general.unlock();
     // os << "p_x" << std::setfill('0') << std::setw(3) << std::fixed << std::setprecision(1) << frame.transform.pos_x << " "
     // << "p_y" << std::setfill('0') << std::setw(3) << std::fixed << std::setprecision(1) << frame.transform.pos_y << " "
     // << "p_z" << std::setfill('0') << std::setw(3) << std::fixed << std::setprecision(1) << frame.transform.pos_z << " "
