@@ -325,18 +325,21 @@ ConditionalAverageTerm PoseEstimator::getTofTransYDiff()
 {
     ConditionalAverageTerm result {0, 0};
 
+    Tof::TofData td {sensors.tofs.tofData};
+    ConditionalAverageTerm flDiff {td.fl-lastTofFL, 1};
+    ConditionalAverageTerm frDiff {td.fr-lastTofFR, 1};
+    ConditionalAverageTerm bDiff {td.b-lastTofB, 1};
+
+    lastTofFL = td.fl;
+    lastTofFR = td.fr;
+    lastTofB = td.b;
+
     // If angle is too large the sensors see the side walls instead of the one in front
     #warning this changes with the distance to the wall in front. When we are closer, do we want to accept a greater angle? But how do we know if we are closer?
     if (abs(globComm->poseComm.robotFrame.transform.rot_z) > MAX_Z_ROTATION_Y_TOF_DIFF)
     {
         return result;
     }
-
-
-    Tof::TofData td {sensors.tofs.tofData};
-    ConditionalAverageTerm flDiff {td.fl-lastTofFL, 1};
-    ConditionalAverageTerm frDiff {td.fr-lastTofFR, 1};
-    ConditionalAverageTerm bDiff {td.b-lastTofB, 1};
 
     Average avg {};
     avg.terms.push_back(flDiff);
@@ -368,9 +371,6 @@ ConditionalAverageTerm PoseEstimator::getTofTransYDiff()
         result.weight = 0;
     }
 
-    lastTofFL = td.fl;
-    lastTofFR = td.fr;
-    lastTofB = td.b;
 
     return result;
 }
@@ -538,6 +538,9 @@ ConditionalAverageTerm PoseEstimator::getIMURotDiff()
     ConditionalAverageTerm result {0, 0};
     double angle {sensors.imu0.angles.z};
     result.value = angle-lastImuAngle;
+
+    // Prepare for next iteration
+    lastImuAngle = angle;
 
     // Check if angle within span
     #warning assumes that no angle changes > 180 degrees can happen in one iteration

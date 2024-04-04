@@ -1,9 +1,6 @@
 // This file contains the class that interprets sensor values into the robot pose.
 
 // TODO:
-// /Write the getter and checker functions for the values and contributions
-// /Handle value wrapping
-// Change diff checker to check individual, required sensors, and not just all.
 // Check the warnings
 // For the first iterations, values might be weird. Initiate all "last values" when initializing object?
 // Testing - includes writing test function?
