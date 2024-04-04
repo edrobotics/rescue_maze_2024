@@ -40,13 +40,13 @@ void PathPlanner::fillKeyFrames(std::vector<communication::DriveCommand>& globPa
 
         switch (move)
         {
-            case communication::driveForward:
+            case communication::DriveCommand::driveForward:
                 curFrame.frame.incrementTransfrom(tfForward);
                 break;
-            case communication::turnLeft:
+            case communication::DriveCommand::turnLeft:
                 curFrame.frame.incrementTransfrom(tfLeft);
                 break;
-            case communication::turnRight:
+            case communication::DriveCommand::turnRight:
                 curFrame.frame.incrementTransfrom(tfRight);
                 break;
             default:
