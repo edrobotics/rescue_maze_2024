@@ -111,7 +111,7 @@ communication::PoseCommunicator PoseEstimator::updateSimple()
 
     for (auto& term : rotAbs.terms)
     {
-        wrapValue(term.value, minZRot, maxZRot);
+        term.value = wrapValue(term.value, minZRot, maxZRot);
     }
 
     double ang {};
@@ -150,11 +150,11 @@ communication::PoseCommunicator PoseEstimator::updateSimple()
 
     for (auto& term : transXAbs.terms)
     {
-        wrapValue(term.value, minXPos, maxXPos);
+        term.value = wrapValue(term.value, minXPos, maxXPos);
     }
     for (auto& term : transYAbs.terms)
     {
-        wrapValue(term.value, minYPos, maxYPos);
+        term.value = wrapValue(term.value, minYPos, maxYPos);
     }
 
     try
@@ -176,7 +176,7 @@ communication::PoseCommunicator PoseEstimator::updateSimple()
     }
 
 
-    wrapPoseComm(resultPose);
+    updatePoseComm(resultPose, lastPose);
 
     return resultPose;
 
@@ -186,10 +186,11 @@ communication::PoseCommunicator PoseEstimator::updateSimple()
 communication::PoseCommunicator PoseEstimator::updateLidar()
 {
     communication::PoseCommunicator resultPose {};
+    communication::PoseCommunicator lastPose {globComm->poseComm};
 
     std::cout << "[PoseEstimator][ERROR]: Lidar pose estimation not implemented";
 
-    wrapPoseComm(resultPose);
+    updatePoseComm(resultPose, lastPose);
 
     return resultPose;
 }
@@ -197,10 +198,11 @@ communication::PoseCommunicator PoseEstimator::updateLidar()
 communication::PoseCommunicator PoseEstimator::updateLidarSimple()
 {
     communication::PoseCommunicator resultPose {};
+    communication::PoseCommunicator lastPose {globComm->poseComm};
 
     std::cout << "[PoseEstimator][ERROR]: Lidar+simple pose estimation not implemented";
 
-    wrapPoseComm(resultPose);
+    updatePoseComm(resultPose, lastPose);
 
     return resultPose;
 }
@@ -208,8 +210,9 @@ communication::PoseCommunicator PoseEstimator::updateLidarSimple()
 communication::PoseCommunicator PoseEstimator::updateIMU()
 {
     communication::PoseCommunicator resultPose {};
+    communication::PoseCommunicator lastPose {globComm->poseComm};
 
-    wrapPoseComm(resultPose);
+    updatePoseComm(resultPose, lastPose);
 
     return resultPose;
 }
@@ -231,41 +234,94 @@ double PoseEstimator::wrapValue(double value, double min, double max)
 }
 
 
-void PoseEstimator::wrapPoseComm(communication::PoseCommunicator& poseComm)
+// void PoseEstimator::wrapPoseComm(communication::PoseCommunicator& poseComm)
+// {
+//     Transform ghostTf {};
+//     // Z
+//     if (poseComm.robotFrame.transform.rot_z < minZRot)
+//     {
+//         ghostTf.pos_x += GRID_SIZE;
+//         ghostTf.rot_z += M_PI_2;
+//     }
+//     else if (poseComm.robotFrame.transform.rot_z >= maxZRot)
+//     {
+//         ghostTf.pos_y += GRID_SIZE;
+//         ghostTf.rot_z += -M_PI_2;
+//     }
+
+
+//     if (poseComm.robotFrame.transform.pos_x < minXPos)
+//     {
+//         ghostTf.pos_x += -GRID_SIZE;
+//     }
+//     else if (poseComm.robotFrame.transform.pos_x >= maxXPos)
+//     {
+//         ghostTf.pos_x += GRID_SIZE;
+//     }
+
+
+//     if (poseComm.robotFrame.transform.pos_y < minYPos)
+//     {
+//         ghostTf.pos_y += -GRID_SIZE;
+//     }
+//     else if (poseComm.robotFrame.transform.pos_y >= maxYPos)
+//     {
+//         ghostTf.pos_y += GRID_SIZE;
+//     }
+
+//     poseComm.localTileFrame.ghostMove(ghostTf);
+// }
+
+
+void PoseEstimator::updatePoseComm(communication::PoseCommunicator& poseComm, communication::PoseCommunicator lastPoseComm)
 {
     Transform ghostTf {};
-    // Z
-    if (poseComm.robotFrame.transform.rot_z < minZRot)
+
+    double rotDiff {poseComm.robotFrame.transform.rot_z - lastPoseComm.robotFrame.transform.rot_z};
+    // Turn right
+    if ( rotDiff > tileRotDiffThreshold)
     {
-        ghostTf.pos_x += GRID_SIZE;
-        ghostTf.rot_z += M_PI_2;
-    }
-    else if (poseComm.robotFrame.transform.rot_z >= maxZRot)
-    {
-        ghostTf.pos_y += GRID_SIZE;
         ghostTf.rot_z += -M_PI_2;
+        ghostTf.pos_y += GRID_SIZE;
+    }
+    // Turn left
+    else if (rotDiff < -tileRotDiffThreshold)
+    {
+        ghostTf.rot_z += M_PI_2;
+        ghostTf.pos_x += GRID_SIZE;
+
     }
 
 
-    if (poseComm.robotFrame.transform.pos_x < minXPos)
+    double xDiff {poseComm.robotFrame.transform.pos_x - lastPoseComm.robotFrame.transform.pos_x};
+
+    // Move left
+    if (xDiff > tileTransXDiffThreshold)
     {
         ghostTf.pos_x += -GRID_SIZE;
     }
-    else if (poseComm.robotFrame.transform.pos_x >= maxXPos)
+    // Move right
+    else if (xDiff < -tileTransXDiffThreshold)
     {
         ghostTf.pos_x += GRID_SIZE;
     }
 
 
-    if (poseComm.robotFrame.transform.pos_y < minYPos)
+    double yDiff {poseComm.robotFrame.transform.pos_y - lastPoseComm.robotFrame.transform.pos_y};
+
+    // Move back
+    if (yDiff > tileTransYDiffThreshold)
     {
         ghostTf.pos_y += -GRID_SIZE;
     }
-    else if (poseComm.robotFrame.transform.pos_y >= maxYPos)
+    // Move forward
+    else if (yDiff < -tileTransYDiffThreshold)
     {
         ghostTf.pos_y += GRID_SIZE;
     }
 
+
+    // Carry out the ghostmove
     poseComm.localTileFrame.ghostMove(ghostTf);
 }
 
@@ -398,20 +454,18 @@ ConditionalAverageTerm PoseEstimator::getTofYTrans(double angle, double yoffset,
     frY.value = frY.value+yoffset*cos(angle)+xoffset*sin(angle);
     bY.value = bY.value+yoffset*cos(angle);
 
-    // Wrap values to local tile
-    flY.value = wrapValue(flY.value, 0, GRID_SIZE-1);
-    frY.value = wrapValue(frY.value, 0, GRID_SIZE-1);
-    bY.value = wrapValue(bY.value, 0, GRID_SIZE-1);
-
     // Average calculation preparation
     Average avg {};
     avg.terms.push_back(flY);
     avg.terms.push_back(frY);
     avg.terms.push_back(bY);
 
-    // Check if sensor values can be used
     for (auto& term : avg.terms)
     {
+        // Wrap values to local tile
+        term.value = wrapValue(term.value, minYPos, maxYPos);
+
+        // Check if sensor values can be used
         if (term.value > MAX_TOF_Y_DIST_ABS)
         {
             // Reject the term/value
@@ -419,6 +473,7 @@ ConditionalAverageTerm PoseEstimator::getTofYTrans(double angle, double yoffset,
         }
         else
         {
+            // Accept the term/value
             term.weight = 1;
         }
     }
@@ -456,9 +511,11 @@ ConditionalAverageTerm PoseEstimator::getTofXTrans(double angle)
     if (getIsTofXLeft())
     {
         x1 = getCentredistanceFromTwoTof(td.fl, td.fr, TOF_SX_OFFSET, angle);
+        x1 = wrapValue(x1, minXPos, maxXPos);
         if (getIsTofXRight())
         {
             x2 = GRID_SIZE - (-getCentredistanceFromTwoTof(td.rf, td.rb, TOF_SX_OFFSET, angle));
+            x2 = wrapValue(x2, minXPos, maxXPos);
             result.value = (x1+x2)/2.0;
         }
         else
@@ -471,6 +528,7 @@ ConditionalAverageTerm PoseEstimator::getTofXTrans(double angle)
     else if (getIsTofXRight())
     {
         result.value = GRID_SIZE - (-getCentredistanceFromTwoTof(td.rf, td.rb, TOF_SX_OFFSET, angle));
+        result.value = wrapValue(result.value, minXPos, maxXPos);
         result.weight = 1;
     }
     else
@@ -498,9 +556,11 @@ ConditionalAverageTerm PoseEstimator::getTofZRot(double curAng)
     if (getIsTofXLeft())
     {
         angle1 = getAngleFromTwoTof(td.fl, td.fr, TOF_SY_OFFSET*2);
+        angle1 = wrapValue(angle1, minZRot, maxZRot);
         if (getIsTofXRight())
         {
             angle2 = -getAngleFromTwoTof(td.rf, td.rb, TOF_SY_OFFSET*2);
+            angle2 = wrapValue(angle2, minZRot, maxZRot);
             result.value = (angle1+angle2)/2.0;
         }
         else
@@ -512,6 +572,7 @@ ConditionalAverageTerm PoseEstimator::getTofZRot(double curAng)
     else if (getIsTofXRight())
     {
         result.value = -getAngleFromTwoTof(td.rf, td.rb, TOF_SY_OFFSET*2);
+        result.value = wrapValue(result.value, minZRot, maxZRot);
         result.weight = 1;
     }
     else

@@ -111,7 +111,6 @@ class PoseEstimator
         ConditionalAverageTerm getWheelRotDiff();
 
         // Distance travelled since last check or reset
-        #warning Unclear what distance diff I get from ToF. Should be straight out from the sensor, which this function assumes
         ConditionalAverageTerm getTofTransYDiff();
         double lastTofFR {};
         double lastTofFL {};
@@ -188,18 +187,29 @@ class PoseEstimator
         // Wraps the value between lower and upper.
         // Currently using loops. Can probably be optimised.
         #warning maybe only works for integer bounds?
+        #warning check behaviour at endpoints. Should go up to, not including upper.
         double wrapValue(double value, double lower, double upper);
 
         // Wrap the pose values into the current tile
-        void wrapPoseComm(communication::PoseCommunicator& posecomm);
+        // void wrapPoseComm(communication::PoseCommunicator& posecomm);
+        // Given a poseComm and the last poseComm, ghost-move the local tile to register tile transitions
+        // Assumes that input posecomm has values inside of limits.
+        // Will only register one "step" - for example cannot register two tile moves forward in one execution, as that is not feasible with these speeds and loop times
+        void updatePoseComm(communication::PoseCommunicator& poseComm, communication::PoseCommunicator lastPoseComm);
         // Limits for wrapping a pose
         const int minYPos {0};
-        const int maxYPos {300};
+        const int maxYPos {GRID_SIZE};
         const int minXPos {0};
-        const int maxXPos {300};
-        const double minZRot {-M_PI};
-        const double maxZRot {M_PI};
+        const int maxXPos {GRID_SIZE};
         const double tileRotThreshhold {M_PI_4}; // 45deg
+        const double minZRot {-tileRotThreshhold};
+        const double maxZRot {tileRotThreshhold};
+        // If rot diff > this, then tile change has occured
+        const double tileRotDiffThreshold {M_PI_4};
+        // If x trans diff > this, then tile change has occured
+        const double tileTransXDiffThreshold {GRID_SIZE/2.0};
+        // If y trans diff > this, then tile change has occured
+        const double tileTransYDiffThreshold {GRID_SIZE/2.0};
         // Transforms to move the tile to wrap the pose
         Transform tf_rotateTileRight {0, GRID_SIZE, 0, 0, 0, -M_PI_2};
         Transform tf_rotateTileLeft {GRID_SIZE, 0, 0, 0, 0, M_PI_2};
