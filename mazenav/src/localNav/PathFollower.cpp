@@ -12,7 +12,7 @@ void PathFollower::setPath(Path path)
     this->path = path;
 
     // Update the last known frame 
-    lastKnownFrame.setParent(&(path.parentFrame));
+    lastKnownFrame.setParentTS(&(path.parentFrame));
     // Reset the last known frame
     lastKnownFrame.transform = Transform{};
 }

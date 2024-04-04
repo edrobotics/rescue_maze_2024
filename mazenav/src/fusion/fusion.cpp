@@ -8,21 +8,26 @@ Sensors sensors {&tComm};
 
 
 
+
 void fusion::main(communication::Communicator* globComm)
 {
     tComm.initiate();
+    PoseEstimator poseEstimator {globComm, &tComm, &sensors};
 
     // Create hardware communication thread. Will run indefinetely
     std::thread hardwareCommunicator(&TeensyCommunicator::runLoopLooper, &tComm);
     std::thread motorDriver(motorDriveLoopLooper, globComm, &motors);
+    poseEstimator.begin();
     
     while (true)
     {
-
+        std::cout << globComm->poseComm.robotFrame << "\n";
+        std::this_thread::sleep_for(std::chrono::milliseconds(100));
     }
 
-    hardwareCommunicator.join();
+    poseEstimator.stop();
     motorDriver.join();
+    hardwareCommunicator.join();
     
 }
 

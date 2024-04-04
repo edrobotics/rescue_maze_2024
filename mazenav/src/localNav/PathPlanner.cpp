@@ -36,7 +36,7 @@ void PathPlanner::fillKeyFrames(std::vector<communication::DriveCommand>& globPa
     path.addKeyFrame(curFrame);
     for (communication::DriveCommand move : globPath)
     {
-        curFrame.frame.setParent(&(path.keyFrames.back().frame));
+        curFrame.frame.setParentTS(&(path.keyFrames.back().frame));
 
         switch (move)
         {

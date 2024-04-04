@@ -27,7 +27,7 @@
 class PoseEstimator
 {
     public:
-        PoseEstimator(communication::Communicator* globComm, TeensyCommunicator* tComm);
+        PoseEstimator(communication::Communicator* globComm, TeensyCommunicator* tComm, Sensors* sens);
 
         // Spawns a new thread running everything that needs to be run
         void begin();
@@ -63,7 +63,7 @@ class PoseEstimator
         TeensyCommunicator* tComm;
         // Sensor objects
         #warning if sensors in this object are used elsewhere, concurrency issues might arise
-        Sensors sensors;
+        Sensors* sensors;
 
 
         // Fusion group in use

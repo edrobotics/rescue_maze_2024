@@ -1,9 +1,9 @@
 #include "fusion/PoseEstimator.h"
 
-PoseEstimator::PoseEstimator(communication::Communicator* globalCommunicator, TeensyCommunicator* teensyCommunicator)
+PoseEstimator::PoseEstimator(communication::Communicator* globalCommunicator, TeensyCommunicator* teensyCommunicator, Sensors* sens)
     : globComm {globalCommunicator},
       tComm {teensyCommunicator},
-      sensors {tComm}
+      sensors {sens}
 {
     #warning unsure what to do here. Initialize sensors?
 
@@ -47,7 +47,7 @@ void PoseEstimator::runLoop()
 void PoseEstimator::update(FusionGroup fgroup)
 {
     #warning check synchronisation (does it happen and do we want it?)
-    sensors.update();
+    sensors->update();
 
     communication::PoseCommunicator poseResult {globComm->poseComm};
     switch (fgroup)
@@ -87,9 +87,8 @@ void PoseEstimator::update(FusionGroup fgroup)
 #warning currently a lot of code without the right conditional logic. Do not expect to work at all
 communication::PoseCommunicator PoseEstimator::updateSimple()
 {
-    communication::PoseCommunicator resultPose {};
-    communication::PoseCommunicator globalPose {globComm->poseComm};
-    communication::PoseCommunicator lastPose {globalPose};
+    communication::PoseCommunicator lastPose {globComm->poseComm};
+    communication::PoseCommunicator resultPose {lastPose};
 
     // This is where the magic happens
 
@@ -381,7 +380,7 @@ ConditionalAverageTerm PoseEstimator::getTofTransYDiff()
 {
     ConditionalAverageTerm result {0, 0};
 
-    Tof::TofData td {sensors.tofs.tofData};
+    Tof::TofData td {sensors->tofs.tofData};
     ConditionalAverageTerm flDiff {td.fl-lastTofFL, 1};
     ConditionalAverageTerm frDiff {td.fr-lastTofFR, 1};
     ConditionalAverageTerm bDiff {td.b-lastTofB, 1};
@@ -443,7 +442,7 @@ ConditionalAverageTerm PoseEstimator::getTofYTrans(double angle, double yoffset,
         return result;
     }
 
-    Tof::TofData td {sensors.tofs.tofData};
+    Tof::TofData td {sensors->tofs.tofData};
     // Get Y distances
     ConditionalAverageTerm flY {td.fl*cos(angle), 1};
     ConditionalAverageTerm frY {td.fr*cos(angle), 1};
@@ -504,7 +503,7 @@ ConditionalAverageTerm PoseEstimator::getTofXTrans(double angle)
         return result;
     }
 
-    Tof::TofData td {sensors.tofs.tofData};
+    Tof::TofData td {sensors->tofs.tofData};
     double x1 {};
     double x2 {};
 
@@ -550,7 +549,7 @@ ConditionalAverageTerm PoseEstimator::getTofZRot(double curAng)
         return result;
     }
 
-    Tof::TofData td {sensors.tofs.tofData};
+    Tof::TofData td {sensors->tofs.tofData};
     double angle1 {};
     double angle2 {};
     if (getIsTofXLeft())
@@ -597,7 +596,7 @@ ConditionalAverageTerm PoseEstimator::getWheelRotDiff()
 ConditionalAverageTerm PoseEstimator::getIMURotDiff()
 {
     ConditionalAverageTerm result {0, 0};
-    double angle {sensors.imu0.angles.z};
+    double angle {sensors->imu0.angles.z};
     result.value = angle-lastImuAngle;
 
     // Prepare for next iteration
@@ -640,7 +639,7 @@ double PoseEstimator::getCentredistanceFromTwoTof(double d1, double d2, double c
 
 bool PoseEstimator::getIsTofXLeft()
 {
-    Tof::TofData td {sensors.tofs.tofData};
+    Tof::TofData td {sensors->tofs.tofData};
 
     if (td.lf>WALL_PRESENCE_THRESHOLD_SENSOR)
     {
@@ -658,7 +657,7 @@ bool PoseEstimator::getIsTofXLeft()
 
 bool PoseEstimator::getIsTofXRight()
 {
-    Tof::TofData td {sensors.tofs.tofData};
+    Tof::TofData td {sensors->tofs.tofData};
 
     if (td.rf>WALL_PRESENCE_THRESHOLD_SENSOR)
     {

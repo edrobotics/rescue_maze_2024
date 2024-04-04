@@ -9,9 +9,8 @@
 // #include "fusion/mutexes.h" // Might not be needed
 
 #include "fusion/Sensors.h"
-// #include "fusion/Imu.h"
-// #include "fusion/Tof.h"
 #include "fusion/MotorControllers.h"
+#include "fusion/PoseEstimator.h"
 
 namespace fusion
 {    
