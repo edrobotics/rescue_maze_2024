@@ -2,8 +2,5 @@
 
 aStar::aStar(/* args */)
 {
-}
-
-aStar::~aStar()
-{
+    
 }

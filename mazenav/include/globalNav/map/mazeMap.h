@@ -1,14 +1,14 @@
 #pragma once
 
-#include "globalNav/map/tile.h"
-
-#define MAZESIZE 50
+#include "globalNav/map/mazeLevel.h"
+#include "globalNav/map/levelPosition.h"
+#include "globalNav/map/mazePosition.h"
+#include <vector>
 
 class MazeMap
 {
 private:
-    Tile mazeMap[MAZESIZE][MAZESIZE];
+    std::vector<MazeLevel> mazeMaps;
 public:
     MazeMap();
-    inline Tile& tileAt(int x, int y) { return mazeMap[y][x]; };
 };

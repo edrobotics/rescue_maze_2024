@@ -8,5 +8,4 @@ private:
     /* data */
 public:
     aStar(/* args */);
-    ~aStar();
 };

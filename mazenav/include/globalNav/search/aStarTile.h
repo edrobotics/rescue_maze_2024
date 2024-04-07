@@ -1,6 +1,7 @@
 #pragma once
 
 #include "globalNav/map/tile.h"
+#include "globalNav/map/mazePosition.h"
 
 class AStarTile
 {
@@ -9,13 +10,5 @@ private:
     Tile* tile;
     AStarTile* parent;
 
-    struct MapPosition
-    {
-        int xIndex;
-        int yIndex;
-        int mapIndex;
-        MapPosition(int x, int y, int map) : xIndex(x), yIndex(y), mapIndex(map) {}
-    };
-
-    MapPosition mapPosition;
+    MazePosition position;
 };

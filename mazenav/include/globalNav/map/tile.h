@@ -16,14 +16,8 @@ class Tile
         uncertainWallWest,
         uncertainWallSouth,
         uncertainWallEast,
-        explored,
-        
-
-        // inAStarSearch,
-        // searched,
-        // visited
+        explored
     };
-    
 
     inline void setTileProperty(TileProperty set, bool state);
     inline bool tileHasProperty(TileProperty get);
