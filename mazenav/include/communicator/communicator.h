@@ -75,5 +75,6 @@ namespace communication
         NavigationCommunicator navigationComm;
         PoseCommunicator poseComm {};
         MotorControllerCommunicator motors{};
+        Logger logger;
     };
 }

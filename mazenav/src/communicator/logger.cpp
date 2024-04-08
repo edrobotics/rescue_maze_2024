@@ -8,14 +8,14 @@ namespace communication
     void Logger::logToFile(std::string logMessage)
     {
         mtx_logging.lock();
-        std::ofstream oFile(logFileName);
+        std::ofstream oFile(logFileName, std::ios_base::app);
 
         if (!oFile){
             std::cerr << "No file?" << std::endl;
             return;
         }
 
-        oFile << logMessage << "\n";
+        oFile << getTimestampAsString() << ": " << logMessage << "\n";
 
         oFile.flush();
         oFile.close();
@@ -38,7 +38,14 @@ namespace communication
 
     std::string Logger::getTimestampAsString()
     {
-        //Now unix timestamp
-        return std::to_string(duration_cast<milliseconds>(system_clock::now().time_since_epoch()).count());
+        //Time now as a unix timestamp
+        return std::to_string(duration_cast<seconds>(system_clock::now().time_since_epoch()).count());
+    }
+
+    std::string Logger::getLogFileNumber()
+    {
+        int i;
+        for (i = 0; std::filesystem::exists(LOGFILE_STARTSTRING + std::to_string(i) + LOGFILE_ENDSTRING); i++);
+        return std::to_string(i);
     }
 }

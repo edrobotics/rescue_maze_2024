@@ -5,6 +5,7 @@
 #include <string>
 #include <mutex>
 #include <chrono>
+#include <filesystem>
 
 namespace communication
 {
@@ -12,9 +13,13 @@ namespace communication
 class Logger
 {
     private:
+    #define LOGFILE_STARTSTRING (std::string)"/home/RCJ24LOG"
+    #define LOGFILE_ENDSTRING (std::string) ".log"
+
     std::string getTimestampAsString();
+    std::string getLogFileNumber();
     std::mutex mtx_logging;
-    const std::string logFileName = (std::string)"/home/RCJ24LOG" + getTimestampAsString() + ".log";
+    const std::string logFileName = LOGFILE_STARTSTRING + getLogFileNumber() + LOGFILE_ENDSTRING;
 
     public:
     void logToFile(std::string logMessage);
