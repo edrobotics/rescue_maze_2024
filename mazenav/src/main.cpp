@@ -1,3 +1,4 @@
+#include <iostream>
 #include <thread>
 #include <fusion/fusion.h>
 #include <globalNav/globalNav.h>
@@ -11,14 +12,15 @@ communication::Communicator comm {};
 
 int main()
 {
+    std::cout << "Hello world!" << std::endl;
     
     std::thread fusionT = std::thread(fusion::main, &comm);
-    std::thread globNavT = std::thread(globalNav::main, &comm);
-    std::thread locNavT = std::thread(localNav::main, &comm);
+    // std::thread globNavT = std::thread(globalNav::main, &comm);
+    // std::thread locNavT = std::thread(localNav::main, &comm);
 
     fusionT.join();
-    globNavT.join();
-    locNavT.join();
+    // globNavT.join();
+    // locNavT.join();
 
     return 0;
 }

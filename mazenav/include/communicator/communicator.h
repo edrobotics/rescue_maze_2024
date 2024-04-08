@@ -29,8 +29,8 @@ namespace communication
         DriveCommand popCommand();
 
         private:
-        std::mutex mtx_commands;
-        std::queue<DriveCommand> commands;
+        std::mutex mtx_commands {};
+        std::queue<DriveCommand> commands {};
     };
 
     class PoseCommunicator
@@ -75,6 +75,6 @@ namespace communication
         NavigationCommunicator navigationComm;
         PoseCommunicator poseComm {};
         MotorControllerCommunicator motors{};
-        Logger logger;
+        // Logger logger {};
     };
 }

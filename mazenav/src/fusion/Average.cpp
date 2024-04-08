@@ -31,5 +31,5 @@ double Average::calc(std::vector<ConditionalAverageTerm> terms)
 
 double Average::calc()
 {
-    calc(terms);
+    return calc(terms);
 }

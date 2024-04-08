@@ -27,13 +27,15 @@
 class PoseEstimator
 {
     public:
-        PoseEstimator(communication::Communicator* globComm, TeensyCommunicator* tComm, Sensors* sens);
+        PoseEstimator(TeensyCommunicator* tComm, Sensors* sens);
 
         // Spawns a new thread running everything that needs to be run
-        void begin();
+        // void begin();
+        // Loops runLoop() as long as stopThread==false. Simplifies as I do not have to figure out lambdas now, and I know that this works
+        void runLoopLooper(communication::Communicator* globComm);
 
         // Stops the thread spawned by begin
-        void stop();
+        // void stop();
 
         // Test the module. Returns true if all tests pass.
         bool test();
@@ -79,8 +81,6 @@ class PoseEstimator
         void runLoop();
         // Whether to stop the thread or not. Used to terminate it.
         bool stopThread {false};
-        // Loops runLoop() as long as stopThread==false. Simplifies as I do not have to figure out lambdas now, and I know that this works
-        void runLoopLooper();
         // Update the pose with the supplied FusionGroup
         void update(FusionGroup fgroup);
 

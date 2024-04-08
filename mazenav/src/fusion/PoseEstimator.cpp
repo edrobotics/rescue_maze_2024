@@ -1,8 +1,8 @@
 #include "fusion/PoseEstimator.h"
 
-PoseEstimator::PoseEstimator(communication::Communicator* globalCommunicator, TeensyCommunicator* teensyCommunicator, Sensors* sens)
-    : globComm {globalCommunicator},
-      tComm {teensyCommunicator},
+PoseEstimator::PoseEstimator(TeensyCommunicator* teensyCommunicator, Sensors* sens)
+    // : globComm {globalCommunicator},
+      : tComm {teensyCommunicator},
       sensors {sens}
 {
     #warning unsure what to do here. Initialize sensors?
@@ -15,23 +15,27 @@ void PoseEstimator::setFusionGroup(FusionGroup fgroup)
     fusionGroup = fgroup;
 }
 
-void PoseEstimator::begin()
-{
-    stopThread = false;
-    #warning unsure whether this is OK or not
-    updater = std::thread{&PoseEstimator::runLoopLooper, this};
-}
+// void PoseEstimator::begin()
+// {
+//     stopThread = false;
+//     #warning unsure whether this is OK or not
+//     updater = std::thread{&PoseEstimator::runLoopLooper, this};
+// }
 
-void PoseEstimator::stop()
-{
-    stopThread = true;
-    updater.join();
-    stopThread = false;
-}
+// void PoseEstimator::stop()
+// {
+//     stopThread = true;
+//     updater.join();
+//     stopThread = false;
+// }
 
-void PoseEstimator::runLoopLooper()
+void PoseEstimator::runLoopLooper(communication::Communicator* globComm)
 {
-    while (!stopThread)
+    std::cout << "Started runLoopLooper" << "\n";
+    this->globComm = globComm;
+    std::cout << "Stored globcomm: " << globComm << "\n";
+    std::cout << "Update before the update: ";
+    while (true)
     {
         runLoop();
     }
@@ -41,7 +45,9 @@ void PoseEstimator::runLoopLooper()
 void PoseEstimator::runLoop()
 {
     // Currently: update as fast as possible for the given FusionGroup
+    std::cout << "Updating... ";
     update(fusionGroup);
+    std::cout << "done" << "\n";
 }
 
 void PoseEstimator::update(FusionGroup fgroup)

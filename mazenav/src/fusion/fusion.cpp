@@ -5,27 +5,35 @@ TeensyCommunicator tComm {1, 0x69};
 
 MotorControllers motors {&tComm};
 Sensors sensors {&tComm};
+PoseEstimator poseEstimator {&tComm, &sensors};
 
 
 
 
 void fusion::main(communication::Communicator* globComm)
 {
+    std::cout << "Init tComm... ";
     tComm.initiate();
-    PoseEstimator poseEstimator {globComm, &tComm, &sensors};
+    std::cout << "done." << "\n";
 
     // Create hardware communication thread. Will run indefinetely
+    std::cout << "Spawn hardwarecommunicator... ";
     std::thread hardwareCommunicator(&TeensyCommunicator::runLoopLooper, &tComm);
+    std::cout << "done." << "\n";
+    std::cout << "Spawn motorDriver... ";
     std::thread motorDriver(motorDriveLoopLooper, globComm, &motors);
-    poseEstimator.begin();
+    std::cout << "done." << "\n";
+    std::cout << "Spawn poseEstimator... ";
+    std::thread poseEst(&PoseEstimator::runLoopLooper, &poseEstimator, globComm);
+    std::cout << "done." << "\n";
     
     while (true)
     {
-        std::cout << globComm->poseComm.robotFrame << "\n";
-        std::this_thread::sleep_for(std::chrono::milliseconds(100));
+        // std::cout << globComm->poseComm.robotFrame << "\n";
+        // std::this_thread::sleep_for(std::chrono::milliseconds(100));
     }
 
-    poseEstimator.stop();
+    poseEst.join();
     motorDriver.join();
     hardwareCommunicator.join();
     
