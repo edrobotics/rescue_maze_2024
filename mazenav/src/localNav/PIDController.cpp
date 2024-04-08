@@ -60,3 +60,11 @@ double PIDController::getCorrection(double value)
     
     return correction;
 }
+
+
+void PIDController::restartPID()
+{
+    integralSum = 0;
+    lastTime = std::chrono::steady_clock::now();
+    lastCorr = 0;
+}

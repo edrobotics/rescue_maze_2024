@@ -21,6 +21,9 @@ class PIDController
         // If not enough time has passed, the last known correction is returned
         double getCorrection(double value);
 
+        // Restarts the PID controller (removes time dependencies, keeps coefficients and setpoint). Useful if you have a pause in operation and want the controller to be fresh when starting up again.
+        void restartPID();
+
     private:
         double kP {0};
         double kI {0};
