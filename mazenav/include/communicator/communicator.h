@@ -1,11 +1,10 @@
 #pragma once
 #include <queue>
 #include <mutex>
-#include <fstream>
-#include <iostream>
 
 #include "transformations/tfsys.h"
 #include "fusion/MotorControllers.h"
+#include "communicator/logger.h"
 
 namespace communication
 {
@@ -67,17 +66,6 @@ namespace communication
             MotorControllers::MotorSpeeds speeds {};
             std::mutex mtx_speeds;
 
-    };
-
-    class Logger
-    {
-        public:
-        void logToFile(std::string logMessage);
-        void logToConsole(std::string logMessage);
-        void logToAll(std::string logMessage);
-
-        private:
-        std::mutex mtx_logging;
     };
 
     // Class containing the data that we want to share

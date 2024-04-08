@@ -43,34 +43,4 @@ namespace communication
         mtx_speeds.unlock();
         return spd;
     }
-
-    void Logger::logToFile(std::string logMessage)
-    {
-        mtx_logging.lock();
-        #warning What path??
-        std::ofstream oFile("/home/RCJ24LOG.log");
-
-        if (!oFile){
-            std::cerr << "What error, no file?" << std::endl;
-            return;
-        }
-
-        oFile << logMessage << "\n";
-
-        oFile.flush();
-        oFile.close();
-        
-        mtx_logging.unlock();
-    }
-    void Logger::logToConsole(std::string logMessage)
-    {
-        mtx_logging.lock();
-        std::cout << logMessage << std::endl;
-        mtx_logging.unlock();
-    }
-    void Logger::logToAll(std::string logMessage)
-    {
-        logToFile(logMessage);
-        logToConsole(logMessage);
-    }
 }
