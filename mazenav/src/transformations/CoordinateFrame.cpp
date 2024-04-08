@@ -21,9 +21,9 @@ CoordinateFrame::~CoordinateFrame()
     // Delete all children of this CF
     deleteChildren();
 
-    // Unregister this CF as a child of the parent
-    unregisterMeAsChild();
     mtx_general.unlock();
+    // Unregister this CF as a child of the parent (thread safe?)
+    unregisterMeAsChild();
 }
 
 
@@ -33,6 +33,7 @@ CoordinateFrame::CoordinateFrame(const CoordinateFrame& frame)
     // parent = frame.parent;
     // children = frame.children;
     *this = frame;
+
 }
 
 CoordinateFrame CoordinateFrame::operator=(const CoordinateFrame& otherFrame)
@@ -50,12 +51,12 @@ CoordinateFrame CoordinateFrame::getWithoutChildren()
 {
     // Do a copy
     CoordinateFrame childless {*this};
-    mtx_general.lock();
+    childless.mtx_general.lock();
 
     // Remove the children
     childless.stripChildren();
 
-    mtx_general.unlock();
+    childless.mtx_general.unlock();
 
     // Return the child-less copy
     return childless;
@@ -95,16 +96,16 @@ CoordinateFrame* CoordinateFrame::getParent()
 
 void CoordinateFrame::setParentTS(CoordinateFrame* newParent)
 {
-    mtx_general.lock();
     // Unregister child from parent
     unregisterMeAsChild();
 
+    mtx_general.lock();
     // Change the parent
     parent = newParent;
+    mtx_general.unlock();
 
     // Re-register the child with the new parent
     registerMeAsChild();
-    mtx_general.unlock();
 }
 
 void CoordinateFrame::registerChild(CoordinateFrame* child)
