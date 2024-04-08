@@ -6,7 +6,10 @@ import loggingclass
 #import tensorflow as tf
 import numpy as np
 import socket 
+import os
 
+import tensorflow.lite as tflite
+from letterRecognition import letters
 
 
 class comms:
@@ -39,42 +42,60 @@ class imgproc:
         self.dir_path = dir_path
         self.bLogging = bLogging
         self.log = loggingclass.log(base_dir=dir_path, bLogging = bLogging)
-        #self.load_model()
+        self.loadModel()
 
 
     def do_the_work(self, image, camera):
         print("working")
+        self.imagecopy = image.copy()
         self.log.save_image(image, camera)
-        #self.find_visual(image)
+        self.find_visual(image)
+
 
     def preprocessing(self,image):
         print("preprocessing")
         gray = cv2.cvtColor(image,cv2.COLOR_BGR2GRAY)
         binary = cv2.adaptiveThreshold(gray,255,cv2.ADAPTIVE_THRESH_MEAN_C, cv2.THRESH_BINARY,21,10) 
+        binary = np.invert(binary)
 
         return binary
 
     def find_visual(self, image):
         binary = self.preprocessing(image)
+        binary2 = binary.copy()
         contours, hierarchy = cv2.findContours(binary,cv2.RETR_LIST,cv2.CHAIN_APPROX_NONE)
+        cv2.drawContours(binary2, contours, 1, (255,0,0),3)
+        print(len(contours))
         for contour in contours:
             area = cv2.contourArea(contour)
             if area >420: 
+                rect = cv2.minAreaRect(contour)
+                box = cv2.boxPoints(rect)
+                box = np.int0(box)
+                cv2.drawContours(self.imagecopy, [box], 0, (255, 0, 0), 3)
                 x,y,w,h = cv2.boundingRect(contour)
+
 
                 size = (25,25)
                 potentialVictim = binary[y:y+h, x:x+w]
-                potentialVictimCS = cv2.resize(potentialVictim, size)
-                return potentialVictimCS
+                potentialVictimRS = cv2.resize(potentialVictim, size)
+
+
+        cv2.imshow("contours", binary2)
+        cv2.imshow("imagecopy",self.imagecopy)
+        cv2.waitKey(0)
+
+                #return potentialVictimCS
 
 
 
 
 
-
+    def loadModel(self):
+        self.model = letters()
 
     def identify_victim(self, section):
-        victim = self.model(section)
+        victim = self.model.recogniseSection(section)
         print(victim) 
         self.framedetected.append(victim)
 
@@ -84,25 +105,5 @@ class imgproc:
 
 
 
-    def load_model(self):
-        num_classes = 4
-        self.model = tf.keras.Sequential([
-        tf.keras.layers.Rescaling(1./255),
-        tf.keras.layers.Conv2D(32, 3, activation='relu'),
-        tf.keras.layers.MaxPooling2D(),
-        tf.keras.layers.Flatten(),
-        tf.keras.layers.Dense(128, activation='relu'),
-        tf.keras.layers.Dense(num_classes)
-    ])
-        self.model.compile(
-        optimizer='adam',
-        loss=tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True),
-        metrics=['accuracy'])
-        
-        self.model.load_weights('./checkpoints/my_checkpoint').expect_partial()
-
-
-
-    
 
 

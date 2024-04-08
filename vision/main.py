@@ -1,9 +1,6 @@
 #!/usr/bin/env python3
 import cv2
 import logging
-if False: #if using picam 
-    from picamera2 import PiCamera2, Preview
-    import time, libcamera 
 import visionclass
 import argparse
 from configparser import ConfigParser
@@ -26,6 +23,9 @@ def openCams(cPi = True, c1 = True, c2 = True):
     global cap2
     print("opening cameras")
     if cPi:
+        from picamera2 import PiCamera2, Preview
+        import time, libcamera 
+        print("opening picam")
         piCam = PiCamera2()
         piCam.start()
 
@@ -50,21 +50,21 @@ def closeCams():
 
 
 def showSource():
-    cv2.namedWindow("cam0")
-    cv2.namedWindow("cam1")
-    cv2.namedWindow("cam2")
-    cv2.setMouseCallback("cam0", get_intensity)
-    cv2.setMouseCallback("cam1", get_intensity)
-    cv2.setMouseCallback("cam2", get_intensity)
-    windows = ("cam0","cam1","cam2","window", "binary", "red", "yellow","green")
-    for window in windows:
-        cv2.namedWindow(window)
-        cv2.setMouseCallback(window, get_intensity)
+    try:
+        windows = ("cam0","cam1","cam2","window", "binary", "red", "yellow","green")
+        for window in windows:
+            cv2.namedWindow(window)
+            cv2.setMouseCallback(window, get_intensity)
+    except Exception as ex:
+        print("couldn't create windows")
+        showsource = False
+
 
 if __name__ == "__main__":
     logging.basicConfig(filename='log/vision.log', encoding='utf-8', level=logging.DEBUG)
     logging.info("started")
     dir_path = os.path.dirname(os.path.realpath(__file__))
+    print(dir_path)
     config_filepath = dir_path+"/config.ini"
 
     exists = os.path.exists(config_filepath)
@@ -122,10 +122,15 @@ if __name__ == "__main__":
                 imgProc.do_the_work(image2, "cam2")
 
                 if showsource:
-                    #cv2.imshow("cam0",piImg)
-                    cv2.imshow("cam1",image1)
-                    cv2.imshow("cam2",image2)
+                    try:
+                        #cv2.imshow("cam0",piImg)
+                        cv2.imshow("cam1",image1)
+                        cv2.imshow("cam2",image2)
+                    except Exception as ex: 
+                        print("couldn't show images")
+                        showSource = False
             except Exception as ex:
+                print("exception")
 
                 
                 closeCams()
