@@ -12,7 +12,6 @@ communication::Communicator comm {};
 
 int main()
 {
-    std::cout << "Hello world!" << std::endl;
     
     std::thread fusionT = std::thread(fusion::main, &comm);
     // std::thread globNavT = std::thread(globalNav::main, &comm);

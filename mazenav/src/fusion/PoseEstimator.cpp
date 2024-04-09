@@ -59,9 +59,7 @@ void PoseEstimator::update(FusionGroup fgroup)
     // std::cout << "Worldframe: " << globComm->poseComm.worldFrame << std::endl;
     // std::cout << "Speeds: " << globComm->poseComm.robotSpeed << std::endl;
     // std::cout << "The next in-between" << std::endl;
-    communication::PoseCommunicator poseResult {globComm->poseComm}; // What we want. Also the line where the error occurs
-    // poseResult = globComm->poseComm;
-    // communication::PoseCommunicator poseResult {}; // Testing
+    communication::PoseCommunicator poseResult {globComm->poseComm};
     // std::cout << "FusionGroup is: " << fgroup << std::endl;
     switch (fgroup)
     {
@@ -120,6 +118,7 @@ communication::PoseCommunicator PoseEstimator::updateSimple()
     rotAbs.terms.push_back(wheelRot);
 
     ConditionalAverageTerm imuRot {getIMURotDiff()};
+    // std::cout << imuRot.value << "\n";
     imuRot.value += lastPose.robotFrame.transform.rot_z;
     rotAbs.terms.push_back(imuRot);
 
@@ -148,19 +147,19 @@ communication::PoseCommunicator PoseEstimator::updateSimple()
     transXAbs.terms.push_back(getTofXTrans(ang));
     transYAbs.terms.push_back(getTofYTrans(ang, TOF_FY_OFFSET, TOF_FX_OFFSET));
 
-    ConditionalAverageTerm wheelTransX {getWheelTransDiff()};
-    ConditionalAverageTerm wheelTransY {wheelTransX};
-    wheelTransX.value = wheelTransX.value*cos(resultPose.robotFrame.transform.rot_z) + lastPose.robotFrame.transform.pos_x;
-    wheelTransY.value = wheelTransY.value*sin(resultPose.robotFrame.transform.rot_z) + lastPose.robotFrame.transform.pos_y;
-    transXAbs.terms.push_back(wheelTransX);
-    transYAbs.terms.push_back(wheelTransY);
+    // ConditionalAverageTerm wheelTransX {getWheelTransDiff()};
+    // ConditionalAverageTerm wheelTransY {wheelTransX};
+    // wheelTransX.value = wheelTransX.value*cos(resultPose.robotFrame.transform.rot_z) + lastPose.robotFrame.transform.pos_x;
+    // wheelTransY.value = wheelTransY.value*sin(resultPose.robotFrame.transform.rot_z) + lastPose.robotFrame.transform.pos_y;
+    // transXAbs.terms.push_back(wheelTransX);
+    // transYAbs.terms.push_back(wheelTransY);
 
-    ConditionalAverageTerm tofTransX {getTofTransYDiff()};
-    ConditionalAverageTerm tofTransY {tofTransX};
-    tofTransX.value = tofTransX.value*cos(resultPose.robotFrame.transform.rot_z) + lastPose.robotFrame.transform.pos_x;
-    tofTransY.value = tofTransY.value*sin(resultPose.robotFrame.transform.rot_z) + lastPose.robotFrame.transform.pos_y;
-    transXAbs.terms.push_back(tofTransX);
-    transYAbs.terms.push_back(tofTransY);
+    // ConditionalAverageTerm tofTransX {getTofTransYDiff()};
+    // ConditionalAverageTerm tofTransY {tofTransX};
+    // tofTransX.value = tofTransX.value*cos(resultPose.robotFrame.transform.rot_z) + lastPose.robotFrame.transform.pos_x;
+    // tofTransY.value = tofTransY.value*sin(resultPose.robotFrame.transform.rot_z) + lastPose.robotFrame.transform.pos_y;
+    // transXAbs.terms.push_back(tofTransX);
+    // transYAbs.terms.push_back(tofTransY);
 
     for (auto& term : transXAbs.terms)
     {
@@ -177,7 +176,7 @@ communication::PoseCommunicator PoseEstimator::updateSimple()
     }
     catch(std::runtime_error& e)
     {
-        std::cerr << e.what() << " : " << "Cannot compute robot X position" << '\n';
+        // std::cerr << e.what() << " : " << "Cannot compute robot X position" << '\n';
     }
 
     try
@@ -186,15 +185,15 @@ communication::PoseCommunicator PoseEstimator::updateSimple()
     }
     catch(std::runtime_error& e)
     {
-        std::cerr << e.what() << " : " << "Cannot compute robot Y position" << '\n';
+        // std::cerr << e.what() << " : " << "Cannot compute robot Y position" << '\n';
     }
 
 
-    updatePoseComm(resultPose, lastPose);
+    // updatePoseComm(resultPose, lastPose);
 
     return resultPose;
 
-    #warning IMPORTANT: tile changes are broken. Some systems fix it themselves before getting the values here, others are dependent on the wrappose. All need to be the same for averaging.
+    #warning (fixed?) IMPORTANT: tile changes are broken. Some systems fix it themselves before getting the values here, others are dependent on the wrappose. All need to be the same for averaging.
 }
 
 communication::PoseCommunicator PoseEstimator::updateLidar()
@@ -235,11 +234,11 @@ communication::PoseCommunicator PoseEstimator::updateIMU()
 double PoseEstimator::wrapValue(double value, double min, double max)
 {
     double diffCorr {max-min};
-    while (value>max)
+    while (value>=max)
     {
         value-=diffCorr;
     }
-    while (value<=min)
+    while (value<min)
     {
         value+=diffCorr;
     }
@@ -448,11 +447,12 @@ ConditionalAverageTerm PoseEstimator::getTofTransYDiff()
 
 ConditionalAverageTerm PoseEstimator::getTofYTrans(double angle, double yoffset, double xoffset)
 {
-    ConditionalAverageTerm result {0, 0};
+    ConditionalAverageTerm result {0, 1};
 
     // Check if angle is too great
     if (abs(angle)>MAX_Z_ROTATION_Y_TOF_ABS)
     {
+        std::cout << "Angle too large for ToF Y abs trans" << std::endl;
         result.weight = 0;
         return result;
     }
@@ -464,8 +464,8 @@ ConditionalAverageTerm PoseEstimator::getTofYTrans(double angle, double yoffset,
     ConditionalAverageTerm bY {td.b*cos(angle), 1};
 
     // Change to robot centre
-    flY.value = flY.value+yoffset*cos(angle)+xoffset*sin(angle);
-    frY.value = frY.value+yoffset*cos(angle)+xoffset*sin(angle);
+    flY.value = GRID_SIZE - (flY.value+yoffset*cos(angle)+xoffset*sin(angle));
+    frY.value = GRID_SIZE - (frY.value+yoffset*cos(angle)+xoffset*sin(angle));
     bY.value = bY.value+yoffset*cos(angle);
 
     // Average calculation preparation
@@ -477,11 +477,12 @@ ConditionalAverageTerm PoseEstimator::getTofYTrans(double angle, double yoffset,
     for (auto& term : avg.terms)
     {
         // Wrap values to local tile
-        term.value = wrapValue(term.value, minYPos, maxYPos);
+        // std::cout << "Value is: " << term.value;
 
         // Check if sensor values can be used
         if (term.value > MAX_TOF_Y_DIST_ABS)
         {
+            // std::cout << "Rejected due to too large distance" << std::endl;
             // Reject the term/value
             term.weight = 0;
         }
@@ -490,6 +491,8 @@ ConditionalAverageTerm PoseEstimator::getTofYTrans(double angle, double yoffset,
             // Accept the term/value
             term.weight = 1;
         }
+        term.value = wrapValue(term.value, minYPos, maxYPos);
+        // std::cout << "  After wrapping: " << term.value << std::endl;
     }
 
     try
@@ -498,11 +501,12 @@ ConditionalAverageTerm PoseEstimator::getTofYTrans(double angle, double yoffset,
     }
     catch(std::runtime_error& e)
     {
-        // std::cerr << e.what() << '\n';
+        std::cerr << e.what() << '\n';
         // If not usable, do not use
         result.weight = 0;
     }
     
+    // std::cout << "Result weight is: " << result.weight << std::endl;
 
     return result;
 }
@@ -524,11 +528,11 @@ ConditionalAverageTerm PoseEstimator::getTofXTrans(double angle)
 
     if (getIsTofXLeft())
     {
-        x1 = getCentredistanceFromTwoTof(td.fl, td.fr, TOF_SX_OFFSET, angle);
+        x1 = getCentredistanceFromTwoTof(td.lf, td.lb, TOF_SX_OFFSET, angle);
         x1 = wrapValue(x1, minXPos, maxXPos);
         if (getIsTofXRight())
         {
-            x2 = GRID_SIZE - (-getCentredistanceFromTwoTof(td.rf, td.rb, TOF_SX_OFFSET, angle));
+            x2 = GRID_SIZE - (getCentredistanceFromTwoTof(td.rf, td.rb, TOF_SX_OFFSET, angle));
             x2 = wrapValue(x2, minXPos, maxXPos);
             result.value = (x1+x2)/2.0;
         }
@@ -541,7 +545,7 @@ ConditionalAverageTerm PoseEstimator::getTofXTrans(double angle)
     }
     else if (getIsTofXRight())
     {
-        result.value = GRID_SIZE - (-getCentredistanceFromTwoTof(td.rf, td.rb, TOF_SX_OFFSET, angle));
+        result.value = GRID_SIZE - (getCentredistanceFromTwoTof(td.rf, td.rb, TOF_SX_OFFSET, angle));
         result.value = wrapValue(result.value, minXPos, maxXPos);
         result.weight = 1;
     }
@@ -558,8 +562,10 @@ ConditionalAverageTerm PoseEstimator::getTofZRot(double curAng)
 {
     ConditionalAverageTerm result {0, 0};
 
+    #warning We want to check here so that we do not mess up when turning in enclosed space, but if we have lost tracking we will not be able to pick it up even if we are straight.
     if (abs(curAng)>MAX_ZROT_XTRANS_TOF_ABS)
     {
+        // std::cout << "Angle too large" << std::endl;
         result.weight = 0;
         return result;
     }
@@ -569,12 +575,14 @@ ConditionalAverageTerm PoseEstimator::getTofZRot(double curAng)
     double angle2 {};
     if (getIsTofXLeft())
     {
-        angle1 = getAngleFromTwoTof(td.fl, td.fr, TOF_SY_OFFSET*2);
+        angle1 = getAngleFromTwoTof(td.lb, td.lf, TOF_SY_OFFSET*2);
         angle1 = wrapValue(angle1, minZRot, maxZRot);
+        // std::cout << "Left: " << angle1;
         if (getIsTofXRight())
         {
-            angle2 = -getAngleFromTwoTof(td.rf, td.rb, TOF_SY_OFFSET*2);
+            angle2 = -getAngleFromTwoTof(td.rb, td.rf, TOF_SY_OFFSET*2);
             angle2 = wrapValue(angle2, minZRot, maxZRot);
+            // std::cout << ", Right: " << angle2;
             result.value = (angle1+angle2)/2.0;
         }
         else
@@ -585,8 +593,9 @@ ConditionalAverageTerm PoseEstimator::getTofZRot(double curAng)
     }
     else if (getIsTofXRight())
     {
-        result.value = -getAngleFromTwoTof(td.rf, td.rb, TOF_SY_OFFSET*2);
+        result.value = -getAngleFromTwoTof(td.rb, td.rf, TOF_SY_OFFSET*2);
         result.value = wrapValue(result.value, minZRot, maxZRot);
+        // std::cout << ", Right: " << result.value;
         result.weight = 1;
     }
     else
@@ -594,6 +603,8 @@ ConditionalAverageTerm PoseEstimator::getTofZRot(double curAng)
         // std::cerr << "Cannot compute ToF Z angle without walls";
         result.weight = 0;
     }
+
+    // std::cout << "ToF Z Rot calculation done with result: " << result.value << ". Weight: " << result.weight << std::endl;
 
     return result;
 }

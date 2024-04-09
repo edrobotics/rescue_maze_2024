@@ -12,9 +12,9 @@ PoseEstimator poseEstimator {&sensors};
 
 void fusion::main(communication::Communicator* globComm)
 {
-    std::cout << "Init tComm... ";
+    // std::cout << "Init tComm... ";
     tComm.initiate();
-    std::cout << "done." << "\n";
+    // std::cout << "done." << "\n";
 
     // Set the correct fusion group
     poseEstimator.setFusionGroup(PoseEstimator::fg_simple);
@@ -37,8 +37,8 @@ void fusion::main(communication::Communicator* globComm)
     }
 
     poseEst.join();
-    // motorDriver.join();
-    // hardwareCommunicator.join();
+    motorDriver.join();
+    hardwareCommunicator.join();
     
 }
 

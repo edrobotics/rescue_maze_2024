@@ -23,13 +23,14 @@ const double WHEEL_TURN_CONTRIBUTION_FACTOR {cos(atan(static_cast<double>(WHEELB
 
 
 // ToF sensor offsets
+#warning None of these constants are accurate with their current values. They were measured with a ruler, not in CAD.
 // Robot centre to front sensors, Y direction
-const double TOF_FY_OFFSET {};
+const double TOF_FY_OFFSET {85};
 // Robot centre to front sensor, X direction
-const double TOF_FX_OFFSET {};
+const double TOF_FX_OFFSET {50};
 // Robot centre to back sensor, Y direction (positive)
 const double TOF_BY_OFFSET {TOF_FY_OFFSET};
 // Robot centre to side sensors, X direction
-const double TOF_SX_OFFSET {};
+const double TOF_SX_OFFSET {70};
 // Robot centre to side sensors, Y direction
-const double TOF_SY_OFFSET {};
+const double TOF_SY_OFFSET {69};
