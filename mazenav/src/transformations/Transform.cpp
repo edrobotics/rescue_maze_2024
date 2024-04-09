@@ -33,18 +33,18 @@ Transform Transform::inverse()
     return inv;
 }
 
-Transform Transform::operator= (const Transform& t2)
-{
-    pos_x = t2.pos_x;
-    pos_y = t2.pos_y;
-    pos_z = t2.pos_z;
+// Transform Transform::operator= (const Transform& t2)
+// {
+//     pos_x = t2.pos_x;
+//     pos_y = t2.pos_y;
+//     pos_z = t2.pos_z;
 
-    rot_x = t2.rot_x;
-    rot_y = t2.rot_y;
-    rot_z = t2.rot_z;
+//     rot_x = t2.rot_x;
+//     rot_y = t2.rot_y;
+//     rot_z = t2.rot_z;
 
-    return *this;
-}
+//     return *this;
+// }
 
 Transform Transform::operator- (Transform& t2)
 {

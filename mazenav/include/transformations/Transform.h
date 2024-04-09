@@ -21,9 +21,11 @@ class Transform
     Transform inverse();
 
     static bool test();
+
+    // Copy constructor
     
     // Assignment operator
-    Transform operator= (const Transform& t2);
+    // Transform operator= (const Transform& t2);
     // Sum of the transforms
     Transform operator+ (Transform& t2);
     // Get arg1 in relation to arg2 (transform from arg2 to arg1)
