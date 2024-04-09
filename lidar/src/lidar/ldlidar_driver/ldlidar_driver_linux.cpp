@@ -21,7 +21,7 @@
 
 #ifdef __linux__
 
-#include "ldlidar_driver/ldlidar_driver_linux.h"
+#include "lidar/ldlidar_driver/ldlidar_driver_linux.h"
 
 namespace ldlidar {
 

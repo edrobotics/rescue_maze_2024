@@ -17,8 +17,8 @@
  * limitations under the License.
  */
 
-#include "ldlidar_driver/serial_interface_linux.h"
-#include "ldlidar_driver/log_module.h"
+#include "lidar/ldlidar_driver/serial_interface_linux.h"
+#include "lidar/ldlidar_driver/log_module.h"
 
 #ifdef __linux__
 

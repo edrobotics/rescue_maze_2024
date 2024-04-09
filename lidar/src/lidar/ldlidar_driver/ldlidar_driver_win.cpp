@@ -21,7 +21,7 @@
 
 #ifdef WIN32
 
-#include "ldlidar_driver/ldlidar_driver_win.h"
+#include "lidar/ldlidar_driver/ldlidar_driver_win.h"
 
 namespace ldlidar {
 

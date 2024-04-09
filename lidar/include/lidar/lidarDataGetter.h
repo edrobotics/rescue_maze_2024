@@ -5,9 +5,9 @@
 #include <thread>
 #include <math.h>
 
-#include <ldlidar_driver/ldlidar_driver_linux.h>
+#include "lidar/ldlidar_driver/ldlidar_driver_linux.h"
 
-#include <lidar/lidarFiles.h>
+#include "lidar/lidarFiles.h"
 
 // #define CODE_READ_LIDAR
 
@@ -37,5 +37,5 @@ class LidarDataGetter
     ldlidar::LDLidarDriverLinuxInterface ldInterface;
     std::chrono::_V2::system_clock::time_point lastLidarUseTime;
 
-    int64_t lidarScanTimeMS = 1000/10;
+    const int64_t lidarScanTimeMS = 1000/10;
 };

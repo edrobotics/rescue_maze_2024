@@ -28,10 +28,10 @@
 #include <mutex>
 #include <functional>
 
-#include "ldlidar_driver/slbf.h"
-#include "ldlidar_driver/sl_transform.h"
-#include "ldlidar_driver/tofbf.h"
-#include "ldlidar_driver/ldlidar_protocol.h"
+#include "lidar/ldlidar_driver/slbf.h"
+#include "lidar/ldlidar_driver/sl_transform.h"
+#include "lidar/ldlidar_driver/tofbf.h"
+#include "lidar/ldlidar_driver/ldlidar_protocol.h"
 
 namespace ldlidar {
 

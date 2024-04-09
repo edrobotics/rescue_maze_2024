@@ -7,9 +7,8 @@
 
 #include <opencv2/opencv.hpp>
 
-#include <lidar/lidarCoordinate.h>
-
-#define TILE_READ_AMOUNT 9 //MUST BE ODD
+#include "lidar/lidarCoordinate.h"
+#include "lidar/lidarDataStructures.h"
 
 class LidarLineAnalyser
 {
@@ -18,7 +17,7 @@ class LidarLineAnalyser
 
     double getOrientation();
     cv::Point getTilePosition();
-    std::array<std::array<cv::Vec<bool, 4>, TILE_READ_AMOUNT>, TILE_READ_AMOUNT> getMap(); //We need better way. Map object?
+    LocalTileMap getMap(); //We need better way. Map object?
     // int getInts();
 
     private:
@@ -41,7 +40,7 @@ class LidarLineAnalyser
 
     double orientation;
     cv::Point position;
-    std::array<std::array<cv::Vec<bool, 4>, TILE_READ_AMOUNT>, TILE_READ_AMOUNT> relMap  = {{{false, false, false, false}}};
+    LocalTileMap relMap;
 
     std::vector<SLine> anaLines; //All lines
     std::vector<SLine> wallLines; //Likely walls

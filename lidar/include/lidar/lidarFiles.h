@@ -5,7 +5,7 @@
 
 #include <opencv2/opencv.hpp>
 
-#include <ldlidar_driver/ldlidar_datatype.h>
+#include <lidar/ldlidar_driver/ldlidar_datatype.h>
 
 #ifdef RPI
 #define PROJECTPATH std::string("/home/theseus/RCJ2024/lidar/")

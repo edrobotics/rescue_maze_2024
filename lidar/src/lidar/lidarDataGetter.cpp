@@ -1,4 +1,4 @@
-#include <lidar/lidarDataGetter.h>
+#include "lidar/lidarDataGetter.h"
 
 using namespace ldlidar;
 using namespace std;
@@ -16,9 +16,6 @@ LidarDataGetter::LidarDataGetter()
     cout << "starting: " << ldInterface.Start() << "\n";
 
     lastLidarUseTime = std::chrono::system_clock::now();
-    double lidarScanFreq;
-    ldInterface.GetLidarScanFreq(lidarScanFreq);
-    lidarScanTimeMS = 1000/lidarScanFreq;
     #endif
 }
 

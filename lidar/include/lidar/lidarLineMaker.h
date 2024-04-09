@@ -6,16 +6,16 @@
 
 #include <opencv2/opencv.hpp>
 
-#include <ldlidar_driver/ldlidar_datatype.h>
+#include "lidar/ldlidar_driver/ldlidar_datatype.h"
 
-#include <lidar/lidarCoordinate.h>
-#include <lidar/lidarFiles.h>
+#include "lidar/lidarCoordinate.h"
+#include "lidar/lidarFiles.h"
 
 class LidarLineMaker
 {
     public:
-    LidarLineMaker(ldlidar::Points2D& points);
-    LidarLineMaker(ldlidar::Points2D& points, cv::Mat& debugOut);
+    LidarLineMaker(ldlidar::Points2D points);
+    LidarLineMaker(ldlidar::Points2D points, cv::Mat& debugOut);
 
     /** @brief Gets lines that were formed by the points
      * @retval The lines

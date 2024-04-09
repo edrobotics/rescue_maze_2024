@@ -3,7 +3,7 @@
 using namespace std;
 using namespace cv;
 
-LidarLineMaker::LidarLineMaker(ldlidar::Points2D& points)
+LidarLineMaker::LidarLineMaker(ldlidar::Points2D points)
 {
     vector<Vec4i> linesP; //detection output
     drawLines(points, linesP);
@@ -12,7 +12,7 @@ LidarLineMaker::LidarLineMaker(ldlidar::Points2D& points)
     mergeLines(linesP, combinedLines);
 }
 
-LidarLineMaker::LidarLineMaker(ldlidar::Points2D& points, cv::Mat& debugOut)
+LidarLineMaker::LidarLineMaker(ldlidar::Points2D points, cv::Mat& debugOut)
 {
     vector<Vec4i> linesP; //detection output
     cvtColor(drawLines(points, linesP), debugOut, COLOR_GRAY2BGR);

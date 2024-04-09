@@ -11,8 +11,6 @@ LidarLineAnalyser::LidarLineAnalyser(vector<Vec<Point, 2>> lines)
         anaLines.push_back(SLine(*i));
     }
 
-    // calcOrientation();
-    // calcPosition();
     calcMap();
 }
 
@@ -28,7 +26,7 @@ Point LidarLineAnalyser::getTilePosition()
     return position;
 }
 
-array<array<Vec<bool, 4>, TILE_READ_AMOUNT>, TILE_READ_AMOUNT> LidarLineAnalyser::getMap()
+LocalTileMap LidarLineAnalyser::getMap()
 {
     if (!mapCalced) calcMap();
     return relMap;
@@ -196,7 +194,7 @@ void LidarLineAnalyser::calcMap()
 {
     if (!orientationCalced) calcOrientation();
     if (!positionCalced) calcPosition();
-    //This should maybe be changed...
+    
     int tileEndPointsXY[TILE_READ_AMOUNT+1];
     for (size_t i = 0; i < TILE_READ_AMOUNT+1; i++)
     {
@@ -241,8 +239,8 @@ void LidarLineAnalyser::calcMap()
 				bool setNext = minDiffEndXIndex > 0;
 				for (int j = smallerIndex; j < largerIndex; j++)
 				{
-					relMap[j][minDiffEndXIndex][1] = true;
-					if(setNext) relMap[j][minDiffEndXIndex-1][3] = true;
+					relMap.relativeMap[j][minDiffEndXIndex][1] = true;
+					if(setNext) relMap.relativeMap[j][minDiffEndXIndex-1][3] = true;
 				}
 			}
 			else if (minDiffEndYIndex == minDiffStartYIndex)
@@ -252,8 +250,8 @@ void LidarLineAnalyser::calcMap()
 				bool setNext = minDiffEndYIndex > 0;
 				for (int j = smallerIndex; j < largerIndex; j++)
 				{
-					relMap[minDiffEndYIndex][j][0] = true;
-					if(setNext) relMap[minDiffEndYIndex-1][j][2] = true;
+					relMap.relativeMap[minDiffEndYIndex][j][0] = true;
+					if(setNext) relMap.relativeMap[minDiffEndYIndex-1][j][2] = true;
 				}
 			}
 			else

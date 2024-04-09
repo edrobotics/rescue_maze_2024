@@ -18,7 +18,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#include "ldlidar_driver/ldlidar_driver.h"
+#include "lidar/ldlidar_driver/ldlidar_driver.h"
 
 namespace ldlidar {
 

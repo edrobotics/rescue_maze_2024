@@ -19,7 +19,7 @@
  * limitations under the License.
  */
 
-#include "ldlidar_driver/sl_transform.h"
+#include "lidar/ldlidar_driver/sl_transform.h"
 
 namespace ldlidar {
 

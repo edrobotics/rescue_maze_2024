@@ -17,7 +17,7 @@
 * limitations under the License.
 **/
 
-#include "ldlidar_driver/ldlidar_protocol.h"
+#include "lidar/ldlidar_driver/ldlidar_protocol.h"
 
 namespace ldlidar {
 

@@ -1,29 +1,12 @@
 #include <opencv2/opencv.hpp>
 
-#include <ldlidar_driver/ldlidar_driver_linux.h>
+#include <lidar/ldlidar_driver/ldlidar_driver_linux.h>
 
 #include <iostream>
 #include <chrono>
 #include <math.h>
-// #include <thread>
 
-#include <lidar/lidarDataGetter.h>
-#include <lidar/lidarLineAnalyser.h>
-#include <lidar/lidarLineMaker.h>
-
-// #define CODE_ANALYSIS
-
-// #ifdef CODE_ANALYSIS
-// #define SHOW_IMG
-
-// // #ifdef SHOW_IMG
-// // #define SHOW_IMG_SIZE cv::Range(1000, 4000)
-// // #define SHOW_CLINES //Merged
-// // #define SHOW_PLINES //Hough output
-// // #endif
-
-// // #define CODE_SAVE_SCANPLT
-// #endif
+#include <lidar/lidar.h>
 
 using namespace std;
 using namespace ldlidar;
@@ -31,12 +14,11 @@ using namespace cv;
 
 void displayImage(Mat& lineImg, LidarLineAnalyser& lAnalyser);
 
-LidarDataGetter ldGetter;
 
 int main() //Expandera mer i riktningen åt senare och tidigare punkter? (om de är sorterade efter vinkel i point2d)
 {           //Read/write intensity in txt
+    Lidar lidar;
 
-    // *** STARTUP ***
     //Pre-calculate the wall endpoints on tiles
     // int tileEndPointsXY[TILE_READ_AMOUNT+1];
     // for (size_t i = 0; i < TILE_READ_AMOUNT+1; i++)
@@ -45,21 +27,17 @@ int main() //Expandera mer i riktningen åt senare och tidigare punkter? (om de 
     // }
 
     //loop
-    Points2D points = ldGetter.getData();
+    while (true)
+    {
+        auto start = std::chrono::high_resolution_clock::now();
 
-    // #ifdef CODE_ANALYSIS
-    auto start = std::chrono::high_resolution_clock::now();
+        lidar.getLidarData();
 
-    Mat showLines;
-    LidarLineMaker lMaker(points, showLines);
+        auto end = std::chrono::high_resolution_clock::now();
+        std::cout << "Full analysis:" << std::chrono::duration_cast<std::chrono::microseconds>(end-start).count() << "µs" << std::endl;
+    }
 
-    vector<Vec<Point, 2>> combinedLines = lMaker.getLines();
-
-    LidarLineAnalyser lAnalyser(combinedLines);
-
-    displayImage(showLines, lAnalyser);
-    auto end = std::chrono::high_resolution_clock::now();
-    std::cout << "Full analysis:" << std::chrono::duration_cast<std::chrono::microseconds>(end-start).count() << "µs" << std::endl;
+    // displayImage(showLines, lAnalyser);
 
     //**************************************   SAVING FILES    **************************************//
 
@@ -86,7 +64,7 @@ void displayImage(Mat& lineImg, LidarLineAnalyser& lAnalyser)
 {
     double orientation = lAnalyser.getOrientation();
     Point relativePosition = lAnalyser.getTilePosition();
-    std::array<std::array<cv::Vec<bool, 4>, TILE_READ_AMOUNT>, TILE_READ_AMOUNT> relMap = lAnalyser.getMap();
+    std::array<std::array<cv::Vec<bool, 4>, TILE_READ_AMOUNT>, TILE_READ_AMOUNT> relMap = lAnalyser.getMap().relativeMap;
 
     Mat relativeImg = imread(BASEIMGPATH);
 

@@ -19,8 +19,8 @@
 
 #ifdef WIN32
 
-#include "ldlidar_driver/serial_interface_win.h"
-#include "ldlidar_driver/log_module.h"
+#include "lidar/ldlidar_driver/serial_interface_win.h"
+#include "lidar/ldlidar_driver/log_module.h"
 
 #include <Cfgmgr32.h>
 #include <SetupAPI.h>

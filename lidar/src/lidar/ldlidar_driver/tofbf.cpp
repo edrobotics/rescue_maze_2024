@@ -19,7 +19,7 @@
  * limitations under the License.
  */
 
-#include "ldlidar_driver/tofbf.h"
+#include "lidar/ldlidar_driver/tofbf.h"
 
 namespace ldlidar {
 

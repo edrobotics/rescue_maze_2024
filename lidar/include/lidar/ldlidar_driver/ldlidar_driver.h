@@ -24,7 +24,7 @@
 #include <chrono>
 #include <functional>
 
-#include "ldlidar_driver/ldlidar_datatype.h"
+#include "lidar/ldlidar_driver/ldlidar_datatype.h"
 
 namespace ldlidar {
 
