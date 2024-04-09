@@ -2,11 +2,14 @@
 
 Imu::Imu(TeensyCommunicator* communicator)
 {
+    mtx_general.lock();
     this->communicator = communicator;
+    mtx_general.unlock();
 }
 
 void Imu::updateVals()
 {
+    mtx_general.lock();
     communicator->transData.tsGetIMU(0, vals);
     quatVals.real = vals[TransferData::imu_real];
     quatVals.i = vals[TransferData::imu_i];
@@ -14,10 +17,12 @@ void Imu::updateVals()
     quatVals.k = vals[TransferData::imu_k];
     angles = quaternionToEuler(quatVals);
     angles = radToDeg(angles);
+    mtx_general.unlock();
 }
 
 void Imu::printVals(bool newLine)
 {
+    mtx_general.lock();
     // std::cout << "real=" << quatVals.real << "  ";
     // std::cout << "i=" << quatVals.i << "  ";
     // std::cout << "j=" << quatVals.j << "  ";
@@ -29,6 +34,8 @@ void Imu::printVals(bool newLine)
     {
     std::cout << "\n";
     }
+
+    mtx_general.unlock();
 }
 
 // You should probably not touch this function ever again, unless you know for certain there is a bug here. This is dark magic... very dark.

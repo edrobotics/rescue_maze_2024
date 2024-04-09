@@ -1,6 +1,7 @@
 #pragma once
 #include <queue>
 #include <mutex>
+#include <iostream>
 
 #include "transformations/tfsys.h"
 #include "fusion/MotorControllers.h"
@@ -36,6 +37,13 @@ namespace communication
     class PoseCommunicator
     {
         public:
+            // Default constructor
+            PoseCommunicator();
+            // Copy constructor
+            PoseCommunicator(const PoseCommunicator& pComm);
+
+            PoseCommunicator& operator=(const PoseCommunicator& pComm);
+
             // Thread safety is handled inside of the CoordinateFrame class
             CoordinateFrame worldFrame {nullptr};
             CoordinateFrame localTileFrame {&worldFrame};
@@ -48,6 +56,7 @@ namespace communication
             
         
         private:
+            std::mutex mtx_general {};
             // std::mutex mtx_world;
             // std::mutex mtx_localtile;
             // std::mutex mtx_robot;

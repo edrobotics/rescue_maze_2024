@@ -2,7 +2,9 @@
 
 MotorControllers::MotorControllers(TeensyCommunicator* communicator)
 {
+    mtx_general.lock();
     this->communicator = communicator;
+    mtx_general.unlock();
 }
 
 MotorControllers::MotorSpeeds::MotorSpeeds(int rf, int lf, int rb, int lb)
@@ -87,17 +89,19 @@ void MotorControllers::printSpeeds()
 }
 
 
-MotorControllers::MotorSpeeds MotorControllers::getSpeeds()
-{
-    return motorSpeeds;
-}
+// MotorControllers::MotorSpeeds MotorControllers::getSpeeds()
+// {
+//     return motorSpeeds;
+// }
 
-MotorControllers::Distances MotorControllers::getDistances()
-{
-    return motorDistances;
-}
+// MotorControllers::Distances MotorControllers::getDistances()
+// {
+//     return motorDistances;
+// }
 
 void MotorControllers::setSpeeds(MotorSpeeds speeds)
 {
+    mtx_speedSetter.lock();
     this->controlSpeeds = speeds;
+    mtx_speedSetter.unlock();
 }

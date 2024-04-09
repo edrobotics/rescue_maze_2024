@@ -44,4 +44,38 @@ namespace communication
         return spd;
     }
 
+
+    PoseCommunicator::PoseCommunicator()
+    {
+
+    }
+
+    PoseCommunicator& PoseCommunicator::operator=(const PoseCommunicator& pComm)
+    {
+        // std::cout << "Began assignment of PoseCommunicator" << std::endl;
+
+        // Lock mutex
+        // const std::lock_guard<std::mutex> lock(mtx_general);
+
+        worldFrame = pComm.worldFrame.getWithoutChildren();
+        // std::cout << "Copied worldframe" << std::endl;
+        localTileFrame = pComm.localTileFrame.getWithoutChildren();
+        // std::cout << "Copied localTileFrame" << std::endl;
+        localTileFrame.setParentTS(&worldFrame);
+        // std::cout << "Set localTileFrame parent" << std::endl;
+        robotFrame = pComm.robotFrame.getWithoutChildren();
+        // std::cout << "Copied robotFrame" << std::endl;
+        robotFrame.setParentTS(&localTileFrame);
+        // std::cout << "Set robotFrame parent" << std::endl;
+        
+        robotSpeed = pComm.robotSpeed.getWithoutChildren();
+        // std::cout << "Set robotSpeed" << std::endl;
+        return *this;
+    }
+
+    PoseCommunicator::PoseCommunicator(const PoseCommunicator& pComm)
+    {
+        *this = pComm;
+    }
+
 }

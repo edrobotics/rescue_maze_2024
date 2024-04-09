@@ -50,8 +50,8 @@ class MotorControllers
         void getVals();
 
         void setSpeeds(MotorSpeeds speeds);
-        MotorSpeeds getSpeeds();
-        Distances getDistances();
+        // MotorSpeeds getSpeeds();
+        // Distances getDistances();
 
         // Variables to store the latest values
         MotorSpeeds controlSpeeds {};
@@ -62,13 +62,17 @@ class MotorControllers
         void printDistances();
 
     private:
+    
+        // For TS access control
+        std::mutex mtx_general {};
+        std::mutex mtx_speedSetter;
+        std::mutex mtx_speedGetter;
+        std::mutex mtx_distanceGetter;
+
         TeensyCommunicator* communicator;
         int16_t distances[motor_num] {};
         int16_t speeds[motor_num] {};
 
-        std::mutex mtx_speedSetter;
-        std::mutex mtx_speedGetter;
-        std::mutex mtx_distanceGetter;
 
 
 };

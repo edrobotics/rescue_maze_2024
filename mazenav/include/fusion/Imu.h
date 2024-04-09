@@ -41,6 +41,10 @@ class Imu
         EulerAngle angles {};
 
     private:
+
+        // For TS access control
+        std::mutex mtx_general {};
+
         float vals[TransferData::imu_num];
         Quaternion quatVals {};
         TeensyCommunicator* communicator;

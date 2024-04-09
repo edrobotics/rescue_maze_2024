@@ -21,10 +21,10 @@ class CoordinateFrame
     // Copy constructor (TS?)
     CoordinateFrame(const CoordinateFrame& frame);
     // Assignment operator (TS)
-    CoordinateFrame operator=(const CoordinateFrame& otherFrame);
+    CoordinateFrame& operator=(const CoordinateFrame& otherFrame);
 
     // Enables child-less copying. Returns the current object but without children. (TS)
-    CoordinateFrame getWithoutChildren();
+    CoordinateFrame getWithoutChildren() const;
     // Strip the children from this object, but keep them in memory for everyone else (!TS)
     void stripChildren();
 

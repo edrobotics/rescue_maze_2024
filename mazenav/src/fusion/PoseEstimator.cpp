@@ -1,9 +1,9 @@
 #include "fusion/PoseEstimator.h"
 
-PoseEstimator::PoseEstimator(TeensyCommunicator* teensyCommunicator, Sensors* sens)
+PoseEstimator::PoseEstimator(Sensors* sens)
     // : globComm {globalCommunicator},
-      : tComm {teensyCommunicator},
-      sensors {sens}
+    //   : tComm {teensyCommunicator},
+    : sensors {sens}
 {
     #warning unsure what to do here. Initialize sensors?
 
@@ -31,10 +31,9 @@ void PoseEstimator::setFusionGroup(FusionGroup fgroup)
 
 void PoseEstimator::runLoopLooper(communication::Communicator* globComm)
 {
-    std::cout << "Started runLoopLooper" << "\n";
+    // std::cout << "Started runLoopLooper" << "\n";
     this->globComm = globComm;
-    std::cout << "Stored globcomm: " << globComm << "\n";
-    std::cout << "Update before the update: ";
+    // std::cout << "Stored globcomm: " << this->globComm << "\n";
     while (true)
     {
         runLoop();
@@ -45,24 +44,34 @@ void PoseEstimator::runLoopLooper(communication::Communicator* globComm)
 void PoseEstimator::runLoop()
 {
     // Currently: update as fast as possible for the given FusionGroup
-    std::cout << "Updating... ";
     update(fusionGroup);
-    std::cout << "done" << "\n";
 }
 
 void PoseEstimator::update(FusionGroup fgroup)
 {
+    // std::cout << "In update" << std::endl;
     #warning check synchronisation (does it happen and do we want it?)
     sensors->update();
-
-    communication::PoseCommunicator poseResult {globComm->poseComm};
+    // std::cout << "After sensor update" << std::endl;
+    // std::cout << "The in-between" << std::endl;
+    // std::cout << "Robotframe: " << globComm->poseComm.robotFrame << std::endl;
+    // std::cout << "LocalTile: " << globComm->poseComm.localTileFrame << std::endl;
+    // std::cout << "Worldframe: " << globComm->poseComm.worldFrame << std::endl;
+    // std::cout << "Speeds: " << globComm->poseComm.robotSpeed << std::endl;
+    // std::cout << "The next in-between" << std::endl;
+    communication::PoseCommunicator poseResult {globComm->poseComm}; // What we want. Also the line where the error occurs
+    // poseResult = globComm->poseComm;
+    // communication::PoseCommunicator poseResult {}; // Testing
+    // std::cout << "FusionGroup is: " << fgroup << std::endl;
     switch (fgroup)
     {
         case fg_lidar:
             poseResult = updateLidar();
             break;
         case fg_simple:
+            // std::cout << "Reached simple" << std::endl;
             poseResult = updateSimple();
+            // std::cout << "Finished simple" << std::endl;
             break;
         case fg_imu:
             poseResult = updateIMU();

@@ -45,6 +45,8 @@ class Tof
         TofData tofData {};
 
     private:
+        // For TS access control
+        std::mutex mtx_general {};
         TeensyCommunicator* communicator;
         uint16_t vals[tof_num] {0};
 

@@ -32,29 +32,40 @@ CoordinateFrame::CoordinateFrame(const CoordinateFrame& frame)
     // transform = frame.transform;
     // parent = frame.parent;
     // children = frame.children;
+    // std::cout << "CoordinateFrame copy start" << std::endl;
     *this = frame;
+    // std::cout << "CoordinateFrame copy finished" << std::endl;
 
 }
 
-CoordinateFrame CoordinateFrame::operator=(const CoordinateFrame& otherFrame)
+CoordinateFrame& CoordinateFrame::operator=(const CoordinateFrame& otherFrame)
 {
+    // std::cout << "Start assignment of CoordinateFrame" << std::endl;
     mtx_general.lock();
+    // std::cout << "Mutex locked" << std::endl;
     transform = otherFrame.transform;
+    // std::cout << "Transform set" << std::endl;
     parent = otherFrame.parent;
+    // std::cout << "Parent set" << std::endl;
     children = otherFrame.children;
+    // std::cout << "Children set" << std::endl;
     mtx_general.unlock();
+    // std::cout << "Mutex unlocked" << std::endl;
     return *this;
 }
 
 
-CoordinateFrame CoordinateFrame::getWithoutChildren()
+CoordinateFrame CoordinateFrame::getWithoutChildren() const
 {
+    // std::cout << "Starting childless copy" << std::endl;
     // Do a copy
     CoordinateFrame childless {*this};
-    childless.mtx_general.lock();
+    // std::cout << "Initial copy done" << std::endl;
 
+    childless.mtx_general.lock();
     // Remove the children
     childless.stripChildren();
+    // std::cout << "Children stripped" << std::endl;
 
     childless.mtx_general.unlock();
 
