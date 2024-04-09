@@ -1,6 +1,7 @@
 #pragma once
 
 #include "globalNav/map/tile.h"
+#include "globalNav/map/levelPosition.h"
 
 #define LEVELSIZE 50
 
@@ -9,5 +10,8 @@ class MazeLevel
 private:
     Tile mazeLevel[LEVELSIZE][LEVELSIZE];
 public:
+    MazeLevel(LevelPosition startPosition);
+    void MazeLevel::setTilePropertyAt(LevelPosition position, Tile::TileProperty property, bool toState);
+    bool MazeLevel::tileHasProperty(LevelPosition tilePosition, Tile::TileProperty property);
     inline Tile& tileAt(int x, int y) { return mazeLevel[y][x]; };
 };

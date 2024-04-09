@@ -8,7 +8,7 @@ namespace globalNav
 
 		while (true)
 		{
-			mazeNavigator.exploreMaze();
+			mazeNavigator.makeNavigationDecision();
 		}
 	}
 }

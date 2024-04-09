@@ -1,6 +1,6 @@
 #pragma once
 
-#include <vector>
+#include <stack>
 #include "globalNav/map/mazePosition.h"
 
 class MazePath
@@ -8,6 +8,7 @@ class MazePath
 public:
     MazePosition getNextPosition();
     void addPosition(MazePosition position);
+    bool isEmpty();
 private:
-    std::vector<MazePosition> positionsInPath;
+    std::stack<MazePosition> positionsInPath;
 };

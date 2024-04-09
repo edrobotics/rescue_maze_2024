@@ -1,6 +1,6 @@
 #include "globalNav/search/aStar.h"
 
-aStar::aStar(/* args */)
+AStar::AStar(/* args */)
 {
     
 }

@@ -2,12 +2,17 @@
 
 MazePosition MazePath::getNextPosition()
 {
-    MazePosition nextPosition = positionsInPath.front();
-    positionsInPath.erase(positionsInPath.begin());
+    MazePosition nextPosition = positionsInPath.top();
+    positionsInPath.pop();
     return nextPosition;
 }
 
 void MazePath::addPosition(MazePosition position)
 {
-    positionsInPath.push_back(position);
+    positionsInPath.push(position);
+}
+
+bool MazePath::isEmpty()
+{
+    return positionsInPath.empty();
 }

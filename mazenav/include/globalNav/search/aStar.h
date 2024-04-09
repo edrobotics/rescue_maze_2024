@@ -1,11 +1,12 @@
 #pragma once
 
 #include "globalNav/search/aStarTile.h"
+#include "globalNav/map/mazePosition.h"
 
-class aStar
+class AStar
 {
 private:
     /* data */
 public:
-    aStar(/* args */);
+    AStar(MazePosition toPosition);
 };
