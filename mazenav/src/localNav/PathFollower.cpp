@@ -6,50 +6,125 @@ PathFollower::PathFollower(communication::Communicator* globComm)
     this->globComm = globComm;
 }
 
-void PathFollower::setPath(Path path)
+double PathFollower::getRotSpeed()
 {
-    // Set the path
-    this->path = path;
+    double wantedAngle {yPid.getCorrection(globComm->poseComm.robotFrame.transform.pos_x)};
+    angPid.setSetpoint(wantedAngle);
+    double speedCorr {angPid.getCorrection(globComm->poseComm.robotFrame.transform.rot_z)};
+    return speedCorr;
+}
 
-    // Update the last known frame 
-    lastKnownFrame.setParentTS(&(path.parentFrame));
-    // Reset the last known frame
-    lastKnownFrame.transform = Transform{};
+double PathFollower::getTransSpeed()
+{
+    #warning not yet implemented correctly
+    return 200;
+}
+
+void PathFollower::setLinePos(double newYLine)
+{
+    // If it is this extreme, we cannot follow it
+    // #warning line setting is limited here
+    // if (newYLine>250 || newYLine<50)
+    // {
+    //     return;
+    // }
+    yPid.setSetpoint(newYLine);
+}
+
+void PathFollower::runLoop()
+{
+    yPid.restartPID();
+    angPid.restartPID();
+    communication::DriveCommand dC {globComm->navigationComm.popCommand()};
+    switch(dC)
+    {
+        case communication::DriveCommand::driveForward:
+            setLinePos(GRID_SIZE/2.0);
+            drive();
+            break;
+
+        default:
+            std::cerr << "Cannot yet execute this DriveCommand" << std::endl;
+            break;
+    }
+}
+
+void PathFollower::drive()
+{
+    bool finished {false};
+    while(!finished)
+    {
+        driver.calcSpeeds(getTransSpeed(), getRotSpeed());
+        driver.setSpeeds();
+        finished = checkIsFinishedDriving();
+    }
+    driver.stop();
 }
 
 
-
-bool PathFollower::setLookaheadDistance(double distance)
+void PathFollower::runLoopLooper()
 {
-    // Too low
-    if (distance < minLookaheadDistance)
+    while(true)
     {
-        lookaheadDistance = minLookaheadDistance;
+        runLoop();
+    }
+}
+
+bool PathFollower::checkIsFinishedDriving()
+{
+    #warning not done yet. This is only prototype hack
+    int input {};
+    std::cin >> input;
+    if (input)
+    {
+        return true;
+    }
+    else
+    {
         return false;
     }
-
-    // Too high
-    if (distance > maxLookaheadDistance)
-    {
-        lookaheadDistance = maxLookaheadDistance;
-        return false;
-    }
-
-    // Valid
-    lookaheadDistance = distance;
-    return true;
 }
 
-double PathFollower::getTurnSpeed()
-{
-    return pid.getCorrection(getLookaheadAngle());
-}
+// void PathFollower::setPath(Path path)
+// {
+//     // Set the path
+//     this->path = path;
 
-double PathFollower::getLookaheadAngle()
-{
-    Transform tf {getLookaheadTF()};
-    return atan2(tf.pos_y, tf.pos_x)-M_PI_2;
-}
+//     // Update the last known frame 
+//     lastKnownFrame.setParentTS(&(path.parentFrame));
+//     // Reset the last known frame
+//     lastKnownFrame.transform = Transform{};
+// }
+
+
+
+// bool PathFollower::setLookaheadDistance(double distance)
+// {
+//     // Too low
+//     if (distance < minLookaheadDistance)
+//     {
+//         lookaheadDistance = minLookaheadDistance;
+//         return false;
+//     }
+
+//     // Too high
+//     if (distance > maxLookaheadDistance)
+//     {
+//         lookaheadDistance = maxLookaheadDistance;
+//         return false;
+//     }
+
+//     // Valid
+//     lookaheadDistance = distance;
+//     return true;
+// }
+
+
+// double PathFollower::getLookaheadAngle()
+// {
+//     Transform tf {getLookaheadTF()};
+//     return atan2(tf.pos_y, tf.pos_x)-M_PI_2;
+// }
 
 // Transform PathFollower::getLookaheadTF()
 // {
@@ -57,98 +132,98 @@ double PathFollower::getLookaheadAngle()
 // }
 
 
-#warning handle division by zero somehow. Happens if two transforms are equal. Check for that instead or do that higher up in the chain?
-Transform PathFollower::getLookaheadTF()
-{
-    int index {pathSegmentIndex};
-    #warning not protected if index is out of bounds
-    CoordinateFrame cf1 {path.keyFrames.at(index).frame};
-    CoordinateFrame cf2 {path.keyFrames.at(index+1).frame};
+// #warning handle division by zero somehow. Happens if two transforms are equal. Check for that instead or do that higher up in the chain?
+// Transform PathFollower::getLookaheadTF()
+// {
+//     int index {pathSegmentIndex};
+//     #warning not protected if index is out of bounds
+//     CoordinateFrame cf1 {path.keyFrames.at(index).frame};
+//     CoordinateFrame cf2 {path.keyFrames.at(index+1).frame};
 
-    Transform tf1 {cf1.getTransformLevelTo(&(globComm->poseComm.robotFrame), 1, 2)};
-    Transform tf2 {cf2.getTransformLevelTo(&(globComm->poseComm.robotFrame), 1, 2)};
+//     Transform tf1 {cf1.getTransformLevelTo(&(globComm->poseComm.robotFrame), 1, 2)};
+//     Transform tf2 {cf2.getTransformLevelTo(&(globComm->poseComm.robotFrame), 1, 2)};
 
-    double dx {tf2.pos_x-tf1.pos_x};
-    double dy {tf2.pos_y-tf1.pos_y};
-    double dr2 {pow(dx, 2) + pow(dy, 2)};
-    double D {tf1.pos_x*tf2.pos_y - tf2.pos_x*tf1.pos_y};
+//     double dx {tf2.pos_x-tf1.pos_x};
+//     double dy {tf2.pos_y-tf1.pos_y};
+//     double dr2 {pow(dx, 2) + pow(dy, 2)};
+//     double D {tf1.pos_x*tf2.pos_y - tf2.pos_x*tf1.pos_y};
     
-    double discriminant {pow(lookaheadDistance, 2)*dr2 - pow(D, 2)};
+//     double discriminant {pow(lookaheadDistance, 2)*dr2 - pow(D, 2)};
 
-    Transform returnTf {};
+//     Transform returnTf {};
 
-    if (discriminant >= 0)
-    {
-        // One or two intersections
-        Transform sol1 {};
-        sol1.pos_x = (D*dy+copysignl(1.0, dy)*dx*sqrt(discriminant))/(dr2);
-        sol1.pos_y = (-D*dx+abs(dy)*sqrt(discriminant))/(dr2);
-        sol1.rot_z = tf2.rot_z;
+//     if (discriminant >= 0)
+//     {
+//         // One or two intersections
+//         Transform sol1 {};
+//         sol1.pos_x = (D*dy+copysignl(1.0, dy)*dx*sqrt(discriminant))/(dr2);
+//         sol1.pos_y = (-D*dx+abs(dy)*sqrt(discriminant))/(dr2);
+//         sol1.rot_z = tf2.rot_z;
 
-        Transform sol2 {};
-        sol2.pos_x = (D*dy-copysignl(1.0, dy)*dx*sqrt(discriminant))/(dr2);
-        sol2.pos_y = (-D*dx-abs(dy)*sqrt(discriminant))/(dr2);
-        sol2.rot_z = tf2.rot_z;
+//         Transform sol2 {};
+//         sol2.pos_x = (D*dy-copysignl(1.0, dy)*dx*sqrt(discriminant))/(dr2);
+//         sol2.pos_y = (-D*dx-abs(dy)*sqrt(discriminant))/(dr2);
+//         sol2.rot_z = tf2.rot_z;
 
-        // Select the point that is is furthest along the line
-        Transform diffTf = sol2-sol1;
-        if (diffTf.pos_y > 0)
-        {
-            returnTf = sol2;
-        }
-        else
-        {
-            returnTf = sol1;
-        }
+//         // Select the point that is is furthest along the line
+//         Transform diffTf = sol2-sol1;
+//         if (diffTf.pos_y > 0)
+//         {
+//             returnTf = sol2;
+//         }
+//         else
+//         {
+//             returnTf = sol1;
+//         }
 
-        // Set the returnTf to the last known frame
-        // Realtive to the robot
-        CoordinateFrame lastKnown {&(globComm->poseComm.robotFrame), returnTf};
-        // Transform to the parent of the lastknownframe
-        lastKnownFrame.transform = lastKnown.getTransformLevelTo(lastKnownFrame.getParent(), 2, 2);
+//         // Set the returnTf to the last known frame
+//         // Realtive to the robot
+//         CoordinateFrame lastKnown {&(globComm->poseComm.robotFrame), returnTf};
+//         // Transform to the parent of the lastknownframe
+//         lastKnownFrame.transform = lastKnown.getTransformLevelTo(lastKnownFrame.getParent(), 2, 2);
 
-    }
-    else
-    {
-        // No intersections
+//     }
+//     else
+//     {
+//         // No intersections
         
-        if (lastKnownFrame.transform == Transform{})
-        {
-            // If last known frame does not exist
-            returnTf = tf2;
+//         if (lastKnownFrame.transform == Transform{})
+//         {
+//             // If last known frame does not exist
+//             returnTf = tf2;
             
-        }
-        else
-        {
-            // If last known frame does exist
-            returnTf = lastKnownFrame.getTransformLevelTo(globComm->poseComm.robotFrame.getParent(), 2, 2);
-        }
+//         }
+//         else
+//         {
+//             // If last known frame does exist
+//             returnTf = lastKnownFrame.getTransformLevelTo(globComm->poseComm.robotFrame.getParent(), 2, 2);
+//         }
 
 
-    }
+//     }
 
-    return returnTf;
+//     return returnTf;
 
-}
+// }
 
 
-void PathFollower::runLoop()
-{
-    // If the current target has been visited
-    if (pathFrameVisited(&(path.keyFrames.at(pathSegmentIndex+1))))
-    {
-        // Go to the next target point
-        ++pathSegmentIndex;
-    }
+// void PathFollower::runLoop()
+// {
+//     // If the current target has been visited
+//     // if (pathFrameVisited(&(path.keyFrames.at(pathSegmentIndex+1))))
+//     // {
+//     //     // Go to the next target point
+//     //     ++pathSegmentIndex;
+//     // }
 
-    // Calculate the wanted turn speed
-    double turnSpeed {getTurnSpeed()};
+//     // Calculate the wanted turn speed
+//     double turnSpeed {getRotSpeed()};
 
-    // Set the turnspeed to the kinematic driver and in turn the motor driver.
-    #warning translational speed not set
-    driver.calcSpeeds(0, turnSpeed);
-    driver.setSpeeds();
-}
+//     // Set the turnspeed to the kinematic driver and in turn the motor driver.
+//     #warning translational speed not set
+//     driver.calcSpeeds(0, turnSpeed);
+//     driver.setSpeeds();
+// }
 
 // CoordinateFrame PathFollower::getLookaheadCFInterpolated()
 // {
@@ -163,17 +238,17 @@ void PathFollower::runLoop()
 // }
 
 
-bool PathFollower::pathFrameVisited(PathFrame* pFrame)
-{
-    // Get the robot pose in the coordinate system of the visiting tile
-    Transform resultTf {globComm->poseComm.robotFrame.getTransformLevelTo(&(pFrame->frame), 1, 2)};
-    // If you are past the line that is visitedradius from the point to the previous point
-    if (resultTf.pos_y > -pFrame->visitedRadius)
-    {
-        return true;
-    }
-    else
-    {
-        return false;
-    }
-}
+// bool PathFollower::pathFrameVisited(PathFrame* pFrame)
+// {
+//     // Get the robot pose in the coordinate system of the visiting tile
+//     Transform resultTf {globComm->poseComm.robotFrame.getTransformLevelTo(&(pFrame->frame), 1, 2)};
+//     // If you are past the line that is visitedradius from the point to the previous point
+//     if (resultTf.pos_y > -pFrame->visitedRadius)
+//     {
+//         return true;
+//     }
+//     else
+//     {
+//         return false;
+//     }
+// }

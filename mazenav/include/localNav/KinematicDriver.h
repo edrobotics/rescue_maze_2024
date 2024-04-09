@@ -22,6 +22,9 @@ class KinematicDriver
         // rSpeed - rotational speed, rad/s
         void calcSpeeds(int tSpeed, int rSpeed);
 
+        // Stops the robot
+        void stop();
+
         // Test communication
         void testComm();
 
