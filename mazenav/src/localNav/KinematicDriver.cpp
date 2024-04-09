@@ -48,6 +48,15 @@ void KinematicDriver::setSpeeds()
     globComm->motors.setSpeeds(motorSpeeds);
 }
 
+void KinematicDriver::stop()
+{
+    motorSpeeds.lf = 0;
+    motorSpeeds.lb = 0;
+    motorSpeeds.rf = 0;
+    motorSpeeds.rb = 0;
+    setSpeeds();
+}
+
 void KinematicDriver::testComm()
 {
     MotorControllers::MotorSpeeds speeds {};

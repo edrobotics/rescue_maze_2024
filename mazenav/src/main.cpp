@@ -12,11 +12,10 @@ communication::Communicator comm {};
 
 int main()
 {
-    std::cout << "Hello world!" << std::endl;
     
     std::thread fusionT = std::thread(fusion::main, &comm);
     // std::thread globNavT = std::thread(globalNav::main, &comm);
-    // std::thread locNavT = std::thread(localNav::main, &comm);
+    std::thread locNavT = std::thread(localNav::main, &comm);
 
     fusionT.join();
     // globNavT.join();

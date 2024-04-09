@@ -98,13 +98,15 @@ Transform Transform::operator-() const
 
 std::ostream& operator << (std::ostream& os, Transform& tf)
 {
-    os << "p_x = " << std::setfill('0') << std::setw(6) << std::fixed << std::setprecision(1) << tf.pos_x << "  "
-    << "p_y = " << std::setfill('0') << std::setw(6) << std::fixed << std::setprecision(1) << tf.pos_y << "  "
-    << "p_z = " << std::setfill('0') << std::setw(6) << std::fixed << std::setprecision(1) << tf.pos_z << "  "
+    os
+    << "p_x = " << std::setfill('0') << std::internal << std::setw(6) << std::fixed << std::setprecision(1) << tf.pos_x << "  "
+    << "p_y = " << std::setfill('0') << std::internal << std::setw(6) << std::fixed << std::setprecision(1) << tf.pos_y << "  "
+    // << "p_z = " << std::setfill('0') << std::internal << std::setw(6) << std::fixed << std::setprecision(1) << tf.pos_z << "  "
 
-    << "r_x = " << std::setfill('0') << std::setw(6) << std::fixed << std::setprecision(1) << tf.rot_x << "  "
-    << "r_y = " << std::setfill('0') << std::setw(6) << std::fixed << std::setprecision(1) << tf.rot_y << "  "
-    << "r_z = " << std::setfill('0') << std::setw(6) << std::fixed << std::setprecision(1) << tf.rot_z << "  ";
+    // << "r_x = " << std::setfill('0') << std::internal << std::setw(5) << std::fixed << std::setprecision(3) << tf.rot_x*180/M_PI << "  "
+    // << "r_y = " << std::setfill('0') << std::internal << std::setw(5) << std::fixed << std::setprecision(3) << tf.rot_y*180/M_PI << "  "
+    << "r_z = " << std::setfill('0') << std::internal << std::setw(5) << std::fixed << std::setprecision(1) << tf.rot_z*180/M_PI << "  "
+    ;
 
     return os;
 }
