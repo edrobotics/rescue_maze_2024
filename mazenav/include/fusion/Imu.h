@@ -16,7 +16,8 @@ class Imu
         Imu(TeensyCommunicator* communicator);
 
         // Gets new values from teensycommunicator and calculates euler angles
-        void updateVals();
+        // Returns true if the values have been updated
+        bool updateVals();
 
         // Print the values
         // newLine - whether or not to print the newline

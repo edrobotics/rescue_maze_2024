@@ -12,8 +12,9 @@ class Tof
     public:
         Tof(TeensyCommunicator* communicator);
 
-        // Get new values from teensycommunicator
-        void updateVals();
+        // Get new values from teensycommunicator.
+        // Returns true if the values have been updated
+        bool updateVals();
 
         // Prints the values
         void printVals(bool newline);

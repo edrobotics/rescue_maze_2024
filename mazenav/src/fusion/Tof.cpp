@@ -5,11 +5,11 @@ Tof::Tof(TeensyCommunicator* communicator)
     this->communicator = communicator;
 }
 
-void Tof::updateVals()
+bool Tof::updateVals()
 {
     mtx_general.lock();
     // Read vals
-    communicator->transData.tsGetTof(vals);
+    bool retVal {communicator->transData.tsGetTof(vals)};
 
     tofData.b = vals[tof_b];
     tofData.lb = vals[tof_lb];
@@ -19,6 +19,8 @@ void Tof::updateVals()
     tofData.rf = vals[tof_rf];
     tofData.rb = vals[tof_rb];
     mtx_general.unlock();
+
+    return retVal;
 }
 
 void Tof::printVals(bool newline)

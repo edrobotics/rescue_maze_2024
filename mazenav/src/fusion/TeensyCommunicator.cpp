@@ -96,6 +96,7 @@ bool TeensyCommunicator::readFrequent()
     
     transData.tsSetByteArr(indata);
     transData.tsDecompose();
+    transData.setAllUpdated();
 
     return true;
 }

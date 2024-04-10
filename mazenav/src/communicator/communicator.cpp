@@ -54,6 +54,7 @@ namespace communication
     {
         // std::cout << "Began assignment of PoseCommunicator" << std::endl;
 
+        #warning should check if mutex should be locked here
         // Lock mutex
         // const std::lock_guard<std::mutex> lock(mtx_general);
 

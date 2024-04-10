@@ -6,10 +6,33 @@ Sensors::Sensors(TeensyCommunicator* communicator)
     this->communicator = communicator;
 }
 
-void Sensors::update()
+void Sensors::update(bool capture)
 {
-    imu0.updateVals();
-    tofs.updateVals();
+    if (capture)
+    {
+        bool imuUpdated {false};
+        bool tofUpdated {false};
+
+        // While at least one not updated exists
+        while (!imuUpdated || !tofUpdated)
+        {
+            if (!imuUpdated)
+            {
+                imuUpdated = imu0.updateVals();
+            }
+
+            if (!tofUpdated)
+            {
+                tofUpdated = tofs.updateVals();
+            }
+        }
+
+    }
+    else
+    {
+        imu0.updateVals();
+        tofs.updateVals();
+    }
 }
 
 void Sensors::print()

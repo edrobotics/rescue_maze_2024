@@ -7,10 +7,10 @@ Imu::Imu(TeensyCommunicator* communicator)
     mtx_general.unlock();
 }
 
-void Imu::updateVals()
+bool Imu::updateVals()
 {
     mtx_general.lock();
-    communicator->transData.tsGetIMU(0, vals);
+    bool retVal {communicator->transData.tsGetIMU(0, vals)};
     quatVals.real = vals[TransferData::imu_real];
     quatVals.i = vals[TransferData::imu_i];
     quatVals.j = vals[TransferData::imu_j];
@@ -18,6 +18,8 @@ void Imu::updateVals()
     angles = quaternionToEuler(quatVals);
     // angles = radToDeg(angles);
     mtx_general.unlock();
+
+    return retVal;
 }
 
 void Imu::printVals(bool newLine)

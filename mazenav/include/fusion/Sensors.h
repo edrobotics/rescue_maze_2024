@@ -10,7 +10,9 @@ class Sensors
     public:
         Sensors(TeensyCommunicator* communicator);
 
-        void update();
+        // Update all sensors.
+        // capture - if true, wait for all to be updated. If false, return regardless of update state.
+        void update(bool capture);
 
         // Print out the sensor values in a nice format
         void print();

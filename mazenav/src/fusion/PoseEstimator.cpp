@@ -50,8 +50,8 @@ void PoseEstimator::runLoop()
 void PoseEstimator::update(FusionGroup fgroup)
 {
     // std::cout << "In update" << std::endl;
-    #warning check synchronisation (does it happen and do we want it?)
-    sensors->update();
+    #warning 
+    sensors->update(true);
     // std::cout << "After sensor update" << std::endl;
     // std::cout << "The in-between" << std::endl;
     // std::cout << "Robotframe: " << globComm->poseComm.robotFrame << std::endl;
@@ -75,16 +75,16 @@ void PoseEstimator::update(FusionGroup fgroup)
             poseResult = updateIMU();
             break;
         case fg_lidar_imu:
-            std::cout << "[PoseEstimator][ERROR]: Lidar+IMU pose estimation not implemented";
+            std::cerr << "[PoseEstimator][ERROR]: Lidar+IMU pose estimation not implemented";
             break;
         case fg_lidar_simple:
             poseResult = updateLidarSimple();
             break;
         case fg_none:
-            std::cout << "[PoseEstimator][ERROR]: No FusionGroup selected";
+            std::cerr << "[PoseEstimator][ERROR]: No FusionGroup selected";
             break;
         default:
-            std::cout << "[PoseEstimator][ERROR]: Default case reached";
+            std::cerr << "[PoseEstimator][ERROR]: Default case reached";
             break;
     }
 

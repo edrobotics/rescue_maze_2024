@@ -75,7 +75,9 @@ void TransferDataWrapper::tsSetControlArr(uint8_t data[])
 bool TransferDataWrapper::tsGetTof(uint16_t values[])
 {
     mtx_freqData.lock();
-    bool ret {getTof(values)};
+    bool ret {tofUpdated};
+    getTof(values);
+    tofUpdated = false;
     mtx_freqData.unlock();
     return ret;
 
@@ -85,7 +87,9 @@ bool TransferDataWrapper::tsGetTof(uint16_t values[])
 bool TransferDataWrapper::tsGetCol(int index, uint16_t values[])
 {
     mtx_freqData.lock();
-    bool ret {getCol(index, values)};
+    bool ret {colUpdated};
+    getCol(index, values);
+    colUpdated = false;
     mtx_freqData.unlock();
     return ret;
 
@@ -95,7 +99,9 @@ bool TransferDataWrapper::tsGetCol(int index, uint16_t values[])
 bool TransferDataWrapper::tsGetIMU(int index, float values[])
 {
     mtx_freqData.lock();
-    bool ret {getIMU(index, values)};
+    bool ret {imuUpdated};
+    getIMU(index, values);
+    imuUpdated = false;
     mtx_freqData.unlock();
     return ret;
 
@@ -105,7 +111,9 @@ bool TransferDataWrapper::tsGetIMU(int index, float values[])
 bool TransferDataWrapper::tsGetRPM(int16_t values[])
 {
     mtx_freqData.lock();
-    bool ret {getRPM(values)};
+    bool ret {rpmUpdated};
+    getRPM(values);
+    rpmUpdated = false;
     mtx_freqData.unlock();
     return ret;
 
@@ -115,7 +123,9 @@ bool TransferDataWrapper::tsGetRPM(int16_t values[])
 bool TransferDataWrapper::tsGetPos(int16_t values[])
 {
     mtx_freqData.lock();
-    bool ret {getPos(values)};
+    bool ret {posUpdated};
+    getPos(values);
+    posUpdated = false;
     mtx_freqData.unlock();
     return ret;
 
@@ -141,3 +151,11 @@ bool TransferDataWrapper::tsSetRpmControl(int16_t values[])
 
 }
 
+void TransferDataWrapper::setAllUpdated()
+{
+    tofUpdated = true;
+    colUpdated = true;
+    imuUpdated = true;
+    rpmUpdated = true;
+    posUpdated = true;
+}
