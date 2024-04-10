@@ -13,19 +13,19 @@ class MazeMap
 private:
     std::vector<MazeLevel> mazeLevels;
     Tile::TileProperty directionToWallProperty(GlobalDirections direction);
-    bool MazeMap::tileHasWallInDirection(MazePosition position, GlobalDirections directionToNeighbor);
+    bool tileHasWallInDirection(MazePosition position, GlobalDirections directionToNeighbor);
     bool neighborIsInDirection(MazePosition basePosition, MazePosition neighborPosition, GlobalDirections direction);
     
 public:
     MazeMap(LevelPosition startPosition);
 
     bool availableNeighborTilesAreExplored(MazePosition position);
-    bool MazeMap::neighborIsAvailableAndUnexplored(MazePosition position, GlobalDirections neighborDirection);
+    bool neighborIsAvailableAndUnexplored(MazePosition position, GlobalDirections neighborDirection);
 
     bool tileHasProperty(MazePosition tilePosition, Tile::TileProperty tileProperty);
-    bool MazeMap::neighborHasProperty(MazePosition basePosition, GlobalDirections neighborDirection, Tile::TileProperty tileProperty);
+    bool neighborHasProperty(MazePosition basePosition, GlobalDirections neighborDirection, Tile::TileProperty tileProperty);
     void setTileProperty(MazePosition tilePosition, Tile::TileProperty tileProperty, bool toState);
     
     std::optional<MazePosition> neighborInDirection(MazePosition basePosition, GlobalDirections stepDirection);
-    std::optional<GlobalDirections> MazeMap::neighborToDirection(MazePosition basePosition, MazePosition neighborPosition);
+    std::optional<GlobalDirections> neighborToDirection(MazePosition basePosition, MazePosition neighborPosition);
 };
