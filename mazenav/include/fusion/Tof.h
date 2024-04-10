@@ -6,6 +6,7 @@
 #include "fusion/mutexes.h"
 
 #include "fusion/TeensyCommunicator.h"
+#include "fusion/SingleTofData.h"
 
 class Tof
 {
@@ -21,14 +22,14 @@ class Tof
 
         struct TofData
         {
-            int lf {0}; // Left front
-            int lb {0}; // Left back
-            int rf {0}; // Right front
-            int rb {0}; // Right back
+            SingleTofData lf {}; // Left front
+            SingleTofData lb {}; // Left back
+            SingleTofData rf {}; // Right front
+            SingleTofData rb {}; // Right back
 
-            int fl {0}; // Front left
-            int fr {0}; // Front right
-            int b {0}; // Back
+            SingleTofData fl {}; // Front left
+            SingleTofData fr {}; // Front right
+            SingleTofData b {}; // Back
         };
 
         enum TofID

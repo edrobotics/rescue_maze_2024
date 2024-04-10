@@ -395,13 +395,13 @@ ConditionalAverageTerm PoseEstimator::getTofTransYDiff()
     ConditionalAverageTerm result {0, 0};
 
     Tof::TofData td {sensors->tofs.tofData};
-    ConditionalAverageTerm flDiff {td.fl-lastTofFL, 1};
-    ConditionalAverageTerm frDiff {td.fr-lastTofFR, 1};
-    ConditionalAverageTerm bDiff {td.b-lastTofB, 1};
+    ConditionalAverageTerm flDiff {td.fl.avg-lastTofFL, 1};
+    ConditionalAverageTerm frDiff {td.fr.avg-lastTofFR, 1};
+    ConditionalAverageTerm bDiff {td.b.avg-lastTofB, 1};
 
-    lastTofFL = td.fl;
-    lastTofFR = td.fr;
-    lastTofB = td.b;
+    lastTofFL = td.fl.avg;
+    lastTofFR = td.fr.avg;
+    lastTofB = td.b.avg;
 
     // If angle is too large the sensors see the side walls instead of the one in front
     #warning this changes with the distance to the wall in front. When we are closer, do we want to accept a greater angle? But how do we know if we are closer?
@@ -459,9 +459,9 @@ ConditionalAverageTerm PoseEstimator::getTofYTrans(double angle, double yoffset,
 
     Tof::TofData td {sensors->tofs.tofData};
     // Get Y distances
-    ConditionalAverageTerm flY {td.fl*cos(angle), 1};
-    ConditionalAverageTerm frY {td.fr*cos(angle), 1};
-    ConditionalAverageTerm bY {td.b*cos(angle), 1};
+    ConditionalAverageTerm flY {td.fl.avg*cos(angle), 1};
+    ConditionalAverageTerm frY {td.fr.avg*cos(angle), 1};
+    ConditionalAverageTerm bY {td.b.avg*cos(angle), 1};
 
     // Change to robot centre
     flY.value = GRID_SIZE - (flY.value+yoffset*cos(angle)+xoffset*sin(angle));
@@ -528,11 +528,11 @@ ConditionalAverageTerm PoseEstimator::getTofXTrans(double angle)
 
     if (getIsTofXLeft())
     {
-        x1 = getCentredistanceFromTwoTof(td.lf, td.lb, TOF_SX_OFFSET, angle);
+        x1 = getCentredistanceFromTwoTof(td.lf.avg, td.lb.avg, TOF_SX_OFFSET, angle);
         x1 = wrapValue(x1, minXPos, maxXPos);
         if (getIsTofXRight())
         {
-            x2 = GRID_SIZE - (getCentredistanceFromTwoTof(td.rf, td.rb, TOF_SX_OFFSET, angle));
+            x2 = GRID_SIZE - (getCentredistanceFromTwoTof(td.rf.avg, td.rb.avg, TOF_SX_OFFSET, angle));
             x2 = wrapValue(x2, minXPos, maxXPos);
             result.value = (x1+x2)/2.0;
         }
@@ -545,7 +545,7 @@ ConditionalAverageTerm PoseEstimator::getTofXTrans(double angle)
     }
     else if (getIsTofXRight())
     {
-        result.value = GRID_SIZE - (getCentredistanceFromTwoTof(td.rf, td.rb, TOF_SX_OFFSET, angle));
+        result.value = GRID_SIZE - (getCentredistanceFromTwoTof(td.rf.avg, td.rb.avg, TOF_SX_OFFSET, angle));
         result.value = wrapValue(result.value, minXPos, maxXPos);
         result.weight = 1;
     }
@@ -575,12 +575,12 @@ ConditionalAverageTerm PoseEstimator::getTofZRot(double curAng)
     double angle2 {};
     if (getIsTofXLeft())
     {
-        angle1 = getAngleFromTwoTof(td.lb, td.lf, TOF_SY_OFFSET*2);
+        angle1 = getAngleFromTwoTof(td.lb.avg, td.lf.avg, TOF_SY_OFFSET*2);
         angle1 = wrapValue(angle1, minZRot, maxZRot);
         // std::cout << "Left: " << angle1;
         if (getIsTofXRight())
         {
-            angle2 = -getAngleFromTwoTof(td.rb, td.rf, TOF_SY_OFFSET*2);
+            angle2 = -getAngleFromTwoTof(td.rb.avg, td.rf.avg, TOF_SY_OFFSET*2);
             angle2 = wrapValue(angle2, minZRot, maxZRot);
             // std::cout << ", Right: " << angle2;
             result.value = (angle1+angle2)/2.0;
@@ -593,7 +593,7 @@ ConditionalAverageTerm PoseEstimator::getTofZRot(double curAng)
     }
     else if (getIsTofXRight())
     {
-        result.value = -getAngleFromTwoTof(td.rb, td.rf, TOF_SY_OFFSET*2);
+        result.value = -getAngleFromTwoTof(td.rb.avg, td.rf.avg, TOF_SY_OFFSET*2);
         result.value = wrapValue(result.value, minZRot, maxZRot);
         // std::cout << ", Right: " << result.value;
         result.weight = 1;
@@ -667,12 +667,12 @@ bool PoseEstimator::getIsTofXLeft()
 {
     Tof::TofData td {sensors->tofs.tofData};
 
-    if (td.lf>WALL_PRESENCE_THRESHOLD_SENSOR)
+    if (td.lf.cur>WALL_PRESENCE_THRESHOLD_SENSOR)
     {
         return false;
     }
 
-    if (td.lb>WALL_PRESENCE_THRESHOLD_SENSOR)
+    if (td.lb.cur>WALL_PRESENCE_THRESHOLD_SENSOR)
     {
         return false;
     }
@@ -685,12 +685,12 @@ bool PoseEstimator::getIsTofXRight()
 {
     Tof::TofData td {sensors->tofs.tofData};
 
-    if (td.rf>WALL_PRESENCE_THRESHOLD_SENSOR)
+    if (td.rf.cur>WALL_PRESENCE_THRESHOLD_SENSOR)
     {
         return false;
     }
 
-    if (td.rb>WALL_PRESENCE_THRESHOLD_SENSOR)
+    if (td.rb.cur>WALL_PRESENCE_THRESHOLD_SENSOR)
     {
         return false;
     }
