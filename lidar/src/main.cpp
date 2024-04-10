@@ -19,14 +19,6 @@ int main() //Expandera mer i riktningen åt senare och tidigare punkter? (om de 
 {           //Read/write intensity in txt
     Lidar lidar;
 
-    //Pre-calculate the wall endpoints on tiles
-    // int tileEndPointsXY[TILE_READ_AMOUNT+1];
-    // for (size_t i = 0; i < TILE_READ_AMOUNT+1; i++)
-    // {
-    //     tileEndPointsXY[i] = 300 * i - 300*(TILE_READ_AMOUNT)/2;
-    // }
-
-    //loop
     while (true)
     {
         auto start = std::chrono::high_resolution_clock::now();

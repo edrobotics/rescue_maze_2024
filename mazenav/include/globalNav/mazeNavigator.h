@@ -12,7 +12,7 @@
 #define START_X LEVELSIZE/2
 #define START_Y LEVELSIZE/2
 #define START_LEVEL 0
-#define START_DIRECTION Directions::North
+#define START_DIRECTION GlobalDirections::North
 
 class MazeNavigator
 {
@@ -21,7 +21,7 @@ class MazeNavigator
     std::vector<MazePosition> knownUnexploredTilePositions;
 
     MazePosition currentPosition = MazePosition(START_X, START_Y, START_LEVEL);
-    Directions currentDirection = START_DIRECTION;
+    GlobalDirections currentDirection = START_DIRECTION;
 
     MazeMap mazeMap = MazeMap(currentPosition);
 
@@ -29,11 +29,22 @@ class MazeNavigator
     MazePath pathToFollow;
 
     void exploreMaze();
-    bool tilesInPath();
+
+    bool anyTilesInPath();
     void followPath();
     void startFollowingPathToLastUnexploredTile();
-    void exploreBestNeighbor();
     MazePath pathTo(MazePosition toPosition);
+
+    void giveLowLevelInstruction(communication::DriveCommand command);
+
+    bool exploreBestNeighbor();
+    bool canExploreNeighborInDirection(LocalDirections neighborDirection);
+    void goToNeighborInDirection(LocalDirections direction);
+    void turnToDirection(LocalDirections direction);
+    void driveTile();
+
+    GlobalDirections localToGlobalDirection(LocalDirections localDirections);
+    LocalDirections globalToLocalDirection(GlobalDirections globalDirections);
 
     public:
     MazeNavigator(communication::Communicator* communicatorInstance) : communicatorSingleton(communicatorInstance) {};
