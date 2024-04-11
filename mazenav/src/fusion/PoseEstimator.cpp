@@ -123,7 +123,7 @@ communication::PoseCommunicator PoseEstimator::updateSimple()
     // Rotation:
     Average rotAbs {};
     ConditionalAverageTerm robotAngle {getTofZRot(resultPose.lastRobotFrame.transform.rot_z)};
-    // rotAbs.terms.push_back(robotAngle);
+    rotAbs.terms.push_back(robotAngle);
 
     ConditionalAverageTerm wheelRot {getWheelRotDiff()};
     wheelRot.value += resultPose.lastRobotFrame.transform.rot_z;
@@ -134,15 +134,13 @@ communication::PoseCommunicator PoseEstimator::updateSimple()
     imuRot.value += resultPose.lastRobotFrame.transform.rot_z;
     rotAbs.terms.push_back(imuRot);
 
-    for (auto& term : rotAbs.terms)
-    {
-        term.value = wrapValue(term.value, minZRot, maxZRot);
-    }
+    rotAbs.stripZeroWeight();
+    wrapVectorSameScale(rotAbs.terms, minZRot, maxZRot);
 
     double ang {};
     try
     {
-        resultPose.robotFrame.transform.rot_z = rotAbs.calc();
+        resultPose.robotFrame.transform.rot_z = wrapValue(rotAbs.calc(), minZRot, maxZRot);
         ang = robotAngle.value;
     }
     catch(const std::runtime_error& e)
@@ -173,18 +171,15 @@ communication::PoseCommunicator PoseEstimator::updateSimple()
     // transXAbs.terms.push_back(tofTransX);
     // transYAbs.terms.push_back(tofTransY);
 
-    for (auto& term : transXAbs.terms)
-    {
-        term.value = wrapValue(term.value, minXPos, maxXPos);
-    }
-    for (auto& term : transYAbs.terms)
-    {
-        term.value = wrapValue(term.value, minYPos, maxYPos);
-    }
+    transXAbs.stripZeroWeight();
+    wrapVectorSameScale(transXAbs.terms, minXPos, maxXPos);
+
+    transYAbs.stripZeroWeight();
+    wrapVectorSameScale(transYAbs.terms, minYPos, maxYPos);
 
     try
     {
-        resultPose.robotFrame.transform.pos_x = transXAbs.calc();
+        resultPose.robotFrame.transform.pos_x = wrapValue(transXAbs.calc(), minXPos, maxXPos);
     }
     catch(std::runtime_error& e)
     {
@@ -193,7 +188,7 @@ communication::PoseCommunicator PoseEstimator::updateSimple()
 
     try
     {
-        resultPose.robotFrame.transform.pos_y = transYAbs.calc();
+        resultPose.robotFrame.transform.pos_y = wrapValue(transYAbs.calc(), minXPos, maxXPos);
     }
     catch(std::runtime_error& e)
     {
@@ -231,19 +226,67 @@ communication::PoseCommunicator PoseEstimator::updateIMU()
 }
 
 
-double PoseEstimator::wrapValue(double value, double min, double max)
+double PoseEstimator::wrapValue(double value, double lower, double upper)
 {
-    double diffCorr {max-min};
-    while (value>=max)
+    double diffCorr {upper-lower};
+    while (value>=upper)
     {
         value-=diffCorr;
     }
-    while (value<min)
+    while (value<lower)
     {
         value+=diffCorr;
     }
 
     return value;
+}
+
+// void PoseEstimator::wrapValueSameScale(double& val1, double& val2, double lower, double upper)
+// {
+//     double diff {upper-lower};
+//     val1 = wrapValue(val1, lower, upper);
+//     val2 = wrapValue(val2, lower, upper);
+
+//     if (abs(val2-val1) > diff/2.0)
+//     {
+//         if (val1<val2)
+//         {
+//             val1+=diff;
+//         }
+//         else
+//         {
+//             val2+=diff;
+//         }
+//     }
+// }
+
+void PoseEstimator::wrapVectorSameScale(std::vector<ConditionalAverageTerm>& vec, double lower, double upper)
+{
+    double diff {upper-lower};
+    if (vec.size()==0)
+    {
+        return;
+    }
+    std::sort(vec.begin(), vec.end());
+    // The index in vec which denotes the largest small number (before the gap)
+    int lowerLimitIndex {-1};
+
+    // Find the gap
+    for (int i=0;i<vec.size()-1;++i)
+    {
+        if (vec.at(i+1).value-vec.at(i).value > diff/3.0)
+        {
+            // We have found the last number before the gap
+            lowerLimitIndex = i;
+            break;
+        }
+    }
+
+    // Get the lower values up to the scale of the larger values
+    for (int i=0;i<=lowerLimitIndex;++i)
+    {
+        vec.at(i).value += diff;
+    }
 }
 
 

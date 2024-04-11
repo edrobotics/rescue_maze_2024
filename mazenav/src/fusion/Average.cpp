@@ -33,3 +33,24 @@ double Average::calc()
 {
     return calc(terms);
 }
+
+void Average::stripZeroWeight()
+{
+    for (auto iter = terms.begin(); iter != terms.end();)
+    {
+        if (iter->weight==0)
+        {
+            iter = terms.erase(iter);
+        }
+        else
+        {
+            ++iter;
+        }
+    }
+}
+
+
+bool ConditionalAverageTerm::operator<(const ConditionalAverageTerm& comp) const
+{
+    return value < comp.value;
+}
