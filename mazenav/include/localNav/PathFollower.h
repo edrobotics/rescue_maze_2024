@@ -35,22 +35,47 @@ class PathFollower
         // Set the pos_y to follow.
         void setLinePos(double newYLine);
 
-        // Checks if the robot has completed the move by looking at the position of the robot.
-        bool checkIsFinishedDriving();
 
     private:
         communication::Communicator* globComm;
         KinematicDriver driver;
 
         // Input y error, get out wanted angle (correction)
-        PIDController yPid {0.1, 0, 0};
+        PIDController yPid {1, 0, 0};
         // Input angle error, output wanted chassis speeds correction
-        PIDController angPid {0.1, 0, 0};
+        PIDController angPid {1, 0, 0};
 
         // Do the driving in accordance with parameters set earlier
-        void drive();
+        void drive(int direction);
         // Turn in accordance with parameters set earlier
-        void turn();
+        void turn(int direction);
+
+
+        // Set the target point given a drivecommand
+        void setTargetPointTf(communication::DriveCommand dC);
+        // The target point
+        CoordinateFrame targetPoint {nullptr};
+        // The transform from targetpoint to robotFrame (targetpoint in relation to robotframe)
+        // Transform targetPointTf {};
+        // Distance left to the target
+        double distLeftToTarget {};
+        // Calculate the distance mentioned above
+        double getDistLeftToTarget();
+        // Angle left to the target
+        double angLeftToTarget {};
+        // Calculate the angle mentioned above. Gives the shortest possible solution.
+        double getAngLeftToTarget();
+
+        // Checks if the robot has completed the move by looking at the position of the robot.
+        // direction - (+1) or (-1), where the sign indicates the desired direction of movement.
+        bool checkIsFinishedDriving(int direction);
+        bool checkIsFinishedTurning(int direction);
+
+        static constexpr double DRIVE_STOP_THRESHOLD {5};
+        static constexpr double TURN_STOP_THRESHOLD {0.035};
+
+
+
 
         // Old pid
         // PIDController pid {1, 0, 0};
@@ -84,9 +109,11 @@ class PathFollower
         // Return if the given PathFrame has been visited
         // bool pathFrameVisited(PathFrame* pFrame);
 
-        // Calculate the wanted rotational speed of the robot..
-        double getRotSpeed();
-        // Calculate the wanted translational speed of the robot.
-        double getTransSpeed();
+        // Calculate the wanted rotational speed of the robot for driving
+        double getRotSpeedDriving();
+        // Calculate the wanted translational speed of the robot for driving
+        double getTransSpeedDriving();
+
+        double getRotSpeedTurning(int direction);
 
 };

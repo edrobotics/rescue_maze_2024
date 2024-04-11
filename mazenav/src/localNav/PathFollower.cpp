@@ -4,9 +4,10 @@ PathFollower::PathFollower(communication::Communicator* globComm)
     : driver {globComm}
 {
     this->globComm = globComm;
+    targetPoint.setParentTS(&(globComm->poseComm.localTileFrame));
 }
 
-double PathFollower::getRotSpeed()
+double PathFollower::getRotSpeedDriving()
 {
     double wantedAngle {yPid.getCorrection(globComm->poseComm.robotFrame.transform.pos_x)};
     angPid.setSetpoint(wantedAngle);
@@ -14,10 +15,23 @@ double PathFollower::getRotSpeed()
     return speedCorr;
 }
 
-double PathFollower::getTransSpeed()
+double PathFollower::getTransSpeedDriving()
 {
     #warning not yet implemented correctly
     return 200;
+}
+
+double PathFollower::getRotSpeedTurning(int direction)
+{
+    if (direction>=0)
+    {
+        direction = 1;
+    }
+    else
+    {
+        direction = -1;
+    }
+    return direction*M_PI;
 }
 
 void PathFollower::setLinePos(double newYLine)
@@ -36,11 +50,21 @@ void PathFollower::runLoop()
     yPid.restartPID();
     angPid.restartPID();
     communication::DriveCommand dC {globComm->navigationComm.popCommand()};
+    // Set the target to go to
+    setTargetPointTf(dC);
     switch(dC)
     {
         case communication::DriveCommand::driveForward:
             setLinePos(GRID_SIZE/2.0);
-            drive();
+            drive(1);
+            break;
+        
+        case communication::DriveCommand::turnLeft:
+            turn(1);
+            break;
+
+        case communication::DriveCommand::turnRight:
+            turn(-1);
             break;
 
         default:
@@ -49,18 +73,30 @@ void PathFollower::runLoop()
     }
 }
 
-void PathFollower::drive()
+void PathFollower::drive(int direction)
 {
     bool finished {false};
     while(!finished)
     {
-        driver.calcSpeeds(getTransSpeed(), getRotSpeed());
+        distLeftToTarget = getDistLeftToTarget();
+        driver.calcSpeeds(getTransSpeedDriving(), getRotSpeedDriving());
         driver.setSpeeds();
-        finished = checkIsFinishedDriving();
+        finished = checkIsFinishedDriving(direction);
     }
     driver.stop();
 }
 
+void PathFollower::turn(int direction)
+{
+    bool finished {false};
+    while (!finished)
+    {
+        angLeftToTarget = getAngLeftToTarget();
+        driver.calcSpeeds(0, getRotSpeedTurning(direction));
+        driver.setSpeeds();
+        finished = checkIsFinishedTurning(direction);
+    }
+}
 
 void PathFollower::runLoopLooper()
 {
@@ -70,12 +106,44 @@ void PathFollower::runLoopLooper()
     }
 }
 
-bool PathFollower::checkIsFinishedDriving()
+bool PathFollower::checkIsFinishedDriving(int direction)
 {
-    #warning not done yet. This is only prototype hack
-    int input {};
-    std::cin >> input;
-    if (input)
+    if (direction>=0)
+    {
+        direction = 1;
+    }
+    else
+    {
+        direction = -1;
+    }
+
+    // distLeftToTarget is updated in another loop, as it is used both for this and for speed control
+
+    if (direction*distLeftToTarget < DRIVE_STOP_THRESHOLD)
+    {
+        return true;
+    }
+    else
+    {
+        return false;
+    }
+
+}
+
+bool PathFollower::checkIsFinishedTurning(int direction)
+{
+    if (direction>=0)
+    {
+        direction = 1;
+    }
+    else
+    {
+        direction = -1;
+    }
+
+    // angLeftToTarget is updated in another loop, as it is used both for this and for speed control
+
+    if (direction*angLeftToTarget < TURN_STOP_THRESHOLD)
     {
         return true;
     }
@@ -84,6 +152,54 @@ bool PathFollower::checkIsFinishedDriving()
         return false;
     }
 }
+
+
+
+void PathFollower::setTargetPointTf(communication::DriveCommand dC)
+{
+    Transform resultTf {GRID_SIZE/2, GRID_SIZE/2, 0, 0, 0, 0};
+    switch (dC)
+    {
+        case communication::DriveCommand::driveForward:
+            resultTf.pos_y += GRID_SIZE;
+            break;
+        
+        case communication::DriveCommand::turnLeft:
+            resultTf.rot_z += M_PI_2;
+            break;
+        
+        case communication::DriveCommand::turnRight:
+            resultTf.rot_z -= M_PI_2;
+            break;
+
+        default:
+            std::cerr << "Cannot set target point with this DriveCommand";
+            break;
+    }
+    
+    targetPoint.applyTransform(resultTf);
+    
+}
+
+
+double PathFollower::getDistLeftToTarget()
+{
+    Transform targetPointTf {targetPoint.getTransformLevelTo(&(globComm->poseComm.robotFrame), 1, 1)};
+    return targetPointTf.pos_y;
+}
+
+double PathFollower::getAngLeftToTarget()
+{
+    Transform targetPointTf {targetPoint.getTransformLevelTo(&(globComm->poseComm.robotFrame), 1, 1)};
+    if (targetPointTf.rot_z > M_PI)
+    {
+        targetPointTf.rot_z -= 2*M_PI;
+    }
+    return targetPointTf.rot_z;
+}
+
+
+
 
 // void PathFollower::setPath(Path path)
 // {
@@ -217,7 +333,7 @@ bool PathFollower::checkIsFinishedDriving()
 //     // }
 
 //     // Calculate the wanted turn speed
-//     double turnSpeed {getRotSpeed()};
+//     double turnSpeed {getRotSpeedDriving()};
 
 //     // Set the turnspeed to the kinematic driver and in turn the motor driver.
 //     #warning translational speed not set
