@@ -93,14 +93,14 @@ void PoseEstimator::update(FusionGroup fgroup)
     // poseResult.lastRobotFrame.setParentTS(&(poseResult.localTileFrame));
 
     // Handle updating of localTile (global coordinates)
-    // updatePoseComm(poseResult);
+    updatePoseComm(poseResult);
 
 
     // Write the new pose with only changes.
     #warning concurrency issues?
     globComm->poseComm = poseResult;
 
-    std::cout << "robotFrame: " << globComm->poseComm.robotFrame << /*"  lastRobotFrame: " << globComm->poseComm.lastRobotFrame << */ "\n";
+    // std::cout << "robotFrame: " << globComm->poseComm.robotFrame << /*"  lastRobotFrame: " << globComm->poseComm.lastRobotFrame << */ "\n";
 }
 
 
@@ -247,43 +247,20 @@ double PoseEstimator::wrapValue(double value, double min, double max)
 }
 
 
-// void PoseEstimator::wrapPoseComm(communication::PoseCommunicator& poseComm)
-// {
-//     Transform ghostTf {};
-//     // Z
-//     if (poseComm.robotFrame.transform.rot_z < minZRot)
-//     {
-//         ghostTf.pos_x += GRID_SIZE;
-//         ghostTf.rot_z += M_PI_2;
-//     }
-//     else if (poseComm.robotFrame.transform.rot_z >= maxZRot)
-//     {
-//         ghostTf.pos_y += GRID_SIZE;
-//         ghostTf.rot_z += -M_PI_2;
-//     }
+void PoseEstimator::wrapPoseComm(communication::PoseCommunicator& poseComm)
+{
+    Transform ghostTf {};
+    // Z
+    poseComm.robotFrame.transform.rot_z = wrapValue(poseComm.robotFrame.transform.rot_z, minZRot, maxZRot);
+    // poseComm.lastRobotFrame.transform.rot_z = wrapValue(poseComm.lastRobotFrame.transform.rot_z, minZRot, maxZRot);
 
+    poseComm.robotFrame.transform.pos_x = wrapValue(poseComm.robotFrame.transform.pos_x, minXPos, maxXPos);
+    // poseComm.lastRobotFrame.transform.pos_x = wrapValue(poseComm.lastRobotFrame.transform.pos_x, minXPos, maxXPos);
+    
+    poseComm.robotFrame.transform.pos_y = wrapValue(poseComm.robotFrame.transform.pos_y, minYPos, maxYPos);
+    // poseComm.lastRobotFrame.transform.pos_y = wrapValue(poseComm.lastRobotFrame.transform.pos_y, minYPos, maxYPos);
 
-//     if (poseComm.robotFrame.transform.pos_x < minXPos)
-//     {
-//         ghostTf.pos_x += -GRID_SIZE;
-//     }
-//     else if (poseComm.robotFrame.transform.pos_x >= maxXPos)
-//     {
-//         ghostTf.pos_x += GRID_SIZE;
-//     }
-
-
-//     if (poseComm.robotFrame.transform.pos_y < minYPos)
-//     {
-//         ghostTf.pos_y += -GRID_SIZE;
-//     }
-//     else if (poseComm.robotFrame.transform.pos_y >= maxYPos)
-//     {
-//         ghostTf.pos_y += GRID_SIZE;
-//     }
-
-//     poseComm.localTileFrame.ghostMove(ghostTf);
-// }
+}
 
 
 void PoseEstimator::updatePoseComm(communication::PoseCommunicator& pose)
@@ -350,8 +327,26 @@ void PoseEstimator::updatePoseComm(communication::PoseCommunicator& pose)
     std::cout << std::endl;
 
 
+    std::cout << "Before ghostMove: " << "\n"
+    << "robot: " << pose.robotFrame << "  "
+    << "lastRobot: " << pose.lastRobotFrame << "  "
+    << "tile: " << pose.localTileFrame << "  "
+    << "\n";
     // Carry out the ghostmove
     pose.localTileFrame.ghostMove(ghostTf);
+    std::cout << "After ghostMove: " << "\n"
+    << "robot: " << pose.robotFrame << "  "
+    << "lastRobot: " << pose.lastRobotFrame << "  "
+    << "tile: " << pose.localTileFrame << "  "
+    << "\n";
+    wrapPoseComm(pose);
+    std::cout << "After wrapping: " << "\n"
+    << "robot: " << pose.robotFrame << "  "
+    << "lastRobot: " << pose.lastRobotFrame << "  "
+    << "tile: " << pose.localTileFrame << "  "
+    << "\n";
+
+    
 }
 
 

@@ -19,9 +19,9 @@ bool Imu::updateVals()
         quatVals.k = vals[TransferData::imu_k];
         angles = quaternionToEuler(quatVals);
         // std::cout << radToDeg(angles).z << "\n";
-        mtx_general.unlock();
-        printVals(true);
-        mtx_general.lock();
+        // mtx_general.unlock();
+        // printVals(true);
+        // mtx_general.lock();
         // angles = radToDeg(angles)
     }
     mtx_general.unlock();
