@@ -1,6 +1,6 @@
 #include "globalNav/map/tile.h"
 
-inline void Tile::setTileProperty(TileProperty propertyToSet, bool toState)
+void Tile::setTileProperty(TileProperty propertyToSet, bool toState)
 {
 	tileInfoIntType bitToRead = (0b1 << (tileInfoIntType)propertyToSet); //Shift left to the bit which should be read
 
@@ -11,7 +11,7 @@ inline void Tile::setTileProperty(TileProperty propertyToSet, bool toState)
     }
 }
 
-inline bool Tile::tileHasProperty(TileProperty propertyToGet)
+bool Tile::tileHasProperty(TileProperty propertyToGet)
 {
 	return ((tileInfo >> (tileInfoIntType)propertyToGet) & 0b1);
 }

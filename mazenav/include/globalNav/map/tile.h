@@ -19,8 +19,8 @@ class Tile
         explored
     };
 
-    inline void setTileProperty(TileProperty set, bool state);
-    inline bool tileHasProperty(TileProperty get);
+    void setTileProperty(TileProperty set, bool state);
+    bool tileHasProperty(TileProperty get);
     
     private:
     typedef int32_t tileInfoIntType;

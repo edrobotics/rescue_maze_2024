@@ -8,7 +8,7 @@
 class MazeLevel
 {
 private:
-    Tile mazeLevel[LEVELSIZE][LEVELSIZE];
+    Tile mazeLevel[LEVELSIZE][LEVELSIZE] = {{Tile()}};
 public:
     MazeLevel(LevelPosition startPosition);
     void setTilePropertyAt(LevelPosition position, Tile::TileProperty property, bool toState);
