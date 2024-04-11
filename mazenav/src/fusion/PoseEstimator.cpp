@@ -91,6 +91,8 @@ void PoseEstimator::update(FusionGroup fgroup)
     // Write the new pose with only changes.
     #warning concurrency issues?
     globComm->poseComm = poseResult;
+
+    std::cout << globComm->poseComm.robotFrame << "\n";
 }
 
 
@@ -667,12 +669,12 @@ bool PoseEstimator::getIsTofXLeft()
 {
     Tof::TofData td {sensors->tofs.tofData};
 
-    if (td.lf.cur>WALL_PRESENCE_THRESHOLD_SENSOR)
+    if (td.lf.cur>WALL_PRESENCE_THRESHOLD_SENSOR || td.lf.avg>WALL_PRESENCE_THRESHOLD_SENSOR)
     {
         return false;
     }
 
-    if (td.lb.cur>WALL_PRESENCE_THRESHOLD_SENSOR)
+    if (td.lb.cur>WALL_PRESENCE_THRESHOLD_SENSOR || td.lb.avg>WALL_PRESENCE_THRESHOLD_SENSOR)
     {
         return false;
     }
@@ -685,12 +687,12 @@ bool PoseEstimator::getIsTofXRight()
 {
     Tof::TofData td {sensors->tofs.tofData};
 
-    if (td.rf.cur>WALL_PRESENCE_THRESHOLD_SENSOR)
+    if (td.rf.cur>WALL_PRESENCE_THRESHOLD_SENSOR || td.rf.avg>WALL_PRESENCE_THRESHOLD_SENSOR)
     {
         return false;
     }
 
-    if (td.rb.cur>WALL_PRESENCE_THRESHOLD_SENSOR)
+    if (td.rb.cur>WALL_PRESENCE_THRESHOLD_SENSOR || td.rb.avg>WALL_PRESENCE_THRESHOLD_SENSOR)
     {
         return false;
     }

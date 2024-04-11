@@ -160,7 +160,7 @@ class PoseEstimator
         static constexpr double WALL_PRESENCE_THRESHOLD_CENTRE {220};
         // If sensor value above this, wall deemed not present
         #warning untuned variable
-        static constexpr double WALL_PRESENCE_THRESHOLD_SENSOR {220};
+        static constexpr double WALL_PRESENCE_THRESHOLD_SENSOR {140};
 
         // Can TOF in robot X direction (left) be used for absolute positioning?
         bool getIsTofXLeft();
