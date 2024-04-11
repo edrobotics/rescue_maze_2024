@@ -7,7 +7,7 @@ class MazePath
 {
 public:
     MazePosition getNextPosition();
-    void addPosition(MazePosition position);
+    void addPositionInFront(MazePosition position);
     bool isEmpty();
 private:
     std::stack<MazePosition> positionsInPath;

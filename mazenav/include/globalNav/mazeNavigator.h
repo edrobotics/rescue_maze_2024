@@ -25,7 +25,7 @@ class MazeNavigator
 
     MazeMap mazeMap = MazeMap(currentPosition);
 
-    PathFinder pathFinder;
+    PathFinder pathFinder{&mazeMap};
     MazePath pathToFollow;
 
     void exploreMaze();

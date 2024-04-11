@@ -7,6 +7,8 @@
 class PathFinder
 {
 private:
+    MazeMap* mazeMap;
 public:
-    MazePath findPathTo(MazePosition toPosition);
+    PathFinder(MazeMap* map) : mazeMap(map) {};
+    MazePath findPathTo(MazePosition currentPosition, MazePosition toPosition);
 };

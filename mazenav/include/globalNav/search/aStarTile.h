@@ -5,8 +5,13 @@
 
 struct AStarTile
 {
-    Tile* tile;
-    AStarTile* parent;
+    AStarTile* parent = nullptr;
 
     MazePosition position;
+
+    int h = 0;
+    int g = 0;
+
+    int totalCost() const {return h + g;}
+    AStarTile(MazePosition mazePosition) : position(mazePosition) {};
 };

@@ -26,6 +26,6 @@ public:
     bool neighborHasProperty(MazePosition basePosition, GlobalDirections neighborDirection, Tile::TileProperty tileProperty);
     void setTileProperty(MazePosition tilePosition, Tile::TileProperty tileProperty, bool toState);
     
-    std::optional<MazePosition> neighborInDirection(MazePosition basePosition, GlobalDirections stepDirection);
+    MazePosition neighborInDirection(MazePosition basePosition, GlobalDirections stepDirection);
     std::optional<GlobalDirections> neighborToDirection(MazePosition basePosition, MazePosition neighborPosition);
 };

@@ -7,7 +7,7 @@ MazePosition MazePath::getNextPosition()
     return nextPosition;
 }
 
-void MazePath::addPosition(MazePosition position)
+void MazePath::addPositionInFront(MazePosition position)
 {
     positionsInPath.push(position);
 }
