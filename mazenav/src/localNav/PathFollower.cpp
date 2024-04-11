@@ -184,18 +184,20 @@ void PathFollower::setTargetPointTf(communication::DriveCommand dC)
 
 double PathFollower::getDistLeftToTarget()
 {
-    Transform targetPointTf {targetPoint.getTransformLevelTo(&(globComm->poseComm.robotFrame), 1, 1)};
-    return targetPointTf.pos_y;
+    // Transform targetPointTf {targetPoint.getTransformLevelTo(&(globComm->poseComm.robotFrame), 1, 1)};
+    // return targetPointTf.pos_y;
+    return targetPoint.transform.pos_y-globComm->poseComm.robotFrame.transform.pos_y;
 }
 
 double PathFollower::getAngLeftToTarget()
 {
-    Transform targetPointTf {targetPoint.getTransformLevelTo(&(globComm->poseComm.robotFrame), 1, 1)};
-    if (targetPointTf.rot_z > M_PI)
+    // Transform targetPointTf {targetPoint.getTransformLevelTo(&(globComm->poseComm.robotFrame), 1, 1)};
+    double rotDiff {targetPoint.transform.rot_z-globComm->poseComm.robotFrame.transform.rot_z};
+    if (rotDiff> M_PI)
     {
-        targetPointTf.rot_z -= 2*M_PI;
+        rotDiff -= 2*M_PI;
     }
-    return targetPointTf.rot_z;
+    return rotDiff;
 }
 
 
