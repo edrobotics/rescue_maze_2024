@@ -21,9 +21,9 @@ private:
 
     struct CompareWeights
 	{
-		bool operator()(const AStarTile left, const AStarTile right) const 
+		bool operator()(const AStarTile* left, const AStarTile* right) const 
 		{
-			return ((left.totalCost()) >( right.totalCost())); //compare tile distances
+			return ((left->totalCost()) >( right->totalCost())); //compare tile distances
 		}
 	};
 
@@ -38,9 +38,9 @@ private:
 
     AStarTile setTileProperties(MazePosition newPosition, AStarTile* parentTile);
     int heuristic(MazePosition fromPosition);
-    
+
     bool neighborIsAvailable(MazePosition tile, MazePosition neighbor, GlobalDirections neighborDirection);
-    bool AStar::inBounds(MazePosition position);
+    bool inBounds(MazePosition position);
 
 public:
     AStar(MazePosition currentPosition, MazePosition toPosition, MazeMap* map);

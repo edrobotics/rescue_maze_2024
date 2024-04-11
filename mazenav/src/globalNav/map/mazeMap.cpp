@@ -78,6 +78,7 @@ MazePosition MazeMap::neighborInDirection(MazePosition basePosition, GlobalDirec
         xOffset = 1;
         break;
     default:
+        break;
     }
 
     return MazePosition(basePosition.tileX + xOffset, basePosition.tileY + yOffset, basePosition.levelIndex);
