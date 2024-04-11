@@ -194,7 +194,7 @@ class PoseEstimator
         // Given a poseComm and the last poseComm, ghost-move the local tile to register tile transitions
         // Assumes that input posecomm has values inside of limits.
         // Will only register one "step" - for example cannot register two tile moves forward in one execution, as that is not feasible with these speeds and loop times
-        void updatePoseComm(communication::PoseCommunicator& poseComm, communication::PoseCommunicator lastPoseComm);
+        void updatePoseComm(communication::PoseCommunicator& pose);
         // Limits for wrapping a pose
         const int minYPos {0};
         const int maxYPos {GRID_SIZE};

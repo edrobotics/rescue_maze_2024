@@ -59,18 +59,20 @@ namespace communication
         // const std::lock_guard<std::mutex> lock(mtx_general);
 
         worldFrame = pComm.worldFrame.getWithoutChildren();
-        // std::cout << "Copied worldframe" << std::endl;
+        
         localTileFrame = pComm.localTileFrame.getWithoutChildren();
-        // std::cout << "Copied localTileFrame" << std::endl;
         localTileFrame.setParentTS(&worldFrame);
-        // std::cout << "Set localTileFrame parent" << std::endl;
+        
         robotFrame = pComm.robotFrame.getWithoutChildren();
-        // std::cout << "Copied robotFrame" << std::endl;
         robotFrame.setParentTS(&localTileFrame);
-        // std::cout << "Set robotFrame parent" << std::endl;
+
+        lastRobotFrame = pComm.lastRobotFrame.getWithoutChildren();
+        lastRobotFrame.setParentTS(&localTileFrame);
         
         robotSpeed = pComm.robotSpeed.getWithoutChildren();
-        // std::cout << "Set robotSpeed" << std::endl;
+
+        freshness = pComm.freshness;
+
         return *this;
     }
 
