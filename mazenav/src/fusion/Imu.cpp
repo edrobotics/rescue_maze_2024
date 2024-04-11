@@ -11,12 +11,15 @@ bool Imu::updateVals()
 {
     mtx_general.lock();
     bool retVal {communicator->transData.tsGetIMU(0, vals)};
-    quatVals.real = vals[TransferData::imu_real];
-    quatVals.i = vals[TransferData::imu_i];
-    quatVals.j = vals[TransferData::imu_j];
-    quatVals.k = vals[TransferData::imu_k];
-    angles = quaternionToEuler(quatVals);
-    // angles = radToDeg(angles);
+    if (retVal==true)
+    {
+        quatVals.real = vals[TransferData::imu_real];
+        quatVals.i = vals[TransferData::imu_i];
+        quatVals.j = vals[TransferData::imu_j];
+        quatVals.k = vals[TransferData::imu_k];
+        angles = quaternionToEuler(quatVals);
+        // angles = radToDeg(angles)
+    }
     mtx_general.unlock();
 
     return retVal;

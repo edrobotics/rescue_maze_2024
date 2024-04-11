@@ -26,6 +26,7 @@ void Sensors::update(bool capture)
                 tofUpdated = tofs.updateVals();
             }
         }
+        // tofs.printVals(true);
 
     }
     else
