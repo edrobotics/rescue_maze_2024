@@ -25,6 +25,8 @@ class CoordinateFrame
 
     // Enables child-less copying. Returns the current object but without children. (TS)
     CoordinateFrame getWithoutChildren() const;
+    // Copies everything except for children from source to the current object.
+    void setWithoutChildren(CoordinateFrame& source);
     // Strip the children from this object, but keep them in memory for everyone else (!TS)
     void stripChildren();
 

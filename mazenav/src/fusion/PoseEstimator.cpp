@@ -5,8 +5,6 @@ PoseEstimator::PoseEstimator(Sensors* sens)
     //   : tComm {teensyCommunicator},
     : sensors {sens}
 {
-    #warning unsure what to do here. Initialize sensors?
-
 }
 
 
@@ -52,15 +50,11 @@ void PoseEstimator::update(FusionGroup fgroup)
     // std::cout << "In update" << std::endl;
     #warning 
     sensors->update(true);
-    // std::cout << "After sensor update" << std::endl;
-    // std::cout << "The in-between" << std::endl;
-    // std::cout << "Robotframe: " << globComm->poseComm.robotFrame << std::endl;
-    // std::cout << "LocalTile: " << globComm->poseComm.localTileFrame << std::endl;
-    // std::cout << "Worldframe: " << globComm->poseComm.worldFrame << std::endl;
-    // std::cout << "Speeds: " << globComm->poseComm.robotSpeed << std::endl;
-    // std::cout << "The next in-between" << std::endl;
-    communication::PoseCommunicator poseResult {globComm->poseComm};
-    // std::cout << "FusionGroup is: " << fgroup << std::endl;
+    // Should copy the tree of poseComm into poseResult
+    communication::PoseCommunicator poseResult {};
+    // Save the current value so that we can set it as the old one later
+    // CoordinateFrame lastRobot {globComm->poseComm.robotFrame.getWithoutChildren()};
+    // std::cout << "lastRobot: " << lastRobot << "\n";
     switch (fgroup)
     {
         case fg_lidar:
@@ -88,11 +82,25 @@ void PoseEstimator::update(FusionGroup fgroup)
             break;
     }
 
+    // Set fresh to false to startup tile change checking.
+    if (poseResult.freshness>0)
+    {
+        --(poseResult.freshness);
+    }
+
+    // Set the lastRobot with the value stored at the top
+    // poseResult.lastRobotFrame = lastRobot.getWithoutChildren();
+    // poseResult.lastRobotFrame.setParentTS(&(poseResult.localTileFrame));
+
+    // Handle updating of localTile (global coordinates)
+    // updatePoseComm(poseResult);
+
+
     // Write the new pose with only changes.
     #warning concurrency issues?
     globComm->poseComm = poseResult;
 
-    std::cout << globComm->poseComm.robotFrame << "\n";
+    std::cout << "robotFrame: " << globComm->poseComm.robotFrame << /*"  lastRobotFrame: " << globComm->poseComm.lastRobotFrame << */ "\n";
 }
 
 
@@ -102,8 +110,10 @@ void PoseEstimator::update(FusionGroup fgroup)
 #warning currently a lot of code without the right conditional logic. Do not expect to work at all
 communication::PoseCommunicator PoseEstimator::updateSimple()
 {
-    communication::PoseCommunicator lastPose {globComm->poseComm};
-    communication::PoseCommunicator resultPose {lastPose};
+    // communication::PoseCommunicator lastPose {globComm->poseComm};
+    communication::PoseCommunicator resultPose {globComm->poseComm};
+    resultPose.lastRobotFrame = resultPose.robotFrame;
+    // CoordinateFrame resultRobot {globComm->poseComm.robotFrame};
 
     // This is where the magic happens
 
@@ -112,16 +122,16 @@ communication::PoseCommunicator PoseEstimator::updateSimple()
 
     // Rotation:
     Average rotAbs {};
-    ConditionalAverageTerm robotAngle {getTofZRot(lastPose.robotFrame.transform.rot_z)};
-    rotAbs.terms.push_back(robotAngle);
+    ConditionalAverageTerm robotAngle {getTofZRot(resultPose.lastRobotFrame.transform.rot_z)};
+    // rotAbs.terms.push_back(robotAngle);
 
     ConditionalAverageTerm wheelRot {getWheelRotDiff()};
-    wheelRot.value += lastPose.robotFrame.transform.rot_z;
+    wheelRot.value += resultPose.lastRobotFrame.transform.rot_z;
     rotAbs.terms.push_back(wheelRot);
 
     ConditionalAverageTerm imuRot {getIMURotDiff()};
     // std::cout << imuRot.value << "\n";
-    imuRot.value += lastPose.robotFrame.transform.rot_z;
+    imuRot.value += resultPose.lastRobotFrame.transform.rot_z;
     rotAbs.terms.push_back(imuRot);
 
     for (auto& term : rotAbs.terms)
@@ -151,15 +161,15 @@ communication::PoseCommunicator PoseEstimator::updateSimple()
 
     // ConditionalAverageTerm wheelTransX {getWheelTransDiff()};
     // ConditionalAverageTerm wheelTransY {wheelTransX};
-    // wheelTransX.value = wheelTransX.value*cos(resultPose.robotFrame.transform.rot_z) + lastPose.robotFrame.transform.pos_x;
-    // wheelTransY.value = wheelTransY.value*sin(resultPose.robotFrame.transform.rot_z) + lastPose.robotFrame.transform.pos_y;
+    // wheelTransX.value = wheelTransX.value*cos(resultPose.robotFrame.transform.rot_z) + resultPose.lastRobotFrame.transform.pos_x;
+    // wheelTransY.value = wheelTransY.value*sin(resultPose.robotFrame.transform.rot_z) + resultPose.lastRobotFrame.transform.pos_y;
     // transXAbs.terms.push_back(wheelTransX);
     // transYAbs.terms.push_back(wheelTransY);
 
     // ConditionalAverageTerm tofTransX {getTofTransYDiff()};
     // ConditionalAverageTerm tofTransY {tofTransX};
-    // tofTransX.value = tofTransX.value*cos(resultPose.robotFrame.transform.rot_z) + lastPose.robotFrame.transform.pos_x;
-    // tofTransY.value = tofTransY.value*sin(resultPose.robotFrame.transform.rot_z) + lastPose.robotFrame.transform.pos_y;
+    // tofTransX.value = tofTransX.value*cos(resultPose.robotFrame.transform.rot_z) + resultPose.lastRobotFrame.transform.pos_x;
+    // tofTransY.value = tofTransY.value*sin(resultPose.robotFrame.transform.rot_z) + resultPose.lastRobotFrame.transform.pos_y;
     // transXAbs.terms.push_back(tofTransX);
     // transYAbs.terms.push_back(tofTransY);
 
@@ -190,9 +200,6 @@ communication::PoseCommunicator PoseEstimator::updateSimple()
         // std::cerr << e.what() << " : " << "Cannot compute robot Y position" << '\n';
     }
 
-
-    // updatePoseComm(resultPose, lastPose);
-
     return resultPose;
 
     #warning (fixed?) IMPORTANT: tile changes are broken. Some systems fix it themselves before getting the values here, others are dependent on the wrappose. All need to be the same for averaging.
@@ -200,34 +207,25 @@ communication::PoseCommunicator PoseEstimator::updateSimple()
 
 communication::PoseCommunicator PoseEstimator::updateLidar()
 {
-    communication::PoseCommunicator resultPose {};
-    communication::PoseCommunicator lastPose {globComm->poseComm};
+    communication::PoseCommunicator resultPose {globComm->poseComm};
 
     std::cout << "[PoseEstimator][ERROR]: Lidar pose estimation not implemented";
-
-    updatePoseComm(resultPose, lastPose);
 
     return resultPose;
 }
 
 communication::PoseCommunicator PoseEstimator::updateLidarSimple()
 {
-    communication::PoseCommunicator resultPose {};
-    communication::PoseCommunicator lastPose {globComm->poseComm};
+    communication::PoseCommunicator resultPose {globComm->poseComm};
 
     std::cout << "[PoseEstimator][ERROR]: Lidar+simple pose estimation not implemented";
-
-    updatePoseComm(resultPose, lastPose);
 
     return resultPose;
 }
 
 communication::PoseCommunicator PoseEstimator::updateIMU()
 {
-    communication::PoseCommunicator resultPose {};
-    communication::PoseCommunicator lastPose {globComm->poseComm};
-
-    updatePoseComm(resultPose, lastPose);
+    communication::PoseCommunicator resultPose {globComm->poseComm};
 
     return resultPose;
 }
@@ -288,56 +286,72 @@ double PoseEstimator::wrapValue(double value, double min, double max)
 // }
 
 
-void PoseEstimator::updatePoseComm(communication::PoseCommunicator& poseComm, communication::PoseCommunicator lastPoseComm)
+void PoseEstimator::updatePoseComm(communication::PoseCommunicator& pose)
 {
+    // If it has never been used before, do not judge (because it will jump).
+    if (pose.freshness>0)
+    {
+        return;
+    }
+
     Transform ghostTf {};
 
-    double rotDiff {poseComm.robotFrame.transform.rot_z - lastPoseComm.robotFrame.transform.rot_z};
+    double rotDiff {pose.robotFrame.transform.rot_z - pose.lastRobotFrame.transform.rot_z};
     // Turn right
     if ( rotDiff > tileRotDiffThreshold)
     {
+        std::cout << "Turned right ";
         ghostTf.rot_z += -M_PI_2;
         ghostTf.pos_y += GRID_SIZE;
     }
     // Turn left
     else if (rotDiff < -tileRotDiffThreshold)
     {
+        std::cout << "Turned left ";
         ghostTf.rot_z += M_PI_2;
         ghostTf.pos_x += GRID_SIZE;
 
     }
 
 
-    double xDiff {poseComm.robotFrame.transform.pos_x - lastPoseComm.robotFrame.transform.pos_x};
+    double xDiff {pose.robotFrame.transform.pos_x - pose.lastRobotFrame.transform.pos_x};
+    // std::cout << "xDiff: " << xDiff << " ";
 
     // Move left
     if (xDiff > tileTransXDiffThreshold)
     {
+        std::cout << "Moved left ";
         ghostTf.pos_x += -GRID_SIZE;
     }
     // Move right
     else if (xDiff < -tileTransXDiffThreshold)
     {
+        std::cout << "Moved right ";
         ghostTf.pos_x += GRID_SIZE;
     }
 
 
-    double yDiff {poseComm.robotFrame.transform.pos_y - lastPoseComm.robotFrame.transform.pos_y};
+    double yDiff {pose.robotFrame.transform.pos_y - pose.lastRobotFrame.transform.pos_y};
+    // std::cout << "yDiff: " << yDiff << " ";
 
     // Move back
     if (yDiff > tileTransYDiffThreshold)
     {
+        std::cout << "Moved back ";
         ghostTf.pos_y += -GRID_SIZE;
     }
     // Move forward
     else if (yDiff < -tileTransYDiffThreshold)
     {
+        std::cout << "Moved forward ";
         ghostTf.pos_y += GRID_SIZE;
     }
 
+    std::cout << std::endl;
+
 
     // Carry out the ghostmove
-    poseComm.localTileFrame.ghostMove(ghostTf);
+    pose.localTileFrame.ghostMove(ghostTf);
 }
 
 
