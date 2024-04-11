@@ -13,7 +13,6 @@ MazePath AStar::getAStarResult()
 void AStar::aStarSearch()
 {
     AStarTile startTile(startPosition);
-    startTile.g = 0;
     storeAndAddTileToQueue(startTile);
 
     while (!aStarTileQueue.empty())
@@ -55,7 +54,7 @@ void AStar::expandTile(AStarTile* tile)
         MazePosition newPosition = mazeMap->neighborInDirection(tile->position, neighborDirection);
 		
         if (neighborIsAvailable(tile->position, newPosition, neighborDirection))
-            setTileProperties(newPosition, tile);
+            storeAndAddTileToQueue(setTileProperties(newPosition, tile));
     }
 }
 
@@ -84,10 +83,11 @@ void AStar::storeAndAddTileToQueue(AStarTile tile)
 
 bool AStar::neighborIsAvailable(MazePosition tile, MazePosition neighbor, GlobalDirections neighborDirection)
 {
-   return mazeMap->neighborIsAvailableAndUnexplored(tile, neighborDirection) && 
-   !mazeMap->tileHasProperty(neighbor, Tile::TileProperty::SearchAlgorithmVisited) &&
-   inBounds(neighbor);
-   //inBounds(newPosition) && !maze[newX][newY].getBit(mBit::visited) && !currentTile->getBit((mBit)direction);
+    return mazeMap->neighborIsAvailable(tile, neighborDirection) && 
+           !mazeMap->tileHasProperty(neighbor, Tile::TileProperty::SearchAlgorithmVisited) &&
+           !mazeMap->tileHasProperty(neighbor, Tile::TileProperty::Explored) &&
+           inBounds(neighbor);
+    //inBounds(newPosition) && !maze[newX][newY].getBit(mBit::visited) && !currentTile->getBit((mBit)direction);
 }
 
 bool AStar::inBounds(MazePosition position)

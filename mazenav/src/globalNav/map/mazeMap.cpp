@@ -16,11 +16,16 @@ bool MazeMap::availableNeighborTilesAreExplored(MazePosition position)
 
 bool MazeMap::neighborIsAvailableAndUnexplored(MazePosition position, GlobalDirections neighborDirection)
 {
-    bool available = tileHasWallInDirection(position, neighborDirection) && 
-                    !tileHasProperty(neighborInDirection(position, neighborDirection), Tile::TileProperty::Black);
+    bool available = neighborIsAvailable(position, neighborDirection);
     bool explored = neighborHasProperty(position, neighborDirection, Tile::TileProperty::Explored);
 
     return available && !explored;
+}
+
+bool MazeMap::neighborIsAvailable(MazePosition position, GlobalDirections neighborDirection)
+{
+    return tileHasWallInDirection(position, neighborDirection) && 
+          !tileHasProperty(neighborInDirection(position, neighborDirection), Tile::TileProperty::Black);
 }
 
 bool MazeMap::tileHasWallInDirection(MazePosition position, GlobalDirections wallDirection)
