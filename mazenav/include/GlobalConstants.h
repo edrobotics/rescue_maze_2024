@@ -1,6 +1,7 @@
 #pragma once
 
 extern const int GRID_SIZE;
+extern const int WALL_THICKNESS;
 
 extern const int WHEEL_RADIUS;
 extern const int WHEEL_SPACING;

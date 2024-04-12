@@ -103,7 +103,7 @@ void PoseEstimator::update(FusionGroup fgroup)
     // Unlock poseComm to allow access to targetPoint again.
     globComm->poseComm.mtx_general.unlock();
 
-    // std::cout << "robotFrame: " << globComm->poseComm.robotFrame << /*"  lastRobotFrame: " << globComm->poseComm.lastRobotFrame << */ "\n";
+    std::cout << "robotFrame: " << globComm->poseComm.robotFrame << /*"  lastRobotFrame: " << globComm->poseComm.lastRobotFrame << */ "\n";
 }
 
 
@@ -521,9 +521,9 @@ ConditionalAverageTerm PoseEstimator::getTofYTrans(double angle, double yoffset,
     ConditionalAverageTerm bY {td.b.avg*cos(angle), 1};
 
     // Change to robot centre
-    flY.value = GRID_SIZE - (flY.value+yoffset*cos(angle)+xoffset*sin(angle));
-    frY.value = GRID_SIZE - (frY.value+yoffset*cos(angle)+xoffset*sin(angle));
-    bY.value = bY.value+yoffset*cos(angle);
+    flY.value = GRID_SIZE - (flY.value+yoffset*cos(angle)+xoffset*sin(angle) + WALL_THICKNESS/2.0);
+    frY.value = GRID_SIZE - (frY.value+yoffset*cos(angle)+xoffset*sin(angle) + WALL_THICKNESS/2.0);
+    bY.value = bY.value+yoffset*cos(angle) + WALL_THICKNESS/2.0;
 
     // Average calculation preparation
     Average avg {};
@@ -589,11 +589,11 @@ ConditionalAverageTerm PoseEstimator::getTofXTrans(double angle)
 
     if (getIsTofXLeft())
     {
-        x1 = getCentredistanceFromTwoTof(td.lf.avg, td.lb.avg, TOF_SX_OFFSET, angle);
+        x1 = getCentredistanceFromTwoTof(td.lf.avg, td.lb.avg, TOF_SX_OFFSET, angle) + WALL_THICKNESS/2.0;
         x1 = wrapValue(x1, minXPos, maxXPos);
         if (getIsTofXRight())
         {
-            x2 = GRID_SIZE - (getCentredistanceFromTwoTof(td.rf.avg, td.rb.avg, TOF_SX_OFFSET, angle));
+            x2 = GRID_SIZE - (getCentredistanceFromTwoTof(td.rf.avg, td.rb.avg, TOF_SX_OFFSET, angle) + WALL_THICKNESS/2.0);
             x2 = wrapValue(x2, minXPos, maxXPos);
             result.value = (x1+x2)/2.0;
         }
@@ -606,7 +606,7 @@ ConditionalAverageTerm PoseEstimator::getTofXTrans(double angle)
     }
     else if (getIsTofXRight())
     {
-        result.value = GRID_SIZE - (getCentredistanceFromTwoTof(td.rf.avg, td.rb.avg, TOF_SX_OFFSET, angle));
+        result.value = GRID_SIZE - (getCentredistanceFromTwoTof(td.rf.avg, td.rb.avg, TOF_SX_OFFSET, angle) + WALL_THICKNESS/2.0);
         result.value = wrapValue(result.value, minXPos, maxXPos);
         result.weight = 1;
     }

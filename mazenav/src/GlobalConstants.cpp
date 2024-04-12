@@ -2,6 +2,7 @@
 #include <cmath>
 
 const int GRID_SIZE {300};
+const int WALL_THICKNESS {15};
 
 // Radius of the wheel
 #warning untuned constant
