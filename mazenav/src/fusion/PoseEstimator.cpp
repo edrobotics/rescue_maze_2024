@@ -324,8 +324,10 @@ void PoseEstimator::updatePoseComm(communication::PoseCommunicator& pose)
     if ( rotDiff > tileRotDiffThreshold)
     {
         std::cout << "Turned right ";
-        ghostTf.rot_z += -M_PI_2;
+        ghostTf.rot_z -= M_PI_2;
         ghostTf.pos_y += GRID_SIZE;
+
+        pose.robotFrame.transform.rot_z -= M_PI_2;
     }
     // Turn left
     else if (rotDiff < -tileRotDiffThreshold)
@@ -333,6 +335,7 @@ void PoseEstimator::updatePoseComm(communication::PoseCommunicator& pose)
         std::cout << "Turned left ";
         ghostTf.rot_z += M_PI_2;
         ghostTf.pos_x += GRID_SIZE;
+        pose.robotFrame.transform.rot_z += M_PI_2;
 
     }
 
@@ -344,13 +347,15 @@ void PoseEstimator::updatePoseComm(communication::PoseCommunicator& pose)
     if (xDiff > tileTransXDiffThreshold)
     {
         std::cout << "Moved left ";
-        ghostTf.pos_x += -GRID_SIZE;
+        ghostTf.pos_x -= GRID_SIZE;
+        pose.robotFrame.transform.pos_x -= GRID_SIZE;
     }
     // Move right
     else if (xDiff < -tileTransXDiffThreshold)
     {
         std::cout << "Moved right ";
         ghostTf.pos_x += GRID_SIZE;
+        pose.robotFrame.transform.pos_x += GRID_SIZE;
     }
 
 
@@ -361,13 +366,15 @@ void PoseEstimator::updatePoseComm(communication::PoseCommunicator& pose)
     if (yDiff > tileTransYDiffThreshold)
     {
         std::cout << "Moved back ";
-        ghostTf.pos_y += -GRID_SIZE;
+        ghostTf.pos_y -= GRID_SIZE;
+        pose.robotFrame.transform.pos_y -= GRID_SIZE;
     }
     // Move forward
     else if (yDiff < -tileTransYDiffThreshold)
     {
         std::cout << "Moved forward ";
         ghostTf.pos_y += GRID_SIZE;
+        pose.robotFrame.transform.pos_y += GRID_SIZE;
     }
 
     std::cout << std::endl;
@@ -385,7 +392,7 @@ void PoseEstimator::updatePoseComm(communication::PoseCommunicator& pose)
     // << "lastRobot: " << pose.lastRobotFrame << "  "
     // << "tile: " << pose.localTileFrame << "  "
     // << "\n";
-    wrapPoseComm(pose);
+    // wrapPoseComm(pose);
     // std::cout << "After wrapping: " << "\n"
     // << "robot: " << pose.robotFrame << "  "
     // << "lastRobot: " << pose.lastRobotFrame << "  "
