@@ -100,7 +100,7 @@ void PoseEstimator::update(FusionGroup fgroup)
     #warning concurrency issues?
     globComm->poseComm = poseResult;
 
-    // std::cout << "robotFrame: " << globComm->poseComm.robotFrame << /*"  lastRobotFrame: " << globComm->poseComm.lastRobotFrame << */ "\n";
+    std::cout << "robotFrame: " << globComm->poseComm.robotFrame << /*"  lastRobotFrame: " << globComm->poseComm.lastRobotFrame << */ "\n";
 }
 
 
@@ -137,11 +137,11 @@ communication::PoseCommunicator PoseEstimator::updateSimple()
     rotAbs.stripZeroWeight();
     wrapVectorSameScale(rotAbs.terms, minZRot, maxZRot);
 
-    double ang {};
+    // double ang {};
     try
     {
         resultPose.robotFrame.transform.rot_z = wrapValue(rotAbs.calc(), minZRot, maxZRot);
-        ang = robotAngle.value;
+        // ang = robotAngle.value;
     }
     catch(const std::runtime_error& e)
     {
@@ -154,8 +154,8 @@ communication::PoseCommunicator PoseEstimator::updateSimple()
     Average transXAbs {};
     Average transYAbs {};
 
-    transXAbs.terms.push_back(getTofXTrans(ang));
-    transYAbs.terms.push_back(getTofYTrans(ang, TOF_FY_OFFSET, TOF_FX_OFFSET));
+    transXAbs.terms.push_back(getTofXTrans(resultPose.robotFrame.transform.rot_z));
+    transYAbs.terms.push_back(getTofYTrans(resultPose.robotFrame.transform.rot_z, TOF_FY_OFFSET, TOF_FX_OFFSET));
 
     // ConditionalAverageTerm wheelTransX {getWheelTransDiff()};
     // ConditionalAverageTerm wheelTransY {wheelTransX};
@@ -370,24 +370,24 @@ void PoseEstimator::updatePoseComm(communication::PoseCommunicator& pose)
     std::cout << std::endl;
 
 
-    std::cout << "Before ghostMove: " << "\n"
-    << "robot: " << pose.robotFrame << "  "
-    << "lastRobot: " << pose.lastRobotFrame << "  "
-    << "tile: " << pose.localTileFrame << "  "
-    << "\n";
+    // std::cout << "Before ghostMove: " << "\n"
+    // << "robot: " << pose.robotFrame << "  "
+    // << "lastRobot: " << pose.lastRobotFrame << "  "
+    // << "tile: " << pose.localTileFrame << "  "
+    // << "\n";
     // Carry out the ghostmove
     pose.localTileFrame.ghostMove(ghostTf);
-    std::cout << "After ghostMove: " << "\n"
-    << "robot: " << pose.robotFrame << "  "
-    << "lastRobot: " << pose.lastRobotFrame << "  "
-    << "tile: " << pose.localTileFrame << "  "
-    << "\n";
+    // std::cout << "After ghostMove: " << "\n"
+    // << "robot: " << pose.robotFrame << "  "
+    // << "lastRobot: " << pose.lastRobotFrame << "  "
+    // << "tile: " << pose.localTileFrame << "  "
+    // << "\n";
     wrapPoseComm(pose);
-    std::cout << "After wrapping: " << "\n"
-    << "robot: " << pose.robotFrame << "  "
-    << "lastRobot: " << pose.lastRobotFrame << "  "
-    << "tile: " << pose.localTileFrame << "  "
-    << "\n";
+    // std::cout << "After wrapping: " << "\n"
+    // << "robot: " << pose.robotFrame << "  "
+    // << "lastRobot: " << pose.lastRobotFrame << "  "
+    // << "tile: " << pose.localTileFrame << "  "
+    // << "\n";
 
     
 }
@@ -549,6 +549,10 @@ ConditionalAverageTerm PoseEstimator::getTofYTrans(double angle, double yoffset,
         // std::cout << "  After wrapping: " << term.value << std::endl;
     }
 
+    // Fix wrapping mismatch
+    avg.stripZeroWeight();
+    wrapVectorSameScale(avg.terms, minYPos, maxYPos);
+
     try
     {
         result.value = avg.calc();
@@ -619,7 +623,7 @@ ConditionalAverageTerm PoseEstimator::getTofZRot(double curAng)
     #warning We want to check here so that we do not mess up when turning in enclosed space, but if we have lost tracking we will not be able to pick it up even if we are straight.
     if (abs(curAng)>MAX_ZROT_XTRANS_TOF_ABS)
     {
-        // std::cout << "Angle too large" << std::endl;
+        std::cout << "Angle too large" << std::endl;
         result.weight = 0;
         return result;
     }

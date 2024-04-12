@@ -1,0 +1,49 @@
+#include "fusion/LedControl.h"
+
+
+LedControl::LedControl()
+{
+    wiringPiSetupGpio();
+    pinMode(led1Pin, OUTPUT);
+    pinMode(led2Pin, OUTPUT);
+}
+
+void LedControl::blinkLedVictimFound()
+{
+    blinkThread = std::thread{&LedControl::blinkLeds, this, 5, blinkFreq};
+}
+
+void LedControl::waitForFinish()
+{
+    blinkThread.join();
+}
+
+
+void LedControl::blinkLeds(int cycles, double freq)
+{
+    int timeMillis {static_cast<int>(1000.0/(2*freq))};
+    turnLightsOn();
+    for (int i=0;i<cycles-1;++i)
+    {
+        std::this_thread::sleep_for(std::chrono::milliseconds(timeMillis));
+        turnLightsOff();
+        std::this_thread::sleep_for(std::chrono::milliseconds(timeMillis));
+        turnLightsOn();
+    }
+
+    std::this_thread::sleep_for(std::chrono::milliseconds(timeMillis));
+    turnLightsOff();
+}
+
+
+void LedControl::turnLightsOff()
+{
+    digitalWrite(led1Pin, LOW);
+    digitalWrite(led2Pin, LOW);
+}
+
+void LedControl::turnLightsOn()
+{
+    digitalWrite(led1Pin, HIGH);
+    digitalWrite(led2Pin, HIGH);
+}

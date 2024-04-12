@@ -1,0 +1,29 @@
+#pragma once
+
+#include <thread>
+#include <chrono>
+
+#include "wiringPi.h"
+
+class LedControlss
+{
+    public:
+        LedControl();
+        // Blinks the LEDs for 5 seconds
+        void blinkLedVictimFound();
+        void waitForFinish();
+
+    private:
+        double blinkFreq {1};
+
+        // #error pins not set yet
+        int led1Pin {};
+        int led2Pin {};
+
+        void blinkLeds(int cycles, double freq);
+        void turnLightsOn();
+        void turnLightsOff();
+
+        std::thread blinkThread{};
+
+};

@@ -47,7 +47,7 @@ namespace communication
 
     PoseCommunicator::PoseCommunicator()
     {
-
+        
     }
 
     PoseCommunicator& PoseCommunicator::operator=(const PoseCommunicator& pComm)
