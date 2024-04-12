@@ -4,7 +4,12 @@ PathFollower::PathFollower(communication::Communicator* globComm)
     : driver {globComm}
 {
     this->globComm = globComm;
-    targetPoint.setParentTS(&(globComm->poseComm.localTileFrame));
+    // targetPoint.setParentTS(&(globComm->poseComm.localTileFrame));
+}
+
+PathFollower::~PathFollower()
+{
+    driver.stop();
 }
 
 double PathFollower::getRotSpeedDriving()
@@ -71,6 +76,8 @@ void PathFollower::runLoop()
             std::cerr << "Cannot yet execute this DriveCommand" << std::endl;
             break;
     }
+
+    driver.stop();
 }
 
 void PathFollower::drive(int direction)
@@ -79,11 +86,12 @@ void PathFollower::drive(int direction)
     while(!finished)
     {
         distLeftToTarget = getDistLeftToTarget();
+        std::cout << "distLeftToTarget: " << distLeftToTarget << "\n";
         driver.calcSpeeds(getTransSpeedDriving(), getRotSpeedDriving());
         driver.setSpeeds();
         finished = checkIsFinishedDriving(direction);
+        std::this_thread::sleep_for(std::chrono::milliseconds(10));
     }
-    driver.stop();
 }
 
 void PathFollower::turn(int direction)
@@ -100,6 +108,8 @@ void PathFollower::turn(int direction)
 
 void PathFollower::runLoopLooper()
 {
+    driver.stop();
+    std::this_thread::sleep_for(std::chrono::milliseconds(1000));
     while(true)
     {
         runLoop();
@@ -177,7 +187,7 @@ void PathFollower::setTargetPointTf(communication::DriveCommand dC)
             break;
     }
     
-    targetPoint.applyTransform(resultTf);
+    globComm->poseComm.setTargetFrameTransformTS(resultTf);
     
 }
 
@@ -186,13 +196,14 @@ double PathFollower::getDistLeftToTarget()
 {
     // Transform targetPointTf {targetPoint.getTransformLevelTo(&(globComm->poseComm.robotFrame), 1, 1)};
     // return targetPointTf.pos_y;
-    return targetPoint.transform.pos_y-globComm->poseComm.robotFrame.transform.pos_y;
+    
+    return globComm->poseComm.getTargetFrameTS().transform.pos_y - globComm->poseComm.robotFrame.transform.pos_y;
 }
 
 double PathFollower::getAngLeftToTarget()
 {
     // Transform targetPointTf {targetPoint.getTransformLevelTo(&(globComm->poseComm.robotFrame), 1, 1)};
-    double rotDiff {targetPoint.transform.rot_z-globComm->poseComm.robotFrame.transform.rot_z};
+    double rotDiff {globComm->poseComm.getTargetFrameTS().transform.rot_z - globComm->poseComm.robotFrame.transform.rot_z};
     if (rotDiff> M_PI)
     {
         rotDiff -= 2*M_PI;

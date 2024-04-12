@@ -24,6 +24,7 @@
 #include "communicator/communicator.h"
 #include "GlobalConstants.h"
 
+
 class PoseEstimator
 {
     public:

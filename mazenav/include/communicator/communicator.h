@@ -50,6 +50,10 @@ namespace communication
             CoordinateFrame localTileFrame {&worldFrame};
             CoordinateFrame robotFrame {&localTileFrame};
             CoordinateFrame lastRobotFrame {&localTileFrame};
+
+            void setTargetFrameTS(CoordinateFrame& frame);
+            CoordinateFrame getTargetFrameTS();
+            void setTargetFrameTransformTS(Transform tf);
             
             // Speeds can be represented with coordinateframes. The speeds are relative to the parent object. (unsure if this representation is actually okay)
             // CoordinateFrame worldSpeed {nullptr};
@@ -60,8 +64,10 @@ namespace communication
             int freshness {6};
             
         
-        private:
             std::mutex mtx_general {};
+        private:
+            // Used by PathFollower. Is here to ensure synchronisation
+            CoordinateFrame targetFrame {&localTileFrame};
             // std::mutex mtx_world;
             // std::mutex mtx_localtile;
             // std::mutex mtx_robot;

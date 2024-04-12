@@ -8,17 +8,17 @@ void testTfsys();
 
 void localNav::main(communication::Communicator* globComm)
 {
-    // PathFollower pathFollower {globComm};
+    PathFollower pathFollower {globComm};
 
-    // globComm->navigationComm.pushCommand(communication::DriveCommand::driveForward);
+    globComm->navigationComm.pushCommand(communication::DriveCommand::driveForward);
     // globComm->navigationComm.pushCommand(communication::DriveCommand::driveForward);
     // globComm->navigationComm.pushCommand(communication::DriveCommand::turnLeft);
     
-    // std::thread pFollow(&PathFollower::runLoopLooper, &pathFollower);
+    std::thread pFollow(&PathFollower::runLoopLooper, &pathFollower);
     
-    // pFollow.join();
+    pFollow.join();
 
-    testTfsys();
+    // testTfsys();
     // KinematicDriver driver {globComm};
     // testDriving(&driver);
 }

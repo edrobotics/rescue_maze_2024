@@ -52,6 +52,8 @@ void PoseEstimator::update(FusionGroup fgroup)
     sensors->update(true);
     // Should copy the tree of poseComm into poseResult
     communication::PoseCommunicator poseResult {};
+    // Lock poseComm to prevent concurrency issues with the targetPoint
+    globComm->poseComm.mtx_general.lock();
     // Save the current value so that we can set it as the old one later
     // CoordinateFrame lastRobot {globComm->poseComm.robotFrame.getWithoutChildren()};
     // std::cout << "lastRobot: " << lastRobot << "\n";
@@ -95,12 +97,13 @@ void PoseEstimator::update(FusionGroup fgroup)
     // Handle updating of localTile (global coordinates)
     updatePoseComm(poseResult);
 
-
     // Write the new pose with only changes.
     #warning concurrency issues?
     globComm->poseComm = poseResult;
+    // Unlock poseComm to allow access to targetPoint again.
+    globComm->poseComm.mtx_general.unlock();
 
-    std::cout << "robotFrame: " << globComm->poseComm.robotFrame << /*"  lastRobotFrame: " << globComm->poseComm.lastRobotFrame << */ "\n";
+    // std::cout << "robotFrame: " << globComm->poseComm.robotFrame << /*"  lastRobotFrame: " << globComm->poseComm.lastRobotFrame << */ "\n";
 }
 
 

@@ -23,6 +23,8 @@ class PathFollower
     public:
         PathFollower(communication::Communicator* globComm);
 
+        ~PathFollower();
+
         // Sets the path to follow
         // void setPath(Path path);
 
@@ -54,7 +56,7 @@ class PathFollower
         // Set the target point given a drivecommand
         void setTargetPointTf(communication::DriveCommand dC);
         // The target point
-        CoordinateFrame targetPoint {nullptr};
+        // CoordinateFrame targetPoint {nullptr};
         // The transform from targetpoint to robotFrame (targetpoint in relation to robotframe)
         // Transform targetPointTf {};
         // Distance left to the target
@@ -71,8 +73,8 @@ class PathFollower
         bool checkIsFinishedDriving(int direction);
         bool checkIsFinishedTurning(int direction);
 
-        static constexpr double DRIVE_STOP_THRESHOLD {5};
-        static constexpr double TURN_STOP_THRESHOLD {0.035};
+        static constexpr double DRIVE_STOP_THRESHOLD {20};
+        static constexpr double TURN_STOP_THRESHOLD {0.08};
 
 
 
