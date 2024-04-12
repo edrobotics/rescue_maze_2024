@@ -14,3 +14,6 @@ extern const double TOF_FX_OFFSET;
 extern const double TOF_BY_OFFSET;
 extern const double TOF_SX_OFFSET;
 extern const double TOF_SY_OFFSET;
+
+extern const double LIDAR_X_OFFSET;
+extern const double LIDAR_Y_OFFSET;
