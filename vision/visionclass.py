@@ -35,10 +35,12 @@ class letters:
 
         output_data = self.interpreter.get_tensor(self.output_details[0]['index'])
         print(output_data)
+        percentage = output_data[0][np.argmax(output_data[0])] 
         victim = self.classes[np.argmax(output_data[0])]
+
         
         
-        return victim
+        return victim, percentage
 
 
 
@@ -113,7 +115,7 @@ class imgproc:
                 box = np.int0(box)
                 cv2.drawContours(self.imagecopy, [box], 0, (255, 0, 0), 3)
                 x,y,w,h = cv2.boundingRect(contour)
-                self.vPos = x
+                self.vPos = (x,y)
 
 
                 size = (25,25)
@@ -139,11 +141,12 @@ class imgproc:
 
 
     def identify_victim(self, section):
-        victim = self.model.recogniseSection(section)
-        print(victim) 
+        victim, percentage = self.model.recogniseSection(section)
         self.framedetected.append(victim)
-        if victim != "none":
-            self.com.send("C",victim,self.camera,self.vPos,self.timestamp)
+        cv2.putText(self.imagecopy, f"{victim}, {percentage:.2f}",self.vPos,cv2.FONT_HERSHEY_SIMPLEX,1.0,(0,255,0))
+        if victim != "none" and percentage > 0.99:
+            print(f"{victim} {percentage}") 
+            self.com.send("C",victim,self.camera,self.vPos[0],self.timestamp)
 
 
 

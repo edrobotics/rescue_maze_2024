@@ -64,9 +64,10 @@ class validation:
     stop = False
     detected = {"H":0,"S":0,"U":0,"none":0}
 
-    def __init__(self,dir_path) -> None:
+    def __init__(self,dir_path,showsource = False) -> None:
         self.TB = Trackbars() #trackbar object
         self.base_folder =  dir_path
+        self.showsource = showsource
         self.config_path = os.path.join(self.base_folder, "config.ini")
         self.imgproc = vc.imgproc(bLogging=False, dir_path=dir_path,bComms=False)
 
@@ -126,7 +127,8 @@ class validation:
 
 
     def showimage(self, image):
-        if True or len(vc.framedetected[0]) == 1: #true for now
+        
+        if self.showsource:# or len(vc.framedetected[0]) == 1: #true for now
 
             try:
                 cv2.imshow("image",image)
@@ -184,8 +186,9 @@ class validation:
 
 
     def clearstat(self):
-        ct = 0
-        tot = 0
+        self.ct = 0
+        self.tot = 0
+        #currently not used
 
     def runValidation(self):
         print("testing")

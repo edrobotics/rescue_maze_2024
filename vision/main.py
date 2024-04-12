@@ -49,7 +49,7 @@ def closeCams():
 
 
 
-def showSource():
+def openWindows():
     try:
         windows = ("cam0","cam1","cam2","window", "binary", "red", "yellow","green")
         for window in windows:
@@ -57,7 +57,7 @@ def showSource():
             cv2.setMouseCallback(window, get_intensity)
     except Exception as ex:
         print("couldn't create windows")
-        showsource = False
+        showSource = False
 
 
 if __name__ == "__main__":
@@ -77,27 +77,23 @@ if __name__ == "__main__":
         print("---------config.ini file not found at ", config_filepath)
 
     parser = argparse.ArgumentParser()
-    parser.add_argument("-l", "--logging", type=bool)
-    parser.add_argument("-t", "--testing", type=bool)
-    parser.add_argument("-s", "--showsource", type=bool)
-    parser.add_argument("-c", "--comms", type=bool)
+    parser.add_argument("-l", "--logging", type=bool, default= True)
+    parser.add_argument("-t", "--testing", type=bool,default=False)
+    parser.add_argument("-s", "--showSource", type=bool, default=False)
+    parser.add_argument("-c", "--comms", type=bool, default=True)
 
 
     args = parser.parse_args()
     bLogging = args.logging
-    showsource = args.showsource
+    showSource = args.showSource
     testing = args.testing
     bComms = args.comms
     if testing:
         bLogging = False
-        showsource = True
+        showSource = True
         bComms = False
     else:
-        if bLogging != False: 
-
-            bLogging = True
-        if bComms != False:
-            bComms = True
+        pass
 
 
     paths_config = config["PATHS"]
@@ -108,13 +104,13 @@ if __name__ == "__main__":
     if testing:
         print("running validation")
         import validation as val
-        valC = val.validation(dir_path)
+        valC = val.validation(dir_path, showsource=showSource)
         sorted_images_local = "log/previous"
         sorted_images = os.path.join(dir_path, sorted_images_local)
         valC.runValidation()
     else: 
-        if showsource: 
-            showSource()
+        if showSource: 
+            openWindows()
         
                     
 
@@ -130,7 +126,7 @@ if __name__ == "__main__":
                 imgProc.do_the_work(image1, "cam1")
                 imgProc.do_the_work(image2, "cam2")
 
-                if showsource:
+                if showSource:
                     try:
                         #cv2.imshow("cam0",piImg)
                         cv2.imshow("cam1",image1)
