@@ -16,9 +16,16 @@ bool MazeMap::availableNeighborTilesAreExplored(MazePosition position)
 
 bool MazeMap::neighborIsAvailableAndUnexplored(MazePosition position, GlobalDirections neighborDirection)
 {
-    bool available = tileHasWallInDirection(position, neighborDirection);
-    bool explored = neighborHasProperty(position, neighborDirection, Tile::TileProperty::explored);
+    bool available = neighborIsAvailable(position, neighborDirection);
+    bool explored = neighborHasProperty(position, neighborDirection, Tile::TileProperty::Explored);
+
     return available && !explored;
+}
+
+bool MazeMap::neighborIsAvailable(MazePosition position, GlobalDirections neighborDirection)
+{
+    return tileHasWallInDirection(position, neighborDirection) && 
+          !tileHasProperty(neighborInDirection(position, neighborDirection), Tile::TileProperty::Black);
 }
 
 bool MazeMap::tileHasWallInDirection(MazePosition position, GlobalDirections wallDirection)
@@ -33,11 +40,8 @@ bool MazeMap::tileHasProperty(MazePosition tilePosition, Tile::TileProperty tile
 
 bool MazeMap::neighborHasProperty(MazePosition basePosition, GlobalDirections neighborDirection, Tile::TileProperty tileProperty)
 {
-    auto optionalNeighborInDirection = neighborInDirection(basePosition, neighborDirection);
-    if (optionalNeighborInDirection)
-        return mazeLevels[basePosition.levelIndex].tileHasProperty(optionalNeighborInDirection.value(), tileProperty);
-    else
-        return false;
+    MazePosition neighbor = neighborInDirection(basePosition, neighborDirection);
+    return mazeLevels[basePosition.levelIndex].tileHasProperty(neighbor, tileProperty);
 }
 
 void MazeMap::setTileProperty(MazePosition tilePosition, Tile::TileProperty tileProperty, bool toState)
@@ -51,17 +55,17 @@ Tile::TileProperty MazeMap::directionToWallProperty(GlobalDirections direction)
     switch (direction) // Apologizing for switch, but I could not find a better way
     {
     case GlobalDirections::North:
-        return Tile::TileProperty::wallNorth;
+        return Tile::TileProperty::WallNorth;
     case GlobalDirections::West:
-        return Tile::TileProperty::wallWest;
+        return Tile::TileProperty::WallWest;
     case GlobalDirections::South:
-        return Tile::TileProperty::wallSouth;
+        return Tile::TileProperty::WallSouth;
     default:
-        return Tile::TileProperty::wallEast;
+        return Tile::TileProperty::WallEast;
     }
 }
 
-std::optional<MazePosition> MazeMap::neighborInDirection(MazePosition basePosition, GlobalDirections neighborDirection)
+MazePosition MazeMap::neighborInDirection(MazePosition basePosition, GlobalDirections neighborDirection)
 {
     int xOffset = 0, yOffset = 0;
     switch (neighborDirection) // Apologizing for switch, but I could not find a better way
@@ -79,7 +83,7 @@ std::optional<MazePosition> MazeMap::neighborInDirection(MazePosition basePositi
         xOffset = 1;
         break;
     default:
-        return std::nullopt;
+        break;
     }
 
     return MazePosition(basePosition.tileX + xOffset, basePosition.tileY + yOffset, basePosition.levelIndex);
@@ -103,10 +107,5 @@ std::optional<GlobalDirections> MazeMap::neighborToDirection(MazePosition basePo
 
 bool MazeMap::neighborIsInDirection(MazePosition basePosition, MazePosition neighborPosition, GlobalDirections direction)
 {
-    auto optionalNeighbor = neighborInDirection(basePosition, direction);
-    if (optionalNeighbor)
-    {
-        return optionalNeighbor.value() == neighborPosition;
-    }
-    return false;
+    return neighborInDirection(basePosition, direction) == neighborPosition;
 }

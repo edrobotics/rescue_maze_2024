@@ -8,15 +8,15 @@ class Tile
 
     enum class TileProperty
     {
-        wallNorth,
-        wallWest,
-        wallSouth,
-        wallEast,
-        uncertainWallNorth,
-        uncertainWallWest,
-        uncertainWallSouth,
-        uncertainWallEast,
-        explored
+        WallNorth,
+        WallWest,
+        WallSouth,
+        WallEast,
+        Explored,
+        SearchAlgorithmVisited,
+        Checkpoint,
+        Black,
+        Blue
     };
 
     void setTileProperty(TileProperty set, bool state);

@@ -9,6 +9,7 @@ namespace globalNav
 		while (true)
 		{
 			mazeNavigator.makeNavigationDecision();
+			// #error I need to update the map, check for victims and so on
 		}
 	}
 }

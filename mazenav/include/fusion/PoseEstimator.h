@@ -188,13 +188,18 @@ class PoseEstimator
         #warning maybe only works for integer bounds?
         #warning check behaviour at endpoints. Should go up to, not including upper.
         double wrapValue(double value, double lower, double upper);
+        // Wrap the two values so that they are within the same span (instead of 299 and 1 you would have 299 and 301)
+        // If one value must be outside, the upper limit is always preferred
+        // void wrapValueSameScale(double& val1, double& val2, double lower, double upper);
+        // Wraps all the elements of a vector into one scale, like wrapValueSameScale does.
+        void wrapVectorSameScale(std::vector<ConditionalAverageTerm>& vec, double lower, double upper);
 
-        // Wrap the pose values into the current tile
-        // void wrapPoseComm(communication::PoseCommunicator& posecomm);
+        // Wrap the pose values into the current tile. Does not register tile changes, only bounds the values
+        void wrapPoseComm(communication::PoseCommunicator& posecomm);
         // Given a poseComm and the last poseComm, ghost-move the local tile to register tile transitions
         // Assumes that input posecomm has values inside of limits.
         // Will only register one "step" - for example cannot register two tile moves forward in one execution, as that is not feasible with these speeds and loop times
-        void updatePoseComm(communication::PoseCommunicator& poseComm, communication::PoseCommunicator lastPoseComm);
+        void updatePoseComm(communication::PoseCommunicator& pose);
         // Limits for wrapping a pose
         const int minYPos {0};
         const int maxYPos {GRID_SIZE};

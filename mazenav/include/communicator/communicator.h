@@ -42,17 +42,22 @@ namespace communication
             // Copy constructor
             PoseCommunicator(const PoseCommunicator& pComm);
 
+            // Copy the whole structure of frames.
             PoseCommunicator& operator=(const PoseCommunicator& pComm);
 
             // Thread safety is handled inside of the CoordinateFrame class
             CoordinateFrame worldFrame {nullptr};
             CoordinateFrame localTileFrame {&worldFrame};
             CoordinateFrame robotFrame {&localTileFrame};
+            CoordinateFrame lastRobotFrame {&localTileFrame};
             
             // Speeds can be represented with coordinateframes. The speeds are relative to the parent object. (unsure if this representation is actually okay)
             // CoordinateFrame worldSpeed {nullptr};
             // CoordinateFrame localTileSpeed {&worldSpeed};
             CoordinateFrame robotSpeed {nullptr};
+
+            // Indicates whether or not values have been set before
+            int freshness {6};
             
         
         private:
@@ -84,6 +89,6 @@ namespace communication
         NavigationCommunicator navigationComm;
         PoseCommunicator poseComm {};
         MotorControllerCommunicator motors{};
-        // Logger logger {};
+        Logger logger {};
     };
 }

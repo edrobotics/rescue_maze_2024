@@ -58,7 +58,7 @@ void MazeNavigator::startFollowingPathToLastUnexploredTile()
 
 MazePath MazeNavigator::pathTo(MazePosition toPosition)
 {
-    pathFinder.findPathTo(toPosition);
+    pathFinder.findPathTo(currentPosition, toPosition);
 }
 
 void MazeNavigator::goToNeighborInDirection(LocalDirections direction)

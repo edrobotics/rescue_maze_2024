@@ -73,6 +73,19 @@ CoordinateFrame CoordinateFrame::getWithoutChildren() const
     return childless;
 }
 
+void CoordinateFrame::setWithoutChildren(CoordinateFrame& source)
+{
+    mtx_general.lock();
+    source.mtx_general.lock();
+
+    transform = source.transform;
+
+    parent = source.parent;
+
+    source.mtx_general.unlock();
+    mtx_general.unlock();
+}
+
 
 void CoordinateFrame::deleteChildren()
 {
