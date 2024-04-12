@@ -62,12 +62,13 @@ class Trackbars:
 
 class validation:
     stop = False
+    detected = {"H":0,"S":0,"U":0,"none":0}
 
     def __init__(self,dir_path) -> None:
         self.TB = Trackbars() #trackbar object
         self.base_folder =  dir_path
         self.config_path = os.path.join(self.base_folder, "config.ini")
-        self.imgproc = vc.imgproc(bLogging=False, dir_path=dir_path)
+        self.imgproc = vc.imgproc(bLogging=False, dir_path=dir_path,bComms=False)
 
 
 
@@ -124,11 +125,14 @@ class validation:
         shutil.move(self.source_path, destination_path)
 
 
-    def showimage(self, victim):
+    def showimage(self, image):
         if True or len(vc.framedetected[0]) == 1: #true for now
 
-            cv2.imshow("image",vc.image)
+            try:
+                cv2.imshow("image",image)
             #colours = ("red","green","yellow")
+            except:
+                cv2.imshow(self.imgproc.image)
 
             self.keystrocks()            
 
@@ -160,7 +164,7 @@ class validation:
                         continue
 
                     else:
-                        self.showimage(victim, self.imgproc.image)
+                        self.showimage(self.imgproc.image)
 
         #        except IndexError:
         #            print(file_name)

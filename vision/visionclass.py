@@ -7,9 +7,39 @@ import loggingclass
 import numpy as np
 import socket 
 import os
+import time
 
 import tensorflow.lite as tflite
-from letterRecognition import letters
+
+
+
+
+class letters:
+    classes = ['H', 'S', 'U', 'none']
+    def __init__(self,dir_path):
+        self.dir_path = dir_path
+        model_path = os.path.join(self.dir_path,"model.tflite")
+        self.interpreter = tflite.Interpreter(model_path=model_path)
+        self.interpreter.allocate_tensors()
+        self.input_details = self.interpreter.get_input_details()
+        self.output_details = self.interpreter.get_output_details()
+    def recogniseSection(self,image):
+
+        image = cv2.resize(image,(25,25))
+        image = np.float32(image)
+        image = np.expand_dims(image, axis=0)
+
+        self.interpreter.set_tensor(self.input_details[0]['index'], image)
+
+        self.interpreter.invoke()
+
+        output_data = self.interpreter.get_tensor(self.output_details[0]['index'])
+        print(output_data)
+        victim = self.classes[np.argmax(output_data[0])]
+        
+        
+        return victim
+
 
 
 class comms:
@@ -17,14 +47,17 @@ class comms:
     host = socket.gethostbyname(socket.gethostname())
     s = socket.socket(socket.AF_INET,socket.SOCK_STREAM)
 
-    def __init__(self) -> None:
-        self.s.connect(self.host, self.port)
+    def __init__(self,bComms = True):
+        if bComms:
+            self.s.connect((self.host, self.port))
+            self.bComms = True
+        else: self.bComms = False
 
     def send(self,messageType,victimType,camera,position,timeStamp):
 
         message = f"!{messageType},{victimType},{camera},{position},{timeStamp}"
-
-        self.s.send(message)
+        if self.bComms:
+            self.s.send(message)
 
 
 
@@ -37,20 +70,26 @@ class imgproc:
     
     framedetected = []
 
-    def __init__(self, bLogging, dir_path):
+    def __init__(self, bLogging, dir_path, bComms = True):
         print("initiating visionclass")
         self.dir_path = dir_path
         self.bLogging = bLogging
         self.log = loggingclass.log(base_dir=dir_path, bLogging = bLogging)
         self.loadModel()
+        self.com = comms(bComms=bComms)
 
 
     def do_the_work(self, image, camera):
         print("working")
         self.imagecopy = image.copy()
+        self.image = image.copy()
+        self.camera = camera
+        self.timestamp = time.time()
         self.log.save_image(image, camera)
         self.find_visual(image)
 
+    def cleanUp(self):
+        self.framdetected = []
 
     def preprocessing(self,image):
         print("preprocessing")
@@ -74,16 +113,18 @@ class imgproc:
                 box = np.int0(box)
                 cv2.drawContours(self.imagecopy, [box], 0, (255, 0, 0), 3)
                 x,y,w,h = cv2.boundingRect(contour)
+                self.vPos = x
 
 
                 size = (25,25)
                 potentialVictim = binary[y:y+h, x:x+w]
                 potentialVictimRS = cv2.resize(potentialVictim, size)
+                potentialVictimBGR = cv2.cvtColor(potentialVictimRS, cv2.COLOR_GRAY2BGR)
+                self.identify_victim(potentialVictimBGR)
 
 
         cv2.imshow("contours", binary2)
         cv2.imshow("imagecopy",self.imagecopy)
-        cv2.waitKey(0)
 
                 #return potentialVictimCS
 
@@ -92,12 +133,19 @@ class imgproc:
 
 
     def loadModel(self):
-        self.model = letters()
+        self.model = letters(self.dir_path)
+
+
+
 
     def identify_victim(self, section):
         victim = self.model.recogniseSection(section)
         print(victim) 
         self.framedetected.append(victim)
+        if victim != "none":
+            self.com.send("C",victim,self.camera,self.vPos,self.timestamp)
+
+
 
         
 

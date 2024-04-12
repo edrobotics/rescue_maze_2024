@@ -80,23 +80,32 @@ if __name__ == "__main__":
     parser.add_argument("-l", "--logging", type=bool)
     parser.add_argument("-t", "--testing", type=bool)
     parser.add_argument("-s", "--showsource", type=bool)
+    parser.add_argument("-c", "--comms", type=bool)
 
 
     args = parser.parse_args()
     bLogging = args.logging
     showsource = args.showsource
-    if bLogging:
-        testing = False
-    elif args.testing == True:
-        testing = True
-    else: testing = False
+    testing = args.testing
+    bComms = args.comms
+    if testing:
+        bLogging = False
+        showsource = True
+        bComms = False
+    else:
+        if bLogging != False: 
+
+            bLogging = True
+        if bComms != False:
+            bComms = True
+
 
     paths_config = config["PATHS"]
     #base_folder = paths_config["basefolder"]
    #print(f"basefolder{base_folder}")
-    imgProc= visionclass.imgproc(bLogging,dir_path)
+    imgProc= visionclass.imgproc(bLogging,dir_path,bComms=bComms)
 
-    if args.testing:
+    if testing:
         print("running validation")
         import validation as val
         valC = val.validation(dir_path)
@@ -129,11 +138,13 @@ if __name__ == "__main__":
                     except Exception as ex: 
                         print("couldn't show images")
                         showSource = False
-            except Exception as ex:
+            except KeyboardInterrupt as ex:
                 print("exception")
-
-                
                 closeCams()
+            
+            except Exception as ex:
+                logging.exception()
+
 
 
 
