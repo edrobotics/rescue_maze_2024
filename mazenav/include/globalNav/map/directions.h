@@ -1,5 +1,7 @@
 #pragma once
 
+#define DIRECTIONS_AMOUNT 4
+
 enum class GlobalDirections
 {
     North = 0,

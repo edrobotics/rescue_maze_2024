@@ -7,4 +7,4 @@ MazePath PathFinder::findPathTo(MazePosition currentPosition, MazePosition toPos
 }
 
 
-//BFS expansion to get closest knownUnexploredTile and path to it
+//BFS expansion to get closest unexplored tile and path to it

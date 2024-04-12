@@ -16,13 +16,14 @@ class Tile
         SearchAlgorithmVisited,
         Checkpoint,
         Black,
-        Blue
+        Blue,
+        ContainsRamp
     };
 
     void setTileProperty(TileProperty set, bool state);
     bool tileHasProperty(TileProperty get);
     
     private:
-    typedef int32_t tileInfoIntType;
+    typedef int16_t tileInfoIntType;
     tileInfoIntType tileInfo = 0;
 };

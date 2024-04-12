@@ -83,11 +83,11 @@ void AStar::storeAndAddTileToQueue(AStarTile tile)
 
 bool AStar::neighborIsAvailable(MazePosition tile, MazePosition neighbor, GlobalDirections neighborDirection)
 {
+    if (!inBounds(neighbor)) return false;
+
     return mazeMap->neighborIsAvailable(tile, neighborDirection) && 
            !mazeMap->tileHasProperty(neighbor, Tile::TileProperty::SearchAlgorithmVisited) &&
-           !mazeMap->tileHasProperty(neighbor, Tile::TileProperty::Explored) &&
-           inBounds(neighbor);
-    //inBounds(newPosition) && !maze[newX][newY].getBit(mBit::visited) && !currentTile->getBit((mBit)direction);
+           !mazeMap->tileHasProperty(neighbor, Tile::TileProperty::Explored);
 }
 
 bool AStar::inBounds(MazePosition position)

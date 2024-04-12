@@ -22,7 +22,11 @@ void MazeNavigator::followPath()
 
 void MazeNavigator::exploreMaze()
 {
-    if (!exploreBestNeighbor())
+    if (shouldTurnAroundAndGoBack)
+    {
+        goToNeighborInDirection(LocalDirections::Back);
+    }
+    else if (!exploreBestNeighbor())
     {
         startFollowingPathToLastUnexploredTile();
     }
@@ -88,13 +92,30 @@ void MazeNavigator::giveLowLevelInstruction(communication::DriveCommand command)
 GlobalDirections MazeNavigator::localToGlobalDirection(LocalDirections localDirections)
 {
     int directionInt = (int)currentDirection + (int)localDirections; // This works because of the order in the enums
-    directionInt = directionInt % 4; // Only directions 0-3 are defined
+    directionInt = directionInt % DIRECTIONS_AMOUNT;
     return (GlobalDirections)directionInt;
 }
 
 LocalDirections MazeNavigator::globalToLocalDirection(GlobalDirections globalDirections)
 {
     int directionInt = (int)globalDirections - (int)currentDirection; // This works because of the order in the enums
-    if (directionInt < 0) directionInt += 4; // Only directions 0-3 are defined
+    if (directionInt < 0) directionInt += DIRECTIONS_AMOUNT;
     return (LocalDirections)directionInt;
+}
+
+void MazeNavigator::updateInfoFromOldRamp()
+{
+    currentPosition = mazeMap.positionAfterUsingRamp(currentPosition, currentDirection);
+}
+
+void MazeNavigator::updateInfoFromNewRamp()
+{
+    MazePosition previousPosition = currentPosition;
+    currentPosition.levelIndex = 1;
+    currentPosition.tileX = START_X;
+    currentPosition.tileY = START_Y;
+
+    mazeMap.createNewRamp(previousPosition, currentPosition, currentDirection);
+
+    // #error think through
 }

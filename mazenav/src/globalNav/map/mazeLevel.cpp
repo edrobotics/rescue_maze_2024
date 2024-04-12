@@ -1,10 +1,5 @@
 #include "globalNav/map/mazeLevel.h"
 
-MazeLevel::MazeLevel(LevelPosition startPosition)
-{
-    mazeLevel[startPosition.tileY][startPosition.tileX] = Tile();
-}
-
 void MazeLevel::setTilePropertyAt(LevelPosition position, Tile::TileProperty property, bool toState)
 {
     mazeLevel[position.tileY][position.tileX].setTileProperty(property, toState);

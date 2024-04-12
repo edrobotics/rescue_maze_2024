@@ -1,7 +1,7 @@
 #pragma once
 
 #include "globalNav/map/tile.h"
-#include "globalNav/map/mazePosition.h"
+#include "globalNav/map/position.h"
 
 struct AStarTile
 {

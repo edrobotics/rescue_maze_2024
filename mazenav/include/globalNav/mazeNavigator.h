@@ -4,7 +4,7 @@
 
 #include "communicator/communicator.h"
 #include "globalNav/map/mazeMap.h"
-#include "globalNav/map/mazePosition.h"
+#include "globalNav/map/position.h"
 #include "globalNav/map/mazePath.h"
 #include "globalNav/search/pathFinder.h"
 #include "globalNav/map/directions.h"
@@ -19,11 +19,13 @@ class MazeNavigator
     private:
     communication::Communicator* communicatorSingleton;
     std::vector<MazePosition> knownUnexploredTilePositions;
+    
+    bool shouldTurnAroundAndGoBack = false;
 
     MazePosition currentPosition = MazePosition(START_X, START_Y, START_LEVEL);
     GlobalDirections currentDirection = START_DIRECTION;
 
-    MazeMap mazeMap = MazeMap(currentPosition);
+    MazeMap mazeMap;
 
     PathFinder pathFinder{&mazeMap};
     MazePath pathToFollow;
@@ -42,6 +44,9 @@ class MazeNavigator
     void goToNeighborInDirection(LocalDirections direction);
     void turnToDirection(LocalDirections direction);
     void driveTile();
+
+    void updateInfoFromNewRamp();
+    void updateInfoFromOldRamp();
 
     GlobalDirections localToGlobalDirection(LocalDirections localDirections);
     LocalDirections globalToLocalDirection(GlobalDirections globalDirections);

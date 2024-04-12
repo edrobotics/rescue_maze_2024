@@ -1,8 +1,8 @@
 #include "globalNav/map/mazeMap.h"
 
-MazeMap::MazeMap(LevelPosition startPosition)
+MazeMap::MazeMap()
 { 
-    mazeLevels.push_back(MazeLevel(startPosition));
+    mazeLevels.push_back(MazeLevel());
 };
 
 bool MazeMap::availableNeighborTilesAreExplored(MazePosition position)
@@ -108,4 +108,52 @@ std::optional<GlobalDirections> MazeMap::neighborToDirection(MazePosition basePo
 bool MazeMap::neighborIsInDirection(MazePosition basePosition, MazePosition neighborPosition, GlobalDirections direction)
 {
     return neighborInDirection(basePosition, direction) == neighborPosition;
+}
+
+void MazeMap::createNewRamp(MazePosition previousPosition, MazePosition newPosition, GlobalDirections direction)
+{
+    ramps.push_back(Ramp(previousPosition, newPosition, direction));
+    createNewLevel();
+    // #error think through
+}
+
+void MazeMap::createNewLevel()
+{
+    mazeLevels.push_back(MazeLevel());
+}
+
+bool MazeMap::canCreateNewRamps()
+{
+    if (ramps.size() == 0) return true;
+    return false;
+}
+
+bool MazeMap::rampHasBeenUsedBefore(MazePosition rampPosition, GlobalDirections rampDirection)
+{
+    for (auto i = ramps.begin(); i != ramps.end(); i++)
+    {
+        bool isFirstPosition = i->getPositionInFirstLevel() == rampPosition && 
+                               i->getDirectionInFirstLevel() == rampDirection;
+        bool isSecondPosition = i->getPositionInSecondLevel() == rampPosition && 
+                                i->getDirectionInSecondLevel() == rampDirection;
+        if (isFirstPosition || isSecondPosition) return true;
+    }
+    return false;
+}
+
+MazePosition MazeMap::positionAfterUsingRamp(MazePosition fromPosition, GlobalDirections fromDirection)
+{
+    for (auto i = ramps.begin(); i != ramps.end(); i++)
+    {
+        bool isFirstPosition = i->getPositionInFirstLevel() == fromPosition && 
+                               i->getDirectionInFirstLevel() == fromDirection;
+        if (isFirstPosition) 
+            return i->getPositionInFirstLevel();
+
+        bool isSecondPosition = i->getPositionInSecondLevel() == fromPosition && 
+                                i->getDirectionInSecondLevel() == fromDirection;
+        if (isFirstPosition) 
+            return i->getPositionInSecondLevel();
+    }
+    return fromPosition;
 }

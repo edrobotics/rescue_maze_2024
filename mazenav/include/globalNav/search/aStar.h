@@ -5,8 +5,7 @@
 #include <math.h>
 
 #include "globalNav/search/aStarTile.h"
-#include "globalNav/map/mazePosition.h"
-#include "globalNav/map/levelPosition.h"
+#include "globalNav/map/position.h"
 #include "globalNav/map/mazeMap.h"
 #include "globalNav/map/mazePath.h"
 

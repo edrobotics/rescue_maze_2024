@@ -1,7 +1,7 @@
 #pragma once
 
 #include <stack>
-#include "globalNav/map/mazePosition.h"
+#include "globalNav/map/position.h"
 
 class MazePath
 {
