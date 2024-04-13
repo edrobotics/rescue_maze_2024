@@ -7,18 +7,6 @@ KinematicDriver::KinematicDriver(communication::Communicator* globComm)
 
 void KinematicDriver::calcSpeeds(int tSpeed, int rSpeed)
 {
-    // First, modify the tSpeed and rSpeed according to PID algorithm
-    // Set the PID setpoints
-    tPID.setSetpoint(tSpeed);
-    rPID.setSetpoint(rSpeed);
-    
-    // Get the corrections and apply them
-    #warning have to get actual speeds. From where?
-    tSpeed += tPID.getCorrection(0);
-    rSpeed += rPID.getCorrection(0);
-
-    // Then do the actual motor speed calculations. The updated PID values "trick" the system
-
     // Base driving speed
     double baseSpeed {tSpeed};
     double baseWheelspeedContribution {baseSpeed/WHEEL_RADIUS};

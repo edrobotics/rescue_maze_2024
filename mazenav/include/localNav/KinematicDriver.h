@@ -2,12 +2,13 @@
 #include "communicator/communicator.h"
 #include "fusion/MotorControllers.h"
 #include "GlobalConstants.h"
-#include "localNav/PIDController.h"
+// #include "localNav/PIDController.h"
 
 #include <chrono>
 #include <thread>
 
-// Input translational and rotational speed, and then it sends motor output values to hardware interface
+// Input translational and rotational speed, and then it sends motor output values to hardware interface.
+// Note: This is only a theoretical calculation. A separate control loop should be used in conjunction with this.
 
 class KinematicDriver
 {
@@ -33,6 +34,4 @@ class KinematicDriver
         communication::Communicator* globComm {};
         MotorControllers::MotorSpeeds motorSpeeds {};
 
-        PIDController tPID {1, 0, 0};
-        PIDController rPID {1, 0, 0};
 };

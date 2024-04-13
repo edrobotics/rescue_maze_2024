@@ -91,9 +91,9 @@ namespace communication
         mtx_general.unlock();
     }
 
-    CoordinateFrame PoseCommunicator::getTargetFrameTS()
+    CoordinateFrame PoseCommunicator::getTargetFrame()
     {
-        std::lock_guard<std::mutex> lock(mtx_general);
+        // std::lock_guard<std::mutex> lock(mtx_general);
         return targetFrame;
     }
 

@@ -36,6 +36,12 @@ void PIDController::setSetpoint(double setpoint)
 
 double PIDController::getCorrection(double value)
 {
+    double error {setpoint-value}; // Negative when above, positive when below
+    return getCorrectionFromError(error);
+}
+
+double PIDController::getCorrectionFromError(double error)
+{
     std::chrono::steady_clock::time_point curTime {std::chrono::steady_clock::now()};
     long int loopTime {std::chrono::duration_cast<std::chrono::milliseconds>(curTime-lastTime).count()};
 
@@ -47,7 +53,6 @@ double PIDController::getCorrection(double value)
     // Otherwise continue
 
     // Compute terms
-    double error {setpoint-value}; // Negative when above, positive when below
     integralSum += error*static_cast<double>(loopTime)/1000.0;
     double derivative {error/(static_cast<double>(loopTime)/1000.0)};
 

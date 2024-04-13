@@ -22,21 +22,45 @@ double PathFollower::getRotSpeedDriving()
 
 double PathFollower::getTransSpeedDriving()
 {
-    #warning not yet implemented correctly
-    return 200;
-}
-
-double PathFollower::getRotSpeedTurning(int direction)
-{
-    if (direction>=0)
+    double driveSpeed {};
+    // Simple slow-down when close by
+    if (distLeftToTarget<DRIVING_CLOSE_PID_THRESHOLD)
     {
-        direction = 1;
+        // Can replace with separate PID later (whose output would be used: driveSpeed = baseSpeed+correction))
+        driveSpeed = DRIVE_SPEED_SLOW;
     }
     else
     {
-        direction = -1;
+        driveSpeed = DRIVE_SPEED_STANDARD;
     }
-    return direction*M_PI;
+
+    driveTransSpeedPid.setSetpoint(driveSpeed);
+    return driveTransSpeedPid.getCorrection(globComm->poseComm.robotSpeed.transform.pos_y);
+}
+
+double PathFollower::getRotSpeedTurning()
+{
+    double turnSpeed {};
+
+    if (angLeftToTarget<TURNING_CLOSE_PID_THRESHOLD)
+    {
+        // Can replace with separate PID later (see getTransSpeedDriving for inspiration)
+        turnSpeed = TURN_SPEED_SLOW;
+    }
+    else
+    {
+        turnSpeed = TURN_SPEED_STANDARD;
+    }
+
+    turnRotSpeedPid.setSetpoint(turnSpeed);
+    return turnRotSpeedPid.getCorrection(globComm->poseComm.robotSpeed.transform.rot_z);
+
+}
+
+double PathFollower::getTransSpeedTurning()
+{
+    turnTransSpeedPid.setSetpoint(0);
+    return turnTransSpeedPid.getCorrection(globComm->poseComm.robotSpeed.transform.pos_y);
 }
 
 void PathFollower::setLinePos(double newYLine)
@@ -61,19 +85,22 @@ void PathFollower::runLoop()
     {
         case communication::DriveCommand::driveForward:
             setLinePos(GRID_SIZE/2.0);
+        driveTransSpeedPid.restartPID();
             drive(1);
             break;
         
         case communication::DriveCommand::turnLeft:
+            turnRotSpeedPid.restartPID();
             turn(1);
             break;
 
         case communication::DriveCommand::turnRight:
+            turnRotSpeedPid.restartPID();
             turn(-1);
             break;
 
         default:
-            std::cerr << "Cannot yet execute this DriveCommand" << std::endl;
+            // std::cerr << "Cannot yet execute this DriveCommand" << std::endl;
             break;
     }
 
@@ -88,7 +115,7 @@ void PathFollower::drive(int direction)
         distLeftToTarget = getDistLeftToTarget();
         std::cout << "distLeftToTarget: " << distLeftToTarget << "\n";
         driver.calcSpeeds(getTransSpeedDriving(), getRotSpeedDriving());
-        driver.setSpeeds();
+        // driver.setSpeeds();
         finished = checkIsFinishedDriving(direction);
         std::this_thread::sleep_for(std::chrono::milliseconds(10));
     }
@@ -100,9 +127,11 @@ void PathFollower::turn(int direction)
     while (!finished)
     {
         angLeftToTarget = getAngLeftToTarget();
-        driver.calcSpeeds(0, getRotSpeedTurning(direction));
-        driver.setSpeeds();
+        std::cout << "angLeftToTarget: " << angLeftToTarget << "\n";
+        driver.calcSpeeds(getTransSpeedTurning(), getRotSpeedTurning());
+        // driver.setSpeeds();
         finished = checkIsFinishedTurning(direction);
+        std::this_thread::sleep_for(std::chrono::milliseconds(10));
     }
 }
 
@@ -183,7 +212,7 @@ void PathFollower::setTargetPointTf(communication::DriveCommand dC)
             break;
 
         default:
-            std::cerr << "Cannot set target point with this DriveCommand";
+            // std::cerr << "Cannot set target point with this DriveCommand";
             break;
     }
     
@@ -197,19 +226,30 @@ double PathFollower::getDistLeftToTarget()
     // Transform targetPointTf {targetPoint.getTransformLevelTo(&(globComm->poseComm.robotFrame), 1, 1)};
     // return targetPointTf.pos_y;
     
-    return globComm->poseComm.getTargetFrameTS().transform.pos_y - globComm->poseComm.robotFrame.transform.pos_y;
+    return globComm->poseComm.getTargetFrame().transform.pos_y - globComm->poseComm.robotFrame.transform.pos_y;
 }
 
 double PathFollower::getAngLeftToTarget()
 {
     // Transform targetPointTf {targetPoint.getTransformLevelTo(&(globComm->poseComm.robotFrame), 1, 1)};
-    double rotDiff {globComm->poseComm.getTargetFrameTS().transform.rot_z - globComm->poseComm.robotFrame.transform.rot_z};
-    if (rotDiff> M_PI)
+    double rotDiff {globComm->poseComm.getTargetFrame().transform.rot_z - globComm->poseComm.robotFrame.transform.rot_z};
+    if (rotDiff > M_PI)
     {
         rotDiff -= 2*M_PI;
     }
     return rotDiff;
 }
+
+
+
+
+
+
+
+
+
+
+
 
 
 

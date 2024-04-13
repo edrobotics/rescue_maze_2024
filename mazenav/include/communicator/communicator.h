@@ -52,7 +52,7 @@ namespace communication
             CoordinateFrame lastRobotFrame {&localTileFrame};
 
             void setTargetFrameTS(CoordinateFrame& frame);
-            CoordinateFrame getTargetFrameTS();
+            CoordinateFrame getTargetFrame();
             void setTargetFrameTransformTS(Transform tf);
             
             // Speeds can be represented with coordinateframes. The speeds are relative to the parent object. (unsure if this representation is actually okay)
