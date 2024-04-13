@@ -147,3 +147,16 @@ void Robot::updateCol()
 //         motorControllers[i]->setPWM(0);
 //     }
 // }
+
+
+void Robot::calibrateMotorPid()
+{
+    Serial.println("Calibrating motorRF:");
+    motorRF.pwmRPMCalibration();
+    Serial.println("Calibrating motorLF:");
+    motorLF.pwmRPMCalibration();
+    Serial.println("Calibrating motorRB:");
+    motorRB.pwmRPMCalibration();
+    Serial.println("Calibrating motorLB:");
+    motorLB.pwmRPMCalibration();
+}

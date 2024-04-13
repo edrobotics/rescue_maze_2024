@@ -17,6 +17,8 @@ class Robot
         void updateLoop();
         // void testDrive();
 
+        void calibrateMotorPid();
+
         // Should be private but there was an issue (flexible member array though it is not)
         static constexpr int MOTOR_NUM = 4;
         MotorController* motorControllers[MOTOR_NUM] {&motorRF, &motorLF, &motorRB, &motorLB};

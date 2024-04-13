@@ -73,7 +73,6 @@ bool MotorController::update(bool usePIDCorr)
     long read = encoder.read();
     encoderPos = (isReversed) ? -read : read;
 
-
     // Calculate speeds
     if (updateTime==lastUpdateTime) return false; // Would result in division by 0
     curMotorSpeed = double(encoderPos-lastEncoderPos)/double(cpr*(updateTime-lastUpdateTime)) * double(MICROS_PER_MINUTE);
@@ -89,7 +88,11 @@ bool MotorController::update(bool usePIDCorr)
     }
 
 
-    float newPWMVal = curPWM + speedCorrection;
+    // Old way of computation
+    // float newPWMVal = curPWM + speedCorrection;
+
+    // New way of computation
+    float newPWMVal = rpmToPwm(motorSpeed) + speedCorrection;
 
     if (abs(motorSpeed)<10 && abs(curMotorSpeed)<1000 && abs(newPWMVal) < 30)
     {
@@ -146,4 +149,39 @@ void MotorController::printValues()
     Serial.print("outputSpeed:");Serial.print(getOutputSpeed());Serial.print(",");
     // Serial.print("encoderPos:");Serial.print(encoderPos);Serial.print(",");
     Serial.println("");
+}
+
+
+void MotorController::pwmRPMCalibration()
+{
+    #warning not done
+    LinearRegression reg {};
+
+    for (int i=0;i<DATA_POINT_NUM;++i)
+    {
+        // Set the speed
+        setPWM(i*PWM_STEP);
+        // Wait until we reach speed
+        delay(1000);
+        // Make sure we read correct speed
+        for (int k=0;k<10;++k)
+        {
+            update(false);
+            delay(100);
+        }
+
+        // Read the speed and pwm and add to regression
+        reg.learn(curMotorSpeed, curPWM);
+    }
+
+    // Update the coefficients
+    reg.parameters(regCoeff);
+
+    // Show the values.
+    Serial.print("Parameters for motor calibration: y=kx+m, where k=");Serial.print(kVal);Serial.print(", m=");Serial.print(mVal);Serial.print(". To make the values take permanent effect, put these values in the code and reflash the code.");Serial.println();
+}
+
+double MotorController::rpmToPwm(double rpm)
+{
+    return kVal*rpm+mVal;
 }

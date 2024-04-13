@@ -3,6 +3,7 @@
 
 #include <Arduino.h>
 #include <QuickPID.h>
+#include <LinearRegression.h>
 
 // Settings for Encoder library
 // #define ENCODER_OPTIMIZE_INTERRUPTS // Leads to a linking error
@@ -14,12 +15,18 @@ class MotorController
     MotorController(int enA, int enB, int pwmPin, int dirPin, double encRatio, int cpr);
     
     bool init();
-    bool update(); // Read encoder positions and set new PID loop value
-    bool update(bool usePIDCorr); // Read encoder positions and calculates values. Does NOT correct, just calculates.
-    void setSpeed(double speed); // Sets the speed in rpm
-    void setPWM(int pwmSpeed); // Sets the PWM output. Clamps if too great.
-    void stopDumb(); // Stop by setting PWM values manually. Ensures no unwanted drift.
-    void stopPID(); // Stop by using PID algorithm. Should stand still regardless of pushing (probably not needed), but can drift in some cases.
+    // Read encoder positions and set new PID loop value
+    bool update();
+    // Read encoder positions and calculates values. Does NOT correct, just calculates.
+    bool update(bool usePIDCorr);
+    // Sets the speed in rpm
+    void setSpeed(double speed);
+    // Sets the PWM output. Clamps if too great.
+    void setPWM(int pwmSpeed);
+    // Stop by setting PWM values manually. Ensures no unwanted drift.
+    void stopDumb();
+    // Stop by using PID algorithm. Should stand still regardless of pushing (probably not needed), but can drift in some cases.
+    void stopPID();
 
     void startDistanceMeasure(); // Begin distance measuring
     // Maybe replace these with passing pointers in the beginning and then updating the values through pointers?
@@ -46,7 +53,7 @@ class MotorController
     float curMotorSpeed {0}; // Current motor speed in rpm
     // double curMotorOutSpeed {0}; // Current output shaft speed in rpm. Not really used?
     // const long MILLIS_PER_MINUTE {long(60000)};
-    #define MICROS_PER_MINUTE 60000000L // Bad to use #define? 60e6 micros per minute
+    #define MICROS_PER_MINUTE 60000000L // Bad to use #define? 60e6 micros per minute. Could also use static constexpr
 
     // Distance measuring
     long tickStartDistance {0L}; // Ticks driven since begin of distancemeasure
@@ -62,12 +69,22 @@ class MotorController
     unsigned long lastUpdateTime = 0;
     long lastEncoderPos = 0;
 
+    #warning retune
     // PID
     float Kp {0.005};
     float Ki {0.003};
     float Kd {0.0001};
     QuickPID pid {&curMotorSpeed, &speedCorrection, &motorSpeed, Kp, Ki, Kd, QuickPID::pMode::pOnError, QuickPID::dMode::dOnMeas, QuickPID::iAwMode::iAwCondition, QuickPID::Action::direct};
     uint32_t pidSampleTimeUs = 2000; // How often the PID loop should update, in microseconds. Untuned, just a guess
+
+    // Convert an rpm value to the PWM value that should give that speed
+    double rpmToPwm(double rpm);
+    // Coefficients for linear regression to convert rpm to PWM.
+    double regCoeff[2] {};
+    double& kVal {regCoeff[0]};
+    double& mVal {regCoeff[1]};
+    static constexpr int DATA_POINT_NUM {6};
+    static constexpr int PWM_STEP {42};
 
 };
 
