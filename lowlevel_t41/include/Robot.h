@@ -15,7 +15,7 @@ class Robot
         bool init();
 
         void updateLoop();
-        // void testDrive();
+        void testDrive();
 
         void calibrateMotorPid();
 

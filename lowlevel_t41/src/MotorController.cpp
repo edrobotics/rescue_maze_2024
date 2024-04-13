@@ -154,13 +154,12 @@ void MotorController::printValues()
 
 void MotorController::pwmRPMCalibration()
 {
-    #warning not done
     LinearRegression reg {};
 
-    for (int i=0;i<DATA_POINT_NUM;++i)
+    for (int i=0;i<PWM_TEST_NUM;++i)
     {
         // Set the speed
-        setPWM(i*PWM_STEP);
+        setPWM(PWM_TEST_POINTS[i]);
         // Wait until we reach speed
         delay(1000);
         // Make sure we read correct speed
@@ -178,7 +177,8 @@ void MotorController::pwmRPMCalibration()
     reg.parameters(regCoeff);
 
     // Show the values.
-    Serial.print("Parameters for motor calibration: y=kx+m, where k=");Serial.print(kVal);Serial.print(", m=");Serial.print(mVal);Serial.print(". To make the values take permanent effect, put these values in the code and reflash the code.");Serial.println();
+    Serial.print("Parameters for motor calibration: y=kx+m, where k=");Serial.print(kVal, 10);Serial.print(", m=");Serial.print(mVal, 10);Serial.print(". To make the values take permanent effect, put these values in the code and reflash the code.");Serial.println();
+    setPWM(0);
 }
 
 double MotorController::rpmToPwm(double rpm)

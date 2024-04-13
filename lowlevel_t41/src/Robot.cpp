@@ -72,10 +72,13 @@ void Robot::setMotors()
 {
     int16_t rpmVals[MOTOR_NUM] {0};
     communicator.transData.getRpmControl(rpmVals);
+    // Serial.print("RPM: ");
     for (int i=0;i<MOTOR_NUM;++i)
     {
         motorControllers[i]->setSpeed(rpmVals[i]);
+        // Serial.print(rpmVals[i]);Serial.print("  ");
     }
+    // Serial.println("");
 }
 
 void Robot::getMotors()
@@ -96,6 +99,10 @@ void Robot::updateMotors()
     for (int i=0;i<MOTOR_NUM;++i)
     {
         motorControllers[i]->update();
+        // if (motorControllers[i]->update() && i==0)
+        // {
+        //     motorControllers[i]->printValues();
+        // }
     }
 }
 
@@ -129,24 +136,24 @@ void Robot::updateCol()
     communicator.transData.setCol(0, tempColVal);
 }
 
-// void Robot::testDrive()
-// {
-//     for (int i=0;i<MOTOR_NUM;++i)
-//     {
-//         motorControllers[i]->setSpeed(90);
-//     }
+void Robot::testDrive()
+{
+    for (int i=0;i<MOTOR_NUM;++i)
+    {
+        motorControllers[i]->setSpeed(60);
+    }
 
-//     long timeflag {millis()};
-//     while (millis()-timeflag < 600)
-//     {
-//         updateMotors();
-//     }
+    long timeflag {millis()};
+    while (millis()-timeflag < 10000)
+    {
+        updateMotors();
+    }
 
-//     for (int i=0;i<MOTOR_NUM;++i)
-//     {
-//         motorControllers[i]->setPWM(0);
-//     }
-// }
+    for (int i=0;i<MOTOR_NUM;++i)
+    {
+        motorControllers[i]->setSpeed(0);
+    }
+}
 
 
 void Robot::calibrateMotorPid()

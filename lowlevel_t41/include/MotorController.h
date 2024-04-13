@@ -71,20 +71,23 @@ class MotorController
 
     #warning retune
     // PID
-    float Kp {0.005};
-    float Ki {0.003};
-    float Kd {0.0001};
+    float Kp {0.03};
+    float Ki {1};
+    float Kd {0};
     QuickPID pid {&curMotorSpeed, &speedCorrection, &motorSpeed, Kp, Ki, Kd, QuickPID::pMode::pOnError, QuickPID::dMode::dOnMeas, QuickPID::iAwMode::iAwCondition, QuickPID::Action::direct};
-    uint32_t pidSampleTimeUs = 2000; // How often the PID loop should update, in microseconds. Untuned, just a guess
+    uint32_t pidSampleTimeUs = 5000; // How often the PID loop should update, in microseconds. Untuned, just a guess
 
     // Convert an rpm value to the PWM value that should give that speed
     double rpmToPwm(double rpm);
     // Coefficients for linear regression to convert rpm to PWM.
-    double regCoeff[2] {};
+    double regCoeff[2] {0.02678, 0.0}; // Full: 0.0267838563, 
     double& kVal {regCoeff[0]};
     double& mVal {regCoeff[1]};
-    static constexpr int DATA_POINT_NUM {6};
-    static constexpr int PWM_STEP {42};
+    // Data points in each direction of 0
+    // static constexpr int DATA_POINT_NUM {3};
+    // static constexpr int PWM_STEP {60};
+    static constexpr int PWM_TEST_NUM {7};
+    int PWM_TEST_POINTS[PWM_TEST_NUM] {-220, -150, -100, 0, 220, 150, 100};
 
 };
 
