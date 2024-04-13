@@ -103,6 +103,7 @@ void PoseEstimator::update(FusionGroup fgroup)
 
     // std::cout << "In poseEstimator, before calcSpeeds\n";
     calcSpeeds(poseResult);
+    poseResult.updated = true;
 
     // Write the new pose with only changes.
     #warning concurrency issues?

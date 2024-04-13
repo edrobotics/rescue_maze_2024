@@ -123,12 +123,19 @@ void PathFollower::drive(int direction)
     bool finished {false};
     while(!finished)
     {
-        distLeftToTarget = getDistLeftToTarget();
-        // std::cout << "distLeftToTarget: " << distLeftToTarget << "\n";
-        driver.calcSpeeds(getTransSpeedDriving(), getRotSpeedDriving());
-        driver.setSpeeds();
-        finished = checkIsFinishedDriving(direction);
-        std::this_thread::sleep_for(std::chrono::milliseconds(10));
+        if (globComm->poseComm.updated)
+        {
+            globComm->poseComm.updated = false;
+            distLeftToTarget = getDistLeftToTarget();
+            // std::cout << "distLeftToTarget: " << distLeftToTarget << "\n";
+            driver.calcSpeeds(getTransSpeedDriving(), getRotSpeedDriving());
+            driver.setSpeeds();
+            finished = checkIsFinishedDriving(direction);
+        }
+        else
+        {
+            std::this_thread::sleep_for(std::chrono::milliseconds(5));
+        }
     }
 }
 
@@ -137,12 +144,19 @@ void PathFollower::turn(int direction)
     bool finished {false};
     while (!finished)
     {
-        angLeftToTarget = getAngLeftToTarget();
-        std::cout << "angLeftToTarget: " << angLeftToTarget << "\n";
-        driver.calcSpeeds(getTransSpeedTurning(), getRotSpeedTurning());
-        driver.setSpeeds();
-        finished = checkIsFinishedTurning(direction);
-        std::this_thread::sleep_for(std::chrono::milliseconds(10));
+        if (globComm->poseComm.updated)
+        {
+            globComm->poseComm.updated = false;
+            angLeftToTarget = getAngLeftToTarget();
+            std::cout << "angLeftToTarget: " << angLeftToTarget << "\n";
+            driver.calcSpeeds(getTransSpeedTurning(), getRotSpeedTurning());
+            driver.setSpeeds();
+            finished = checkIsFinishedTurning(direction);
+        }
+        else
+        {
+            std::this_thread::sleep_for(std::chrono::milliseconds(5));
+        }
     }
 }
 

@@ -96,6 +96,9 @@ namespace communication
 
             // Indicates whether or not values have been set before
             int freshness {6};
+
+            // Indicates whether new values have been set. Set to true when putting in new values (PoseEstimator), false when reading (PathFollower)
+            bool updated {false};
             
             // Time point for when the lastRobotTime was captured
             std::chrono::steady_clock::time_point curRobotTime {std::chrono::steady_clock::now()};

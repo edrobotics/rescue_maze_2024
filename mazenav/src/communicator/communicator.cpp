@@ -78,6 +78,7 @@ namespace communication
         // std::cout << "done\n";
 
         freshness = pComm.freshness;
+        updated = pComm.updated;
 
         // std::cout << "copying times... ";
         curRobotTime = pComm.curRobotTime;
