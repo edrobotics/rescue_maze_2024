@@ -69,7 +69,6 @@ class MotorController
     unsigned long lastUpdateTime = 0;
     long lastEncoderPos = 0;
 
-    #warning retune
     // PID
     float Kp {0.03};
     float Ki {1};
