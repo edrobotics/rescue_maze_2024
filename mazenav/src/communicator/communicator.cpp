@@ -47,7 +47,7 @@ namespace communication
 
     PoseCommunicator::PoseCommunicator()
     {
-
+        // robotSpeeds.fill(CoordinateFrame{nullptr});
     }
 
     PoseCommunicator& PoseCommunicator::operator=(const PoseCommunicator& pComm)
@@ -72,12 +72,17 @@ namespace communication
         targetFrame = pComm.targetFrame.getWithoutChildren();
         targetFrame.setParentTS(&localTileFrame);
         
-        robotSpeed = pComm.robotSpeed.getWithoutChildren();
+        robotSpeedAvg = pComm.robotSpeedAvg.getWithoutChildren();
+        // std::cout << "copying robotSpeeds... ";
+        robotSpeeds = pComm.robotSpeeds;
+        // std::cout << "done\n";
 
         freshness = pComm.freshness;
 
+        // std::cout << "copying times... ";
         curRobotTime = pComm.curRobotTime;
         lastRobotTime = pComm.lastRobotTime;
+        // std::cout << "done\n";
 
         return *this;
     }
@@ -105,6 +110,60 @@ namespace communication
         mtx_general.lock();
         targetFrame.applyTransform(tf);
         mtx_general.unlock();
+    }
+
+
+    void PoseCommunicator::incrementHistoryIndex(int& index)
+    {
+        ++index;
+        wrapHistoryIndex(index);
+    }
+
+    void PoseCommunicator::wrapHistoryIndex(int& index)
+    {
+        index = index % HISTORY_NUM;
+    }
+
+    void PoseCommunicator::calcRobotSpeedAvg(CoordinateFrame newSpeed)
+    {
+        // std::cout << "Begin speedCalc... ";
+        robotSpeedCur = newSpeed;
+        robotSpeeds.at(historyIndex) = robotSpeedCur;
+        incrementHistoryIndex(historyIndex);
+        calcAverage(robotSpeedAvg);
+        // std::cout << "calc done" << "\n";
+    }
+
+    void PoseCommunicator::calcAverage(CoordinateFrame& result)
+    {
+        // Sort array to filter out most extreme values
+        // std::array<CoordinateFrame, HISTORY_NUM> sorted {robotSpeeds};
+        // std::sort(sorted.begin(), sorted.end());
+
+        double xSum {0};
+        double ySum {0};
+        double zSum {0};
+
+        // for (int i=1;i<HISTORY_NUM-1;++i)
+        // {
+        //     xSum+=sorted.at(i).transform.pos_x;
+        //     ySum+=sorted.at(i).transform.pos_y;
+        //     zSum+=sorted.at(i).transform.rot_z;
+        // }
+        // result.transform.pos_x = xSum/(HISTORY_NUM-2);
+        // result.transform.pos_y = ySum/(HISTORY_NUM-2);
+        // result.transform.rot_z = zSum/(HISTORY_NUM-2);
+
+        for (auto& speed : robotSpeeds)
+        {
+            xSum += speed.transform.pos_x;
+            ySum += speed.transform.pos_y;
+            zSum += speed.transform.rot_z;
+        }
+        result.transform.pos_x = xSum/HISTORY_NUM;
+        result.transform.pos_y = ySum/HISTORY_NUM;
+        result.transform.rot_z = zSum/HISTORY_NUM;
+
     }
 
 }

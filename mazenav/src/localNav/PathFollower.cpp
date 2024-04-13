@@ -35,7 +35,7 @@ double PathFollower::getTransSpeedDriving()
     }
 
     driveTransSpeedPid.setSetpoint(driveSpeed);
-    return driveTransSpeedPid.getCorrection(globComm->poseComm.robotSpeed.transform.pos_y);
+    return driveTransSpeedPid.getCorrection(globComm->poseComm.robotSpeedAvg.transform.pos_y);
 }
 
 double PathFollower::getRotSpeedTurning()
@@ -53,14 +53,14 @@ double PathFollower::getRotSpeedTurning()
     }
 
     turnRotSpeedPid.setSetpoint(turnSpeed);
-    return turnRotSpeedPid.getCorrection(globComm->poseComm.robotSpeed.transform.rot_z);
+    return turnRotSpeedPid.getCorrection(globComm->poseComm.robotSpeedAvg.transform.rot_z);
 
 }
 
 double PathFollower::getTransSpeedTurning()
 {
     turnTransSpeedPid.setSetpoint(0);
-    return turnTransSpeedPid.getCorrection(globComm->poseComm.robotSpeed.transform.pos_y);
+    return turnTransSpeedPid.getCorrection(globComm->poseComm.robotSpeedAvg.transform.pos_y);
 }
 
 void PathFollower::setLinePos(double newYLine)

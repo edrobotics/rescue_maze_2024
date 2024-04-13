@@ -3,6 +3,7 @@
 #include <mutex>
 #include <iostream>
 #include <chrono>
+#include <array>
 
 #include "transformations/tfsys.h"
 #include "fusion/MotorControllers.h"
@@ -37,6 +38,34 @@ namespace communication
 
     class PoseCommunicator
     {
+        private:
+            // std::mutex mtx_world;
+            // std::mutex mtx_localtile;
+            // std::mutex mtx_robot;
+
+            // For timed average of robotSpeed
+            static constexpr int HISTORY_NUM {4};
+            int historyIndex {0};
+            void incrementHistoryIndex(int& index);
+            void wrapHistoryIndex(int& index);
+            void calcAverage(CoordinateFrame& result);
+
+            // To enable initialization with constructor?
+            template <typename T, std::size_t ... Is>
+            constexpr std::array<T, sizeof...(Is)>
+            create_array(T value, std::index_sequence<Is...>)
+            {
+                // cast Is to void to remove the warning: unused value
+                return {{(static_cast<void>(Is), value)...}};
+            }
+            template <std::size_t N, typename T>
+            constexpr std::array<T, N> create_array(const T& value)
+            {
+                return create_array(value, std::make_index_sequence<N>());
+            }
+
+            std::array<CoordinateFrame, HISTORY_NUM> robotSpeeds {create_array<HISTORY_NUM, CoordinateFrame>(CoordinateFrame{nullptr})};
+
         public:
             // Default constructor
             PoseCommunicator();
@@ -59,7 +88,11 @@ namespace communication
             // Speeds can be represented with coordinateframes. The speeds are relative to the parent object. (unsure if this representation is actually okay)
             // CoordinateFrame worldSpeed {nullptr};
             // CoordinateFrame localTileSpeed {&worldSpeed};
-            CoordinateFrame robotSpeed {nullptr};
+            // CoordinateFrame robotSpeed {nullptr};
+            CoordinateFrame robotSpeedAvg {nullptr};
+            CoordinateFrame robotSpeedCur {nullptr};
+            // Take in a new speed and calculate robotSpeedAvg based on this.
+            void calcRobotSpeedAvg(CoordinateFrame newSpeed);
 
             // Indicates whether or not values have been set before
             int freshness {6};
@@ -69,12 +102,9 @@ namespace communication
             std::chrono::steady_clock::time_point lastRobotTime {std::chrono::steady_clock::now()};
         
             std::mutex mtx_general {};
-        private:
             // Used by PathFollower. Is here to ensure synchronisation
+            // DO NOT USE DIRECTLY! ACCESS THROUGH THREAD SAFE FUNCTIONS
             CoordinateFrame targetFrame {&localTileFrame};
-            // std::mutex mtx_world;
-            // std::mutex mtx_localtile;
-            // std::mutex mtx_robot;
 
     };
 

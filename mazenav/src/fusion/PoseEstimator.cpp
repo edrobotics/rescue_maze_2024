@@ -48,12 +48,15 @@ void PoseEstimator::runLoop()
 void PoseEstimator::update(FusionGroup fgroup)
 {
     // std::cout << "In update" << std::endl;
-    #warning 
     sensors->update(true);
     // Should copy the tree of poseComm into poseResult
+    // std::cout << "Creating poseResult... ";
     communication::PoseCommunicator poseResult {};
+    // std::cout << "done\n";
+    // std::cout << "lock poseComm mutex... ";
     // Lock poseComm to prevent concurrency issues with the targetPoint
     globComm->poseComm.mtx_general.lock();
+    // std::cout << "done\n";
     // Save the current value so that we can set it as the old one later
     // CoordinateFrame lastRobot {globComm->poseComm.robotFrame.getWithoutChildren()};
     // std::cout << "lastRobot: " << lastRobot << "\n";
@@ -95,8 +98,10 @@ void PoseEstimator::update(FusionGroup fgroup)
     // poseResult.lastRobotFrame.setParentTS(&(poseResult.localTileFrame));
 
     // Handle updating of localTile (global coordinates)
+    // std::cout << "before updatePoseComm\n";
     updatePoseComm(poseResult);
 
+    // std::cout << "In poseEstimator, before calcSpeeds\n";
     calcSpeeds(poseResult);
 
     // Write the new pose with only changes.
@@ -105,7 +110,7 @@ void PoseEstimator::update(FusionGroup fgroup)
     // Unlock poseComm to allow access to targetPoint again.
     globComm->poseComm.mtx_general.unlock();
 
-    std::cout << "robotSpeed: " << globComm->poseComm.robotSpeed << "\n";
+    std::cout << "robotSpeed: " << globComm->poseComm.robotSpeedAvg << "\n";
     // std::cout << "robotFrame: " << globComm->poseComm.robotFrame << /*"  lastRobotFrame: " << globComm->poseComm.lastRobotFrame << */ "\n";
 }
 
@@ -117,7 +122,9 @@ void PoseEstimator::update(FusionGroup fgroup)
 communication::PoseCommunicator PoseEstimator::updateSimple()
 {
     // communication::PoseCommunicator lastPose {globComm->poseComm};
+    // std::cout << "before resultPose copy from poseComm... ";
     communication::PoseCommunicator resultPose {globComm->poseComm};
+    // std::cout << "done\n";
     resultPose.lastRobotFrame = resultPose.robotFrame;
     // Update the times
     resultPose.lastRobotTime = resultPose.curRobotTime;
@@ -157,6 +164,8 @@ communication::PoseCommunicator PoseEstimator::updateSimple()
         std::cerr << e.what() << " : " << "Cannot compute robot angle" << '\n';
         #warning what to do here, with no angle? Also what to do for further angle requirements
     }
+
+    // std::cout << "rotation done\n";
     
     
     // Translation, abs:
@@ -203,6 +212,7 @@ communication::PoseCommunicator PoseEstimator::updateSimple()
     {
         // std::cerr << e.what() << " : " << "Cannot compute robot Y position" << '\n';
     }
+    // std::cout << "translation done\n";
 
 
     return resultPose;
@@ -240,16 +250,19 @@ void PoseEstimator::calcSpeeds(communication::PoseCommunicator& pose)
 {
     double timeDiff {std::chrono::duration_cast<std::chrono::milliseconds>(pose.curRobotTime-pose.lastRobotTime).count()/1000.0};
 
+    CoordinateFrame newSpeed {nullptr};
     // Calc speeds in localTile coordinate system
     double xSpeed {(pose.robotFrame.transform.pos_x - pose.lastRobotFrame.transform.pos_x)/timeDiff};
     double ySpeed {(pose.robotFrame.transform.pos_y - pose.lastRobotFrame.transform.pos_y)/timeDiff};
 
-    pose.robotSpeed.transform.rot_z = (pose.robotFrame.transform.rot_z - pose.lastRobotFrame.transform.rot_z)/timeDiff;
+    newSpeed.transform.rot_z = (pose.robotFrame.transform.rot_z - pose.lastRobotFrame.transform.rot_z)/timeDiff;
     
     // Transform the speeds to robot local coordinate system.
     double angle {pose.lastRobotFrame.transform.rot_z};
-    pose.robotSpeed.transform.pos_x = xSpeed*cos(angle) + ySpeed*sin(angle);
-    pose.robotSpeed.transform.pos_y = ySpeed*cos(angle) - xSpeed*sin(angle);
+    newSpeed.transform.pos_x = xSpeed*cos(angle) + ySpeed*sin(angle);
+    newSpeed.transform.pos_y = ySpeed*cos(angle) - xSpeed*sin(angle);
+
+    pose.calcRobotSpeedAvg(newSpeed);
     
     // Debugging
     // std::cout << "timeDiff: " << timeDiff << "  ";
