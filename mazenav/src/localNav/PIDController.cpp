@@ -43,26 +43,33 @@ double PIDController::getCorrection(double value)
 double PIDController::getCorrectionFromError(double error)
 {
     std::chrono::steady_clock::time_point curTime {std::chrono::steady_clock::now()};
-    long int loopTime {std::chrono::duration_cast<std::chrono::milliseconds>(curTime-lastTime).count()};
+    double loopTime {std::chrono::duration_cast<std::chrono::milliseconds>(curTime-lastTime).count()/1000.0};
 
     // If not enough time has passed
-    if (loopTime < minDurationMillis)
+    if (loopTime < MIN_DURATION)
     {
         return lastCorr;
     }
     // Otherwise continue
 
     // Compute terms
-    integralSum += error*static_cast<double>(loopTime)/1000.0;
-    double derivative {error/(static_cast<double>(loopTime)/1000.0)};
+    integralSum += error*loopTime;
+    double derivative {(error-lastError)/loopTime};
+    // Catch the case where reset has been done or first time, where we do not know the lastError (thus it is set to 0)
+    if (lastError==0)
+    {
+        derivative = 0;
+    }
 
     // Compute correction
-    double correction {(kI*error + kI*integralSum + kD*derivative)};
+    double correction {(kP*error + kI*integralSum + kD*derivative)};
 
     // Update variables for next iteration
     lastTime = curTime;
     lastCorr = correction;
-    
+    lastError = error;
+
+
     return correction;
 }
 
@@ -72,4 +79,5 @@ void PIDController::restartPID()
     integralSum = 0;
     lastTime = std::chrono::steady_clock::now();
     lastCorr = 0;
+    lastError = 0;
 }

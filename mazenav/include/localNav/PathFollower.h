@@ -12,6 +12,8 @@
 #pragma once
 
 #include <iostream>
+#include <fstream>
+#include <string>
 
 #include "localNav/KinematicDriver.h"
 #include "communicator/communicator.h"
@@ -126,7 +128,7 @@ class PathFollower
         static constexpr double TURNING_CLOSE_PID_THRESHOLD {0.35}; // About 20 degrees
 
         #warning untuned constants
-        PIDController driveTransSpeedPid {1, 0, 0};
+        PIDController driveTransSpeedPid {2, 0, 0};
         PIDController turnRotSpeedPid {1, 0, 0};
         PIDController turnTransSpeedPid {1, 0, 0};
 
@@ -135,5 +137,9 @@ class PathFollower
         static constexpr double DRIVE_SPEED_SLOW {50};
         static constexpr double TURN_SPEED_STANDARD {M_PI_2};
         static constexpr double TURN_SPEED_SLOW {M_PI_4};
+
+
+        // For getting PID values from file
+        void readPidFromFile(double& kP, double& kI, double& kD);
 
 };

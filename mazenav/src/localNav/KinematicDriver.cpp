@@ -5,14 +5,14 @@ KinematicDriver::KinematicDriver(communication::Communicator* globComm)
     this->globComm = globComm;
 }
 
-void KinematicDriver::calcSpeeds(int tSpeed, int rSpeed)
+void KinematicDriver::calcSpeeds(double tSpeed, double rSpeed)
 {
     // Base driving speed
     double baseSpeed {tSpeed};
     double baseWheelspeedContribution {baseSpeed/WHEEL_RADIUS};
 
     // Contribution of rotation
-    double rotationSpeedAtWheel {WHEEL_TURN_CONTRIBUTION_FACTOR*(static_cast<double>(rSpeed)/WHEEL_TURN_RADIUS)};
+    double rotationSpeedAtWheel {WHEEL_TURN_CONTRIBUTION_FACTOR*(rSpeed/WHEEL_TURN_RADIUS)};
     double rotationWheelspeedContribution {rotationSpeedAtWheel/WHEEL_RADIUS};
 
     // Computation of wheel rotation speeds
@@ -28,6 +28,8 @@ void KinematicDriver::calcSpeeds(int tSpeed, int rSpeed)
     motorSpeeds.lb = leftSpeedrpm;
     motorSpeeds.rf = rightSpeedrpm;
     motorSpeeds.rb = rightSpeedrpm;
+
+    std::cout << "leftSpeed: " << leftSpeed << " , lfSpeedWheel: " << leftSpeedrpm << "\n";
 
 }
 

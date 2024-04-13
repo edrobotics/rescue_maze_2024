@@ -21,7 +21,7 @@ class KinematicDriver
         // Calculate motor speeds from robot translational and rotational speed.
         // tSpeed - translational speed, mm/s
         // rSpeed - rotational speed, rad/s
-        void calcSpeeds(int tSpeed, int rSpeed);
+        void calcSpeeds(double tSpeed, double rSpeed);
 
         // Stops the robot
         void stop();

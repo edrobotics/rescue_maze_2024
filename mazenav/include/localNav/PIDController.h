@@ -1,6 +1,7 @@
 #pragma once
 
 #include <chrono>
+#include <iostream>
 
 class PIDController
 {
@@ -15,7 +16,6 @@ class PIDController
 
         // Set the setpoint
         void setSetpoint(double setpoint);
-        // Set the actual value
 
         // Gets the correction for the given value (computes the correction)
         // If not enough time has passed, the last known correction is returned
@@ -34,9 +34,10 @@ class PIDController
         double setpoint {0};
         double lastCorr {0};
 
-        // Minimum time between loops in milliseconds
-        int minDurationMillis {10};
+        // Minimum time between loops in seconds
+        static constexpr double MIN_DURATION {0.01};
 
         std::chrono::steady_clock::time_point lastTime {std::chrono::steady_clock::now()};
         double integralSum {};
+        double lastError {};
 };

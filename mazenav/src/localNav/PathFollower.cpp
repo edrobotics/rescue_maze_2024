@@ -5,6 +5,13 @@ PathFollower::PathFollower(communication::Communicator* globComm)
 {
     this->globComm = globComm;
     // targetPoint.setParentTS(&(globComm->poseComm.localTileFrame));
+
+    double kP {};
+    double kI {};
+    double kD {};
+    readPidFromFile(kP, kI, kD);
+    driveTransSpeedPid.setCoeff(kP, kI, kD);
+
 }
 
 PathFollower::~PathFollower()
@@ -14,10 +21,12 @@ PathFollower::~PathFollower()
 
 double PathFollower::getRotSpeedDriving()
 {
-    double wantedAngle {yPid.getCorrection(globComm->poseComm.robotFrame.transform.pos_x)};
-    angPid.setSetpoint(wantedAngle);
-    double speedCorr {angPid.getCorrection(globComm->poseComm.robotFrame.transform.rot_z)};
-    return speedCorr;
+    // double wantedAngle {yPid.getCorrection(globComm->poseComm.robotFrame.transform.pos_x)};
+    // angPid.setSetpoint(wantedAngle);
+    // double speedCorr {angPid.getCorrection(globComm->poseComm.robotFrame.transform.rot_z)};
+    // return speedCorr;
+    #warning temporary testing
+    return 0;
 }
 
 double PathFollower::getTransSpeedDriving()
@@ -35,7 +44,10 @@ double PathFollower::getTransSpeedDriving()
     }
 
     driveTransSpeedPid.setSetpoint(driveSpeed);
-    return driveTransSpeedPid.getCorrection(globComm->poseComm.robotSpeedAvg.transform.pos_y);
+    std::cout << "driveSpeed: " << driveSpeed << "  speed: " << globComm->poseComm.robotSpeedAvg.transform.pos_y << "  ";
+    double corr {driveTransSpeedPid.getCorrection(globComm->poseComm.robotSpeedAvg.transform.pos_y)};
+    std::cout << "transSpeedCorr: " << corr << "\n";
+    return corr;
 }
 
 double PathFollower::getRotSpeedTurning()
@@ -78,6 +90,8 @@ void PathFollower::runLoop()
 {
     yPid.restartPID();
     angPid.restartPID();
+    driveTransSpeedPid.restartPID();
+    turnRotSpeedPid.restartPID();
     communication::DriveCommand dC {globComm->navigationComm.popCommand()};
     // Set the target to go to
     setTargetPointTf(dC);
@@ -85,17 +99,14 @@ void PathFollower::runLoop()
     {
         case communication::DriveCommand::driveForward:
             setLinePos(GRID_SIZE/2.0);
-        driveTransSpeedPid.restartPID();
             drive(1);
             break;
         
         case communication::DriveCommand::turnLeft:
-            turnRotSpeedPid.restartPID();
             turn(1);
             break;
 
         case communication::DriveCommand::turnRight:
-            turnRotSpeedPid.restartPID();
             turn(-1);
             break;
 
@@ -113,9 +124,9 @@ void PathFollower::drive(int direction)
     while(!finished)
     {
         distLeftToTarget = getDistLeftToTarget();
-        std::cout << "distLeftToTarget: " << distLeftToTarget << "\n";
+        // std::cout << "distLeftToTarget: " << distLeftToTarget << "\n";
         driver.calcSpeeds(getTransSpeedDriving(), getRotSpeedDriving());
-        // driver.setSpeeds();
+        driver.setSpeeds();
         finished = checkIsFinishedDriving(direction);
         std::this_thread::sleep_for(std::chrono::milliseconds(10));
     }
@@ -129,7 +140,7 @@ void PathFollower::turn(int direction)
         angLeftToTarget = getAngLeftToTarget();
         std::cout << "angLeftToTarget: " << angLeftToTarget << "\n";
         driver.calcSpeeds(getTransSpeedTurning(), getRotSpeedTurning());
-        // driver.setSpeeds();
+        driver.setSpeeds();
         finished = checkIsFinishedTurning(direction);
         std::this_thread::sleep_for(std::chrono::milliseconds(10));
     }
@@ -240,7 +251,21 @@ double PathFollower::getAngLeftToTarget()
     return rotDiff;
 }
 
+void PathFollower::readPidFromFile(double& kP, double& kI, double& kD)
+{
+    std::ifstream file ("pid.txt", std::ios::in);
+    if (!file.is_open())
+    {
+        std::cerr << "Could not open PID file\n";
+        exit(1);
+    }
 
+    file >> kP;
+    file >> kI;
+    file >> kD;
+
+    std::cout << "Read: kP=" << kP << " , kI=" << kI << " , kD=" << kD << "\n";
+}
 
 
 
