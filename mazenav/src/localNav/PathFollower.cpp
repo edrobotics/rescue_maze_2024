@@ -47,7 +47,8 @@ double PathFollower::getTransSpeedDriving()
     std::cout << "driveSpeed: " << driveSpeed << "  speed: " << globComm->poseComm.robotSpeedAvg.transform.pos_y << "  ";
     double corr {driveTransSpeedPid.getCorrection(globComm->poseComm.robotSpeedAvg.transform.pos_y)};
     std::cout << "transSpeedCorr: " << corr << "\n";
-    return corr;
+    return driveSpeed+corr;
+    // return 200;
 }
 
 double PathFollower::getRotSpeedTurning()
