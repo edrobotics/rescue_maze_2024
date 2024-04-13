@@ -2,6 +2,7 @@
 #include <queue>
 #include <mutex>
 #include <iostream>
+#include <chrono>
 
 #include "transformations/tfsys.h"
 #include "fusion/MotorControllers.h"
@@ -63,6 +64,9 @@ namespace communication
             // Indicates whether or not values have been set before
             int freshness {6};
             
+            // Time point for when the lastRobotTime was captured
+            std::chrono::steady_clock::time_point curRobotTime {std::chrono::steady_clock::now()};
+            std::chrono::steady_clock::time_point lastRobotTime {std::chrono::steady_clock::now()};
         
             std::mutex mtx_general {};
         private:
@@ -71,6 +75,7 @@ namespace communication
             // std::mutex mtx_world;
             // std::mutex mtx_localtile;
             // std::mutex mtx_robot;
+
     };
 
     class MotorControllerCommunicator

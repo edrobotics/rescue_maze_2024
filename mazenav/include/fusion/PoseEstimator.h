@@ -95,7 +95,8 @@ class PoseEstimator
         // Only gives rotation, not translations
         communication::PoseCommunicator updateIMU();
 
-
+        // Calculate and set the speeds
+        void calcSpeeds(communication::PoseCommunicator& pose);
 
 
         // Low-level pose estimation helper functions

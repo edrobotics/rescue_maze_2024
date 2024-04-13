@@ -116,6 +116,9 @@ communication::PoseCommunicator PoseEstimator::updateSimple()
     // communication::PoseCommunicator lastPose {globComm->poseComm};
     communication::PoseCommunicator resultPose {globComm->poseComm};
     resultPose.lastRobotFrame = resultPose.robotFrame;
+    // Update the times
+    resultPose.lastRobotTime = resultPose.curRobotTime;
+    resultPose.curRobotTime = std::chrono::steady_clock::now();
     // CoordinateFrame resultRobot {globComm->poseComm.robotFrame};
 
     // This is where the magic happens
@@ -198,6 +201,8 @@ communication::PoseCommunicator PoseEstimator::updateSimple()
         // std::cerr << e.what() << " : " << "Cannot compute robot Y position" << '\n';
     }
 
+    calcSpeeds(resultPose);
+
     return resultPose;
 
     #warning (fixed?) IMPORTANT: tile changes are broken. Some systems fix it themselves before getting the values here, others are dependent on the wrappose. All need to be the same for averaging.
@@ -226,6 +231,26 @@ communication::PoseCommunicator PoseEstimator::updateIMU()
     communication::PoseCommunicator resultPose {globComm->poseComm};
 
     return resultPose;
+}
+
+
+void PoseEstimator::calcSpeeds(communication::PoseCommunicator& pose)
+{
+    double timeDiff {std::chrono::duration_cast<std::chrono::milliseconds>(pose.curRobotTime-pose.lastRobotTime).count()/1000.0};
+
+    // Calc speeds in localTile coordinate system
+    double xSpeed {(pose.robotFrame.transform.pos_x - pose.lastRobotFrame.transform.pos_x)/timeDiff};
+    double ySpeed {(pose.robotFrame.transform.pos_y - pose.lastRobotFrame.transform.pos_y)/timeDiff};
+
+    pose.robotSpeed.transform.rot_z = (pose.robotFrame.transform.rot_z - pose.lastRobotFrame.transform.rot_z)/timeDiff;
+    
+    // Transform the speeds to robot local coordinate system.
+    double angle {pose.lastRobotFrame.transform.rot_z};
+    pose.robotSpeed.transform.pos_x = xSpeed*cos(angle) + ySpeed*sin(angle);
+    pose.robotSpeed.transform.pos_y = ySpeed*cos(angle) - xSpeed*sin(angle);
+
+    // Alternative: Set the parent of the speed to localTileFrame, then set speeds in localTile coordinate system. Then transform (or at least get the transform) down into the robot coordinate system. Should do this exact calculation, and looks nicer. Probem with the children?
+
 }
 
 
