@@ -46,8 +46,7 @@ namespace communication
             // For timed average of robotSpeed
             static constexpr int HISTORY_NUM {4};
             int historyIndex {0};
-            void incrementHistoryIndex(int& index);
-            void wrapHistoryIndex(int& index);
+            void incrementHistoryIndex();
             void calcAverage(CoordinateFrame& result);
 
             // To enable initialization with constructor?

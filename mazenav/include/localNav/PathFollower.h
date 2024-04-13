@@ -134,7 +134,7 @@ class PathFollower
 
 
         static constexpr double DRIVE_SPEED_STANDARD {200};
-        static constexpr double DRIVE_SPEED_SLOW {50};
+        static constexpr double DRIVE_SPEED_SLOW {100};
         static constexpr double TURN_SPEED_STANDARD {M_PI_2};
         static constexpr double TURN_SPEED_SLOW {M_PI_4};
 

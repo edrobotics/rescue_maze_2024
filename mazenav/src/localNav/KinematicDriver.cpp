@@ -29,7 +29,7 @@ void KinematicDriver::calcSpeeds(double tSpeed, double rSpeed)
     motorSpeeds.rf = rightSpeedrpm;
     motorSpeeds.rb = rightSpeedrpm;
 
-    std::cout << "leftSpeed: " << leftSpeed << " , lfSpeedWheel: " << leftSpeedrpm << "\n";
+    // std::cout << "leftSpeed: " << leftSpeed << " , lfSpeedWheel: " << leftSpeedrpm << "\n";
 
 }
 

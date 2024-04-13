@@ -76,6 +76,7 @@ namespace communication
         // std::cout << "copying robotSpeeds... ";
         robotSpeeds = pComm.robotSpeeds;
         // std::cout << "done\n";
+        historyIndex = pComm.historyIndex;
 
         freshness = pComm.freshness;
         updated = pComm.updated;
@@ -114,24 +115,21 @@ namespace communication
     }
 
 
-    void PoseCommunicator::incrementHistoryIndex(int& index)
+    void PoseCommunicator::incrementHistoryIndex()
     {
-        ++index;
-        wrapHistoryIndex(index);
+        ++historyIndex;
+        historyIndex = historyIndex % HISTORY_NUM;
     }
 
-    void PoseCommunicator::wrapHistoryIndex(int& index)
-    {
-        index = index % HISTORY_NUM;
-    }
 
     void PoseCommunicator::calcRobotSpeedAvg(CoordinateFrame newSpeed)
     {
         // std::cout << "Begin speedCalc... ";
         robotSpeedCur = newSpeed;
         robotSpeeds.at(historyIndex) = robotSpeedCur;
-        incrementHistoryIndex(historyIndex);
+        incrementHistoryIndex();
         calcAverage(robotSpeedAvg);
+        // robotSpeedAvg = robotSpeedCur;
         // std::cout << "calc done" << "\n";
     }
 
@@ -155,15 +153,15 @@ namespace communication
         // result.transform.pos_y = ySum/(HISTORY_NUM-2);
         // result.transform.rot_z = zSum/(HISTORY_NUM-2);
 
-        for (auto& speed : robotSpeeds)
+        for (int i=0;i<HISTORY_NUM;++i)
         {
-            xSum += speed.transform.pos_x;
-            ySum += speed.transform.pos_y;
-            zSum += speed.transform.rot_z;
+            xSum += robotSpeeds.at(i).transform.pos_x;
+            ySum += robotSpeeds.at(i).transform.pos_y;
+            zSum += robotSpeeds.at(i).transform.rot_z;
         }
-        result.transform.pos_x = xSum/HISTORY_NUM;
-        result.transform.pos_y = ySum/HISTORY_NUM;
-        result.transform.rot_z = zSum/HISTORY_NUM;
+        result.transform.pos_x = xSum/static_cast<double>(HISTORY_NUM);
+        result.transform.pos_y = ySum/static_cast<double>(HISTORY_NUM);
+        result.transform.rot_z = zSum/static_cast<double>(HISTORY_NUM);
 
     }
 

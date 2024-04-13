@@ -11,6 +11,8 @@ void localNav::main(communication::Communicator* globComm)
     PathFollower pathFollower {globComm};
 
     globComm->navigationComm.pushCommand(communication::DriveCommand::driveForward);
+    globComm->navigationComm.pushCommand(communication::DriveCommand::driveForward);
+    globComm->navigationComm.pushCommand(communication::DriveCommand::driveForward);
     // globComm->navigationComm.pushCommand(communication::DriveCommand::driveForward);
     // globComm->navigationComm.pushCommand(communication::DriveCommand::turnLeft);
     
