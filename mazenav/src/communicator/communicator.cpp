@@ -76,6 +76,9 @@ namespace communication
 
         freshness = pComm.freshness;
 
+        curRobotTime = pComm.curRobotTime;
+        lastRobotTime = pComm.lastRobotTime;
+
         return *this;
     }
 

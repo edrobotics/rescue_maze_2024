@@ -97,13 +97,16 @@ void PoseEstimator::update(FusionGroup fgroup)
     // Handle updating of localTile (global coordinates)
     updatePoseComm(poseResult);
 
+    calcSpeeds(poseResult);
+
     // Write the new pose with only changes.
     #warning concurrency issues?
     globComm->poseComm = poseResult;
     // Unlock poseComm to allow access to targetPoint again.
     globComm->poseComm.mtx_general.unlock();
 
-    std::cout << "robotFrame: " << globComm->poseComm.robotFrame << /*"  lastRobotFrame: " << globComm->poseComm.lastRobotFrame << */ "\n";
+    std::cout << "robotSpeed: " << globComm->poseComm.robotSpeed << "\n";
+    // std::cout << "robotFrame: " << globComm->poseComm.robotFrame << /*"  lastRobotFrame: " << globComm->poseComm.lastRobotFrame << */ "\n";
 }
 
 
@@ -201,7 +204,6 @@ communication::PoseCommunicator PoseEstimator::updateSimple()
         // std::cerr << e.what() << " : " << "Cannot compute robot Y position" << '\n';
     }
 
-    calcSpeeds(resultPose);
 
     return resultPose;
 
@@ -248,8 +250,23 @@ void PoseEstimator::calcSpeeds(communication::PoseCommunicator& pose)
     double angle {pose.lastRobotFrame.transform.rot_z};
     pose.robotSpeed.transform.pos_x = xSpeed*cos(angle) + ySpeed*sin(angle);
     pose.robotSpeed.transform.pos_y = ySpeed*cos(angle) - xSpeed*sin(angle);
+    
+    // Debugging
+    // std::cout << "timeDiff: " << timeDiff << "  ";
+    // std::cout << "xSpeed: " << xSpeed << "  ";
+    // std::cout << "realXSpeed: " << pose.robotSpeed.transform.pos_x << "  ";
+    // std::cout << "ySpeed: " << ySpeed << "  ";
+    // std::cout << "realYSpeed: " << pose.robotSpeed.transform.pos_y << "  ";
+    // std::cout << "\n";
+
 
     // Alternative: Set the parent of the speed to localTileFrame, then set speeds in localTile coordinate system. Then transform (or at least get the transform) down into the robot coordinate system. Should do this exact calculation, and looks nicer. Probem with the children?
+    // pose.robotSpeed.setParentTS(&(pose.localTileFrame));
+    // pose.robotSpeed.transform.pos_x = xSpeed;
+    // pose.robotSpeed.transform.pos_y = ySpeed;
+    // pose.robotSpeed.transformLevelTo(&(pose.robotFrame), 1, 1);
+    // pose.robotSpeed.transform.rot_z = (pose.robotFrame.transform.rot_z - pose.lastRobotFrame.transform.rot_z)/timeDiff;
+    // #warning requires chnages in assignment constructor of posecomm to make the parent correct?
 
 }
 
@@ -402,7 +419,7 @@ void PoseEstimator::updatePoseComm(communication::PoseCommunicator& pose)
         pose.robotFrame.transform.pos_y += GRID_SIZE;
     }
 
-    std::cout << std::endl;
+    // std::cout << std::endl;
 
 
     // std::cout << "Before ghostMove: " << "\n"
