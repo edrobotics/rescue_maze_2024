@@ -33,8 +33,9 @@ void PoseEstimator::runLoopLooper(communication::Communicator* globComm)
     this->globComm = globComm;
     for (int i=0;i<5;++i)
     {
-        sensors->update(true);
-        std::cout << "updated sensors\n";
+        // sensors->update(true);
+        // std::cout << "updated sensors\n";
+        update(fusionGroup, false);
     }
     // std::cout << "Stored globcomm: " << this->globComm << "\n";
     while (true)
@@ -47,10 +48,10 @@ void PoseEstimator::runLoopLooper(communication::Communicator* globComm)
 void PoseEstimator::runLoop()
 {
     // Currently: update as fast as possible for the given FusionGroup
-    update(fusionGroup);
+    update(fusionGroup, true);
 }
 
-void PoseEstimator::update(FusionGroup fgroup)
+void PoseEstimator::update(FusionGroup fgroup, bool doUpdate)
 {
     // std::cout << "In update" << std::endl;
     sensors->update(true);
@@ -111,9 +112,12 @@ void PoseEstimator::update(FusionGroup fgroup)
     calcSpeeds(poseResult);
     poseResult.updated = true;
 
-    // Write the new pose with only changes.
-    #warning concurrency issues?
-    globComm->poseComm = poseResult;
+    if (doUpdate)
+    {
+        // Write the new pose with only changes.
+        #warning concurrency issues?
+        globComm->poseComm = poseResult;
+    }
     // Unlock poseComm to allow access to targetPoint again.
     globComm->poseComm.mtx_general.unlock();
 
@@ -600,7 +604,7 @@ ConditionalAverageTerm PoseEstimator::getTofYTrans(double angle, double yoffset,
     Average avg {};
     avg.terms.push_back(flY);
     avg.terms.push_back(frY);
-    avg.terms.push_back(bY);
+    // avg.terms.push_back(bY);
     // std::cout << "bY: " << bY.value << "  ";
     // std::cout << "b.avg: " << td.b.avg << "  ";
     // std::cout << "b.cur: " << td.b.cur << "  ";
@@ -627,13 +631,17 @@ ConditionalAverageTerm PoseEstimator::getTofYTrans(double angle, double yoffset,
             // std::cout << "frY: " << frY.value << "  ";
             term.weight = 1;
         }
-        term.value = wrapValue(term.value, minYPos, maxYPos);
-        // std::cout << "  After wrapping: " << term.value << std::endl;
     }
 
     // Invert the front sensors
     avg.terms.at(0).value = GRID_SIZE - avg.terms.at(0).value;
     avg.terms.at(1).value = GRID_SIZE - avg.terms.at(1).value;
+
+    for (auto& term : avg.terms)
+    {
+        term.value = wrapValue(term.value, minYPos, maxYPos);
+        // std::cout << "  After wrapping: " << term.value << std::endl;
+    }
 
     // Fix wrapping mismatch
     avg.stripZeroWeight();
