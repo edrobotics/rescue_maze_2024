@@ -25,6 +25,7 @@ bool Imu::updateVals()
         // angles = radToDeg(angles)
     }
     mtx_general.unlock();
+    // printVals(true);
 
     return retVal;
 }
@@ -36,9 +37,13 @@ void Imu::printVals(bool newLine)
     // std::cout << "i=" << quatVals.i << "  ";
     // std::cout << "j=" << quatVals.j << "  ";
     // std::cout << "k=" << quatVals.k << "  ";
-    std::cout << "x=" << std::fixed << std::setprecision(1) << angles.x << "  ";
-    std::cout << "y=" << std::fixed << std::setprecision(1) << angles.y << "  ";
-    std::cout << "z=" << std::fixed << std::setprecision(1) << angles.z << "  ";
+    std::cout << "x= " << std::setfill('0') << std::internal << std::setw(5) << std::fixed << std::setprecision(1) << angles.x*180/M_PI << "  ";
+    std::cout << "y= " << std::setfill('0') << std::internal << std::setw(5) << std::fixed << std::setprecision(1) << angles.y*180/M_PI << "  ";
+    std::cout << "z= " << std::setfill('0') << std::internal << std::setw(5) << std::fixed << std::setprecision(1) << angles.z*180/M_PI << "  ";
+
+    // std::cout << "x=" << std::fixed << std::setprecision(1) << angles.x << "  ";
+    // std::cout << "y=" << std::fixed << std::setprecision(1) << angles.y << "  ";
+    // std::cout << "z=" << std::fixed << std::setprecision(1) << angles.z << "  ";
     if (newLine)
     {
     std::cout << "\n";

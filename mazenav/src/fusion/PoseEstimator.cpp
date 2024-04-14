@@ -31,6 +31,11 @@ void PoseEstimator::runLoopLooper(communication::Communicator* globComm)
 {
     // std::cout << "Started runLoopLooper" << "\n";
     this->globComm = globComm;
+    for (int i=0;i<5;++i)
+    {
+        sensors->update(true);
+        std::cout << "updated sensors\n";
+    }
     // std::cout << "Stored globcomm: " << this->globComm << "\n";
     while (true)
     {
@@ -49,6 +54,7 @@ void PoseEstimator::update(FusionGroup fgroup)
 {
     // std::cout << "In update" << std::endl;
     sensors->update(true);
+    // std::cout << "updated sensors  ";
     // Should copy the tree of poseComm into poseResult
     // std::cout << "Creating poseResult... ";
     communication::PoseCommunicator poseResult {};
@@ -113,6 +119,8 @@ void PoseEstimator::update(FusionGroup fgroup)
 
     // std::cout << "robotSpeed: " << globComm->poseComm.robotSpeedAvg << "\n";
     std::cout << "robotFrame: " << globComm->poseComm.robotFrame << /*"  lastRobotFrame: " << globComm->poseComm.lastRobotFrame << */ "\n";
+    // sensors->tofs.printVals(true);
+    // sensors->imu0.printVals(true);
 }
 
 
@@ -584,8 +592,8 @@ ConditionalAverageTerm PoseEstimator::getTofYTrans(double angle, double yoffset,
     ConditionalAverageTerm bY {td.b.avg*cos(angle), 1};
 
     // Change to robot centre
-    flY.value = GRID_SIZE - (flY.value+yoffset*cos(angle)+xoffset*sin(angle) + WALL_THICKNESS/2.0);
-    frY.value = GRID_SIZE - (frY.value+yoffset*cos(angle)+xoffset*sin(angle) + WALL_THICKNESS/2.0);
+    flY.value = (flY.value+yoffset*cos(angle)+xoffset*sin(angle) + WALL_THICKNESS/2.0);
+    frY.value = (frY.value+yoffset*cos(angle)+xoffset*sin(angle) + WALL_THICKNESS/2.0);
     bY.value = bY.value+yoffset*cos(angle) + WALL_THICKNESS/2.0;
 
     // Average calculation preparation
@@ -593,7 +601,12 @@ ConditionalAverageTerm PoseEstimator::getTofYTrans(double angle, double yoffset,
     avg.terms.push_back(flY);
     avg.terms.push_back(frY);
     avg.terms.push_back(bY);
+    // std::cout << "bY: " << bY.value << "  ";
+    // std::cout << "b.avg: " << td.b.avg << "  ";
+    // std::cout << "b.cur: " << td.b.cur << "  ";
+    // std::cout << "\n";
 
+    // Disqualify too large values
     for (auto& term : avg.terms)
     {
         // Wrap values to local tile
@@ -609,11 +622,18 @@ ConditionalAverageTerm PoseEstimator::getTofYTrans(double angle, double yoffset,
         else
         {
             // Accept the term/value
+            // std::cout << "term.value: " << term.value;
+            // std::cout << "flY: " << flY.value << "  ";
+            // std::cout << "frY: " << frY.value << "  ";
             term.weight = 1;
         }
         term.value = wrapValue(term.value, minYPos, maxYPos);
         // std::cout << "  After wrapping: " << term.value << std::endl;
     }
+
+    // Invert the front sensors
+    avg.terms.at(0).value = GRID_SIZE - avg.terms.at(0).value;
+    avg.terms.at(1).value = GRID_SIZE - avg.terms.at(1).value;
 
     // Fix wrapping mismatch
     avg.stripZeroWeight();

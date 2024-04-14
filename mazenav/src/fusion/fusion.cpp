@@ -30,13 +30,14 @@ void fusion::main(communication::Communicator* globComm)
     std::thread poseEst(&PoseEstimator::runLoopLooper, &poseEstimator, globComm);
     std::cout << "done." << "\n";
     
-    while (true)
-    {
+    // while (true)
+    // {
         // std::cout << globComm->poseComm.robotFrame << "\n";
         // std::this_thread::sleep_for(std::chrono::milliseconds(100));
-    }
+    // }
 
     poseEst.join();
+    std::cout << "joined\n";
     motorDriver.join();
     hardwareCommunicator.join();
     

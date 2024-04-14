@@ -11,6 +11,12 @@ void SingleTofData::setCur(int newVal)
 
 void SingleTofData::updateAvg(int newVal)
 {
+    // If the value is 0, something is probably wrong.
+    if (newVal==0)
+    {
+        return;
+    }
+    
     // Change value
     history.at(historyIndex) = newVal;
     // std::cout << "historyIndex: " << historyIndex << "\n";

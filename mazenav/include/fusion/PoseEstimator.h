@@ -156,7 +156,7 @@ class PoseEstimator
         static constexpr double MAX_ZROT_XTRANS_TOF_ABS {M_PI_4/2.0};
         // Maximum distance that can be used for abs calc with Y Tof
         #warning untuned constant
-        static constexpr double MAX_TOF_Y_DIST_ABS {900};
+        static constexpr double MAX_TOF_Y_DIST_ABS {555};
         // If robot centre to wall/calculated sensor measurement is > this, wall is not deemed present
         #warning untuned variable
         static constexpr double WALL_PRESENCE_THRESHOLD_CENTRE {220};
