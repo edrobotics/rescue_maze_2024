@@ -64,12 +64,12 @@ class validation:
     stop = False
     detected = {"H":0,"S":0,"U":0,"none":0}
 
-    def __init__(self,dir_path,showsource = False) -> None:
+    def __init__(self,dir_path,showsource = False,training = False) -> None:
         self.TB = Trackbars() #trackbar object
         self.base_folder =  dir_path
         self.showsource = showsource
         self.config_path = os.path.join(self.base_folder, "config.ini")
-        self.imgproc = vc.imgproc(bLogging=False, dir_path=dir_path,bComms=False)
+        self.imgproc = vc.imgproc(bLogging=False, dir_path=dir_path,bComms=False,training=training)
 
 
 
@@ -119,7 +119,7 @@ class validation:
 
 
     def move(self, file_name, type, source = None, base = None):
-        pass 
+        
         destination_path = os.path.join(self.source_path,type,file_name)
         print(f"source: {self.source_path}")
         print(f"destination: {destination_path}")
@@ -127,7 +127,7 @@ class validation:
 
 
     def showimage(self, image):
-        
+
         if self.showsource:# or len(vc.framedetected[0]) == 1: #true for now
 
             try:
@@ -145,44 +145,56 @@ class validation:
         #for cam in cams:
         if True:
             source_folder = os.path.join(self.base_folder,"log/previous",victim)
-            file_list = os.listdir(source_folder)
-            ct = 0
-            for file_name in file_list:
-                self.file_name = file_name
-                if self.stop:
-                    break
-                ct += 1
-                source_path = os.path.join(source_folder, file_name)
-                print(source_path)
+            identifiedVictims =self.iterateFolder(source_folder)
 
-                try:
-                    image = cv2.imread(source_path) 
-                    self.imgproc.do_the_work(image, file_name)
-                
-                    if len(self.imgproc.framedetected) == 1:
-                        if victim != self.imgproc.framedetected[0]:
-                            self.showimage(victim, self.imgproc.image)
-                    elif len(self.imgproc.framedetected) == 0 and victim == "none":
-                        continue
-
-                    else:
-                        self.showimage(self.imgproc.image)
-
-        #        except IndexError:
-        #            print(file_name)
-        #            move(file_name,"problem")
-
-                except Exception as e:
-                    print(file_name)
-                    print(e)
-                    logging.exception("exception in evaluate folder")
                     
-            print(f"{victim} was evaluated")
-            tot = len(file_list)
-            if ct <len(file_list):
-                print(f"finished {ct} out of {tot} images")
-            else:
-                print(f"finished {tot} images")
+ #               if len(self.imgproc.framedetected) == 1:
+ #                   if victim != self.imgproc.framedetected[0]:
+ #                       self.showimage(victim, self.imgproc.image)
+ #               elif len(self.imgproc.framedetected) == 0 and victim == "none":
+ #                   continue
+
+ #               else:
+ #                   self.showimage(self.imgproc.image)
+
+
+    def runLog(self,folder):
+
+        source_folder = os.path.join(self.base_folder,"log/unsorted/log" + folder)
+        identifiedVictims =self.iterateFolder(source_folder)
+        
+
+
+    def iterateFolder(self,folder):
+        file_list = os.listdir(folder)
+        ct = 0
+        for file_name in file_list:
+            self.file_name = file_name
+            if self.stop:
+                break
+            ct += 1
+            source_path = os.path.join(folder, file_name)
+            print(source_path)
+
+            try:
+                image = cv2.imread(source_path) 
+                self.imgproc.do_the_work(image, file_name)
+            
+
+    #        except IndexError:
+    #            print(file_name)
+    #            move(file_name,"problem")
+
+            except Exception as e:
+                print(file_name)
+                print(e)
+                logging.exception("exception in evaluate folder")
+            
+            for victim in self.imgproc.framedetected:
+                self.detected[victim] += 1 
+            
+            self.imgproc.cleanUp()
+            print(self.detected)
 
 
     def clearstat(self):
@@ -206,6 +218,10 @@ class validation:
 
         elif victim in victims:
             self.evaluatefolder(victim)
+        elif victim == "l":
+            logfolder = input("enter a number(log folder): ")
+            self.runLog(logfolder)
+    
         else:
             print("invalid victim")
         cv2.destroyAllWindows()

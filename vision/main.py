@@ -81,6 +81,7 @@ if __name__ == "__main__":
     parser.add_argument("-t", "--testing", type=bool,default=False)
     parser.add_argument("-s", "--showSource", type=bool, default=False)
     parser.add_argument("-c", "--comms", type=bool, default=True)
+    parser.add_argument("-r", "--train", type=bool, default=False)
 
 
     args = parser.parse_args()
@@ -88,9 +89,10 @@ if __name__ == "__main__":
     showSource = args.showSource
     testing = args.testing
     bComms = args.comms
+
     if testing:
         bLogging = False
-        showSource = True
+       # showSource = True
         bComms = False
     else:
         pass
@@ -104,7 +106,7 @@ if __name__ == "__main__":
     if testing:
         print("running validation")
         import validation as val
-        valC = val.validation(dir_path, showsource=showSource)
+        valC = val.validation(dir_path, showsource=showSource,training=args.train)
         sorted_images_local = "log/previous"
         sorted_images = os.path.join(dir_path, sorted_images_local)
         valC.runValidation()
