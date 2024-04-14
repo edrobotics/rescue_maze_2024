@@ -48,8 +48,16 @@ double PathFollower::getTransSpeedDriving()
     // return 200;
 }
 
-double PathFollower::getRotSpeedTurning()
+double PathFollower::getRotSpeedTurning(int direction)
 {
+    if (direction>=0)
+    {
+        direction = 1;
+    }
+    else
+    {
+        direction = -1;
+    }
     double turnSpeed {};
 
     if (angLeftToTarget<TURNING_CLOSE_PID_THRESHOLD)
@@ -66,7 +74,7 @@ double PathFollower::getRotSpeedTurning()
     // std::cout << "turnSpeed: " << turnSpeed << "  speed: " << globComm->poseComm.robotSpeedAvg.transform.rot_z << "  ";
     double corr {turnRotSpeedPid.getCorrection(globComm->poseComm.robotSpeedAvg.transform.rot_z)};
     // std::cout << "rotSpeedCorr: " << corr << "\n";
-    return turnSpeed+corr;
+    return direction*turnSpeed+corr;
 
 }
 
@@ -151,7 +159,7 @@ void PathFollower::turn(int direction)
             globComm->poseComm.updated = false;
             angLeftToTarget = getAngLeftToTarget();
             std::cout << "angLeftToTarget: " << angLeftToTarget << "\n";
-            driver.calcSpeeds(getTransSpeedTurning(), getRotSpeedTurning());
+            driver.calcSpeeds(getTransSpeedTurning(), getRotSpeedTurning(direction));
             driver.setSpeeds();
             finished = checkIsFinishedTurning(direction);
         }

@@ -76,7 +76,7 @@ class PathFollower
         bool checkIsFinishedTurning(int direction);
 
         static constexpr double DRIVE_STOP_THRESHOLD {20};
-        static constexpr double TURN_STOP_THRESHOLD {0.08};
+        static constexpr double TURN_STOP_THRESHOLD {M_PI_4/3.0};
 
 
 
@@ -118,7 +118,7 @@ class PathFollower
         // Calculate the wanted translational speed of the robot for driving
         double getTransSpeedDriving();
 
-        double getRotSpeedTurning();
+        double getRotSpeedTurning(int direction);
         double getTransSpeedTurning();
 
 
@@ -137,7 +137,7 @@ class PathFollower
 
         static constexpr double DRIVE_SPEED_STANDARD {200};
         static constexpr double DRIVE_SPEED_SLOW {100};
-        static constexpr double TURN_SPEED_STANDARD {M_PI_2*0.8};
+        static constexpr double TURN_SPEED_STANDARD {M_PI_2*0.75};
         static constexpr double TURN_SPEED_SLOW {TURN_SPEED_STANDARD};
 
 

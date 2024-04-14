@@ -17,7 +17,7 @@ const int WHEELBASE {95};
 const int WHEEL_TURN_RADIUS {static_cast<int>(sqrt(WHEEL_SPACING*WHEEL_SPACING/4 + WHEELBASE*WHEELBASE/4))};
 
 // How much the wheel will contribute to the rotation. Is one if the wheelbase is very large in relation to the wheel spacing.
-const double WHEEL_TURN_CONTRIBUTION_FACTOR {cos(atan(static_cast<double>(WHEELBASE)/WHEEL_SPACING))};
+const double WHEEL_TURN_CONTRIBUTION_FACTOR {1.5*cos(atan(static_cast<double>(WHEELBASE)/WHEEL_SPACING))};
 
 
 // ToF sensor offsets

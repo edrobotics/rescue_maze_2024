@@ -174,7 +174,7 @@ communication::PoseCommunicator PoseEstimator::updateSimple()
     }
     catch(const std::runtime_error& e)
     {
-        std::cerr << e.what() << " : " << "Cannot compute robot angle" << '\n';
+        // std::cerr << e.what() << " : " << "Cannot compute robot angle" << '\n';
         #warning what to do here, with no angle? Also what to do for further angle requirements
     }
 
@@ -584,7 +584,7 @@ ConditionalAverageTerm PoseEstimator::getTofYTrans(double angle, double yoffset,
     // Check if angle is too great
     if (abs(angle)>MAX_Z_ROTATION_Y_TOF_ABS)
     {
-        std::cout << "Angle too large for ToF Y abs trans" << std::endl;
+        // std::cout << "Angle too large for ToF Y abs trans" << std::endl;
         result.weight = 0;
         return result;
     }
@@ -653,7 +653,7 @@ ConditionalAverageTerm PoseEstimator::getTofYTrans(double angle, double yoffset,
     }
     catch(std::runtime_error& e)
     {
-        std::cerr << e.what() << '\n';
+        // std::cerr << e.what() << '\n';
         // If not usable, do not use
         result.weight = 0;
     }
@@ -779,6 +779,7 @@ ConditionalAverageTerm PoseEstimator::getIMURotDiff()
 
     // Prepare for next iteration
     lastImuAngle = angle;
+    std::cout << "IMU angle: " << angle << "  ";
 
     // Check if angle within span
     #warning assumes that no angle changes > 180 degrees can happen in one iteration

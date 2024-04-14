@@ -15,7 +15,7 @@ void localNav::main(communication::Communicator* globComm)
     // globComm->navigationComm.pushCommand(communication::DriveCommand::driveForward);
     // globComm->navigationComm.pushCommand(communication::DriveCommand::driveForward);
     globComm->navigationComm.pushCommand(communication::DriveCommand::turnLeft);
-    // globComm->navigationComm.pushCommand(communication::DriveCommand::turnRight);
+    globComm->navigationComm.pushCommand(communication::DriveCommand::turnRight);
     
     std::thread pFollow(&PathFollower::runLoopLooper, &pathFollower);
     
