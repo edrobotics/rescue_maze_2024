@@ -114,6 +114,7 @@ void Robot::updateBatVol()
 void Robot::updateImu()
 {
     imu.runLoop();
+    // imu.printVals();
 
     communicator.transData.setIMU(0, imu.rotationVector.floats);
 }
@@ -125,6 +126,7 @@ void Robot::updateTof()
         delayMicroseconds(100);
     }
 
+    // tof.printVals();
     communicator.transData.setTof(tof.distances);
 
 }

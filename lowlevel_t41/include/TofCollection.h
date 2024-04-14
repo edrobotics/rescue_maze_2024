@@ -35,6 +35,7 @@ class TofCollection
         uint16_t distances[TOF_NUM] {0};
 
         void test();
+        void printVals();
 
 
         // Should not be public, but did not work as private

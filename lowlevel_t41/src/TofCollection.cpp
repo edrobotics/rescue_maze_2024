@@ -160,3 +160,18 @@ void TofCollection::test()
 {
 
 }
+
+void TofCollection::printVals()
+{
+    Serial.print("ToF: ");
+    for (int i=0;i<L0X_NUM;++i)
+    {
+        Serial.print(tofData[i].distance);Serial.print("  ");
+    }
+
+    for (int i=0;i<L1X_NUM;++i)
+    {
+        Serial.print(tofData[L0X_NUM+i].distance);Serial.print("  ");
+    }
+    Serial.println("");
+}

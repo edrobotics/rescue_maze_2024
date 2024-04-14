@@ -10,6 +10,7 @@ class Imu
         bool runLoop();
 
         Quaternion rotationVector {};
+        void printVals();
 
     private:
         int i2cAddr0 = 0x4a; // Default address of bno085. 0x4b can be used with hardware modification
