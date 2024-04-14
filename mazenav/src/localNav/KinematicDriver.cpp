@@ -12,7 +12,7 @@ void KinematicDriver::calcSpeeds(double tSpeed, double rSpeed)
     double baseWheelspeedContribution {baseSpeed/WHEEL_RADIUS};
 
     // Contribution of rotation
-    double rotationSpeedAtWheel {WHEEL_TURN_CONTRIBUTION_FACTOR*(rSpeed/WHEEL_TURN_RADIUS)};
+    double rotationSpeedAtWheel {WHEEL_TURN_CONTRIBUTION_FACTOR*(rSpeed*WHEEL_TURN_RADIUS)};
     double rotationWheelspeedContribution {rotationSpeedAtWheel/WHEEL_RADIUS};
 
     // Computation of wheel rotation speeds

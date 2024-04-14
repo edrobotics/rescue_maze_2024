@@ -112,7 +112,7 @@ void PoseEstimator::update(FusionGroup fgroup)
     globComm->poseComm.mtx_general.unlock();
 
     // std::cout << "robotSpeed: " << globComm->poseComm.robotSpeedAvg << "\n";
-    // std::cout << "robotFrame: " << globComm->poseComm.robotFrame << /*"  lastRobotFrame: " << globComm->poseComm.lastRobotFrame << */ "\n";
+    std::cout << "robotFrame: " << globComm->poseComm.robotFrame << /*"  lastRobotFrame: " << globComm->poseComm.lastRobotFrame << */ "\n";
 }
 
 

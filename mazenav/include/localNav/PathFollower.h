@@ -45,7 +45,7 @@ class PathFollower
         KinematicDriver driver;
 
         // Input y error, get out wanted angle (correction)
-        PIDController yPid {0.1, 0, 0};
+        PIDController yPid {0.01, 0, 0};
         // Input angle error, output wanted chassis speeds correction
         PIDController angPid {10, 0, 0};
 
@@ -123,23 +123,25 @@ class PathFollower
 
 
         // The threshold for distanceLeft, for when to use PID for translational speed control.
-        static constexpr double DRIVING_CLOSE_PID_THRESHOLD {69};
+        static constexpr double DRIVING_CLOSE_PID_THRESHOLD {100}; // 100 is good
         // The threshold for angleLeft, for when to use PID for rotational speed control.
-        static constexpr double TURNING_CLOSE_PID_THRESHOLD {0.35}; // About 20 degrees
+        static constexpr double TURNING_CLOSE_PID_THRESHOLD {M_PI_4}; // M_PI_4
 
-        #warning untuned constants
-        PIDController driveTransSpeedPid {2, 0, 0};
-        PIDController turnRotSpeedPid {1, 0, 0};
+        // Tuned
+        PIDController driveTransSpeedPid {0.069, 0, 0};
+        // Untuned constant
         PIDController turnTransSpeedPid {1, 0, 0};
+        // Tuned
+        PIDController turnRotSpeedPid {0.4, 0, 0};
 
 
         static constexpr double DRIVE_SPEED_STANDARD {200};
         static constexpr double DRIVE_SPEED_SLOW {100};
-        static constexpr double TURN_SPEED_STANDARD {M_PI_2};
-        static constexpr double TURN_SPEED_SLOW {M_PI_4};
+        static constexpr double TURN_SPEED_STANDARD {M_PI_2*0.8};
+        static constexpr double TURN_SPEED_SLOW {TURN_SPEED_STANDARD};
 
 
         // For getting PID values from file
-        void readPidFromFile(double& kP, double& kI, double& kD);
+        void readPidFromFile();
 
 };

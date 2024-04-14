@@ -6,11 +6,7 @@ PathFollower::PathFollower(communication::Communicator* globComm)
     this->globComm = globComm;
     // targetPoint.setParentTS(&(globComm->poseComm.localTileFrame));
 
-    double kP {};
-    double kI {};
-    double kD {};
-    readPidFromFile(kP, kI, kD);
-    driveTransSpeedPid.setCoeff(kP, kI, kD);
+    readPidFromFile();
 
 }
 
@@ -21,12 +17,13 @@ PathFollower::~PathFollower()
 
 double PathFollower::getRotSpeedDriving()
 {
-    // double wantedAngle {yPid.getCorrection(globComm->poseComm.robotFrame.transform.pos_x)};
-    // angPid.setSetpoint(wantedAngle);
-    // double speedCorr {angPid.getCorrection(globComm->poseComm.robotFrame.transform.rot_z)};
-    // return speedCorr;
-    #warning temporary testing
-    return 0;
+    // std::cout << "xPos: " << globComm->poseComm.robotFrame.transform.pos_x << "  ";
+    double wantedAngle {yPid.getCorrection(globComm->poseComm.robotFrame.transform.pos_x)};
+    // std::cout << "wantedAngle: " << wantedAngle << "angle: " << globComm->poseComm.robotFrame.transform.rot_z << "  ";
+    angPid.setSetpoint(wantedAngle);
+    double speedCorr {angPid.getCorrection(globComm->poseComm.robotFrame.transform.rot_z)};
+    // std::cout << "speedCorr:" << speedCorr << "\n";
+    return speedCorr;
 }
 
 double PathFollower::getTransSpeedDriving()
@@ -44,9 +41,9 @@ double PathFollower::getTransSpeedDriving()
     }
 
     driveTransSpeedPid.setSetpoint(driveSpeed);
-    std::cout << "driveSpeed: " << driveSpeed << "  speed: " << globComm->poseComm.robotSpeedAvg.transform.pos_y << "  ";
+    // std::cout << "driveSpeed: " << driveSpeed << "  speed: " << globComm->poseComm.robotSpeedAvg.transform.pos_y << "  ";
     double corr {driveTransSpeedPid.getCorrection(globComm->poseComm.robotSpeedAvg.transform.pos_y)};
-    std::cout << "transSpeedCorr: " << corr << "\n";
+    // std::cout << "transSpeedCorr: " << corr << "\n";
     return driveSpeed+corr;
     // return 200;
 }
@@ -66,14 +63,18 @@ double PathFollower::getRotSpeedTurning()
     }
 
     turnRotSpeedPid.setSetpoint(turnSpeed);
-    return turnRotSpeedPid.getCorrection(globComm->poseComm.robotSpeedAvg.transform.rot_z);
+    // std::cout << "turnSpeed: " << turnSpeed << "  speed: " << globComm->poseComm.robotSpeedAvg.transform.rot_z << "  ";
+    double corr {turnRotSpeedPid.getCorrection(globComm->poseComm.robotSpeedAvg.transform.rot_z)};
+    // std::cout << "rotSpeedCorr: " << corr << "\n";
+    return turnSpeed+corr;
 
 }
 
 double PathFollower::getTransSpeedTurning()
 {
-    turnTransSpeedPid.setSetpoint(0);
-    return turnTransSpeedPid.getCorrection(globComm->poseComm.robotSpeedAvg.transform.pos_y);
+    // turnTransSpeedPid.setSetpoint(0);
+    // return turnTransSpeedPid.getCorrection(globComm->poseComm.robotSpeedAvg.transform.pos_y);
+    return 0;
 }
 
 void PathFollower::setLinePos(double newYLine)
@@ -266,7 +267,7 @@ double PathFollower::getAngLeftToTarget()
     return rotDiff;
 }
 
-void PathFollower::readPidFromFile(double& kP, double& kI, double& kD)
+void PathFollower::readPidFromFile()
 {
     std::ifstream file ("pid.txt", std::ios::in);
     if (!file.is_open())
@@ -275,11 +276,39 @@ void PathFollower::readPidFromFile(double& kP, double& kI, double& kD)
         exit(1);
     }
 
+    double kP {};
+    double kI {};
+    double kD {};
+
     file >> kP;
     file >> kI;
     file >> kD;
+    std::cout << "Read for driveTransSpeedPid: kP=" << kP << " , kI=" << kI << " , kD=" << kD << "\n";
+    driveTransSpeedPid.setCoeff(kP, kI, kD);
 
-    std::cout << "Read: kP=" << kP << " , kI=" << kI << " , kD=" << kD << "\n";
+    file >> kP;
+    file >> kI;
+    file >> kD;
+    std::cout << "Read for yPid: kP=" << kP << " , kI=" << kI << " , kD=" << kD << "\n";
+    yPid.setCoeff(kP, kI, kD);
+
+    file >> kP;
+    file >> kI;
+    file >> kD;
+    std::cout << "Read for angPid: kP=" << kP << " , kI=" << kI << " , kD=" << kD << "\n";
+    angPid.setCoeff(kP, kI, kD);
+
+    file >> kP;
+    file >> kI;
+    file >> kD;
+    std::cout << "Read for turnTransSpeedPid: kP=" << kP << " , kI=" << kI << " , kD=" << kD << "\n";
+    turnTransSpeedPid.setCoeff(kP, kI, kD);
+
+    file >> kP;
+    file >> kI;
+    file >> kD;
+    std::cout << "Read for turnRotSpeedPid: kP=" << kP << " , kI=" << kI << " , kD=" << kD << "\n";
+    turnRotSpeedPid.setCoeff(kP, kI, kD);
 }
 
 
