@@ -717,7 +717,7 @@ ConditionalAverageTerm PoseEstimator::getTofZRot(double curAng)
     #warning We want to check here so that we do not mess up when turning in enclosed space, but if we have lost tracking we will not be able to pick it up even if we are straight.
     if (abs(curAng)>MAX_ZROT_XTRANS_TOF_ABS)
     {
-        std::cout << "Angle too large" << std::endl;
+        std::cout << "Angle too  for tof z rot" << std::endl;
         result.weight = 0;
         return result;
     }
@@ -775,6 +775,35 @@ ConditionalAverageTerm PoseEstimator::getIMURotDiff()
 {
     ConditionalAverageTerm result {0, 0};
     double angle {sensors->imu0.angles.z};
+
+    bool imuReset {sensors->imu0.getWasReset()};
+    
+    // Reset handling
+    if (lastImuWasReset && !imuReset)
+    {
+        // Last sensor value was reset but not this one => startup imu calc again
+        std::cout << "Staring IMU after reset\n";
+        // Communicate no-use
+        result.value = 0;
+        result.weight = 0;
+        // Fix so it works next iteration. This is the first good iteration
+        lastImuAngle = angle;
+        lastImuWasReset = false;
+        
+        return result;
+    }
+    else if (imuReset)
+    {
+        // Reset detected this run
+        std::cout << "IMU RESET!" << "\n";
+        lastImuWasReset = true;
+        // Communicate no-use
+        result.value = 0;
+        result.weight = 0;
+        return result;
+    }
+
+
     result.value = angle-lastImuAngle;
 
     // Prepare for next iteration

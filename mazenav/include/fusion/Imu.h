@@ -41,6 +41,9 @@ class Imu
         // The data to use outward. Euler angles with YZX rotation order, left hand coordinate system
         EulerAngle angles {};
 
+        // Returns true if an IMU reset was detected, otherwise false
+        bool getWasReset();
+
     private:
 
         // For TS access control
@@ -53,5 +56,7 @@ class Imu
         // Converts a quaternion into euler angles with sensor local YZX rotation order, global convention XZY rotation order
         EulerAngle quaternionToEuler(Quaternion q);
         EulerAngle radToDeg(EulerAngle angle);
+
+        bool wasReset {false};
 
 };

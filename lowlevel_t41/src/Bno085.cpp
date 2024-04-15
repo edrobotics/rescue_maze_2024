@@ -42,6 +42,12 @@ bool Bno085::runLoop()
     {
         Serial.println("[BNO085] ERROR: Sensor was reset");
         setReports();
+        // Communicate reset to the pi via setting all to 0: Unlikely that all are exactly 0 and in the rare case they are, we can accept that the value will not be used (it should work fine)
+        rotationVector.floats[Quaternion::term_real] = 0;
+        rotationVector.floats[Quaternion::term_i] = 0;
+        rotationVector.floats[Quaternion::term_j] = 0;
+        rotationVector.floats[Quaternion::term_k] = 0;
+        return true;
     }
 
     if (!bno085.getSensorEvent(&sensorValue))

@@ -138,6 +138,7 @@ class PoseEstimator
         // Get the Z rotation diff since last check or reset
         ConditionalAverageTerm getIMURotDiff();
         double lastImuAngle {};
+        double lastImuWasReset {false};
 
 
         /////////////////////////
@@ -155,7 +156,7 @@ class PoseEstimator
         static constexpr double MAX_Z_ROTATION_Y_TOF_ABS {MAX_Z_ROTATION_Y_TOF_DIFF};
         // Maximum angle for ToF X trans and Z rot calculation
         #warning untuned constant
-        static constexpr double MAX_ZROT_XTRANS_TOF_ABS {M_PI_4/2.0};
+        static constexpr double MAX_ZROT_XTRANS_TOF_ABS {M_PI_4/4};
         // Maximum distance that can be used for abs calc with Y Tof
         #warning untuned constant
         static constexpr double MAX_TOF_Y_DIST_ABS {555};

@@ -17,6 +17,15 @@ bool Imu::updateVals()
         quatVals.i = vals[TransferData::imu_i];
         quatVals.j = vals[TransferData::imu_j];
         quatVals.k = vals[TransferData::imu_k];
+        if (quatVals.real==0 && quatVals.i==0 && quatVals.j==0 && quatVals.k==0)
+        {
+            // Reset maybe happened
+            wasReset = true;
+        }
+        else
+        {
+            wasReset = false;
+        }
         angles = quaternionToEuler(quatVals);
         // std::cout << radToDeg(angles).z << "\n";
         // mtx_general.unlock();
@@ -165,4 +174,11 @@ Imu::EulerAngle Imu::radToDeg(EulerAngle angle)
     retAngle.y = angle.y * 180.0/M_PI;
     retAngle.z = angle.z * 180.0/M_PI;
     return retAngle;
+}
+
+
+bool Imu::getWasReset()
+{
+    std::lock_guard<std::mutex> lock(mtx_general);
+    return wasReset;
 }
