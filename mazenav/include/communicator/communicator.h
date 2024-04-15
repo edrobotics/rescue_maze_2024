@@ -8,6 +8,7 @@
 #include "transformations/tfsys.h"
 #include "fusion/MotorControllers.h"
 #include "communicator/logger.h"
+#include "communicator/timer.h"
 
 namespace communication
 {
@@ -133,5 +134,6 @@ namespace communication
         PoseCommunicator poseComm {};
         MotorControllerCommunicator motors{};
         Logger logger {};
+        Timer timer {};
     };
 }
