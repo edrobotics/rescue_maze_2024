@@ -17,7 +17,7 @@ bool Imu::updateVals()
         quatVals.i = vals[TransferData::imu_i];
         quatVals.j = vals[TransferData::imu_j];
         quatVals.k = vals[TransferData::imu_k];
-        if (quatVals.real==0 && quatVals.i==0 && quatVals.j==0 && quatVals.k==0)
+        if (quatVals.real==0 && quatVals.i==0 && quatVals.j==0 && quatVals.k==1)
         {
             // Reset maybe happened
             wasReset = true;

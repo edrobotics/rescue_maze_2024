@@ -46,7 +46,7 @@ bool Bno085::runLoop()
         rotationVector.floats[Quaternion::term_real] = 0;
         rotationVector.floats[Quaternion::term_i] = 0;
         rotationVector.floats[Quaternion::term_j] = 0;
-        rotationVector.floats[Quaternion::term_k] = 0;
+        rotationVector.floats[Quaternion::term_k] = 1;
         return true;
     }
 

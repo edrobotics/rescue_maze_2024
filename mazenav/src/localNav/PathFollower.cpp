@@ -71,10 +71,10 @@ double PathFollower::getRotSpeedTurning(int direction)
     }
 
     turnRotSpeedPid.setSetpoint(turnSpeed);
-    // std::cout << "turnSpeed: " << turnSpeed << "  speed: " << globComm->poseComm.robotSpeedAvg.transform.rot_z << "  ";
+    std::cout << "direction fixed turnSpeed: " << direction*turnSpeed << "  speed: " << globComm->poseComm.robotSpeedAvg.transform.rot_z << "  ";
     double corr {turnRotSpeedPid.getCorrection(globComm->poseComm.robotSpeedAvg.transform.rot_z)};
-    // std::cout << "rotSpeedCorr: " << corr << "\n";
-    return direction*turnSpeed+corr;
+    std::cout << "rotSpeedCorr: " << corr << "\n";
+    return direction*(turnSpeed+corr);
 
 }
 

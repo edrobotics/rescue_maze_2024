@@ -31,7 +31,7 @@ void PoseEstimator::runLoopLooper(communication::Communicator* globComm)
 {
     // std::cout << "Started runLoopLooper" << "\n";
     this->globComm = globComm;
-    for (int i=0;i<5;++i)
+    for (int i=0;i<10;++i)
     {
         // sensors->update(true);
         // std::cout << "updated sensors\n";
@@ -152,7 +152,7 @@ communication::PoseCommunicator PoseEstimator::updateSimple()
     // Rotation:
     Average rotAbs {};
     ConditionalAverageTerm robotAngle {getTofZRot(resultPose.lastRobotFrame.transform.rot_z)};
-    rotAbs.terms.push_back(robotAngle);
+    // rotAbs.terms.push_back(robotAngle);
 
     ConditionalAverageTerm wheelRot {getWheelRotDiff()};
     wheelRot.value += resultPose.lastRobotFrame.transform.rot_z;
