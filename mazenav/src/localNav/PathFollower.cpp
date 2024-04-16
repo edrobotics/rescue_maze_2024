@@ -123,6 +123,7 @@ void PathFollower::runLoop()
             break;
 
         default:
+            std::this_thread::sleep_for(std::chrono::milliseconds(4));
             // std::cerr << "Cannot yet execute this DriveCommand" << std::endl;
             break;
     }
@@ -133,6 +134,7 @@ void PathFollower::runLoop()
 void PathFollower::drive(int direction)
 {
     bool finished {false};
+    globComm->poseComm.setTurning(false);
     while(!finished)
     {
         if (globComm->poseComm.updated)
@@ -154,6 +156,7 @@ void PathFollower::drive(int direction)
 void PathFollower::turn(int direction)
 {
     bool finished {false};
+    globComm->poseComm.setTurning(true);
     while (!finished)
     {
         if (globComm->poseComm.updated)

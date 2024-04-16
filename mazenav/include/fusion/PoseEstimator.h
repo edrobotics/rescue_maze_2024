@@ -70,6 +70,8 @@ class PoseEstimator
 
         // Fusion group in use
         FusionGroup fusionGroup {fg_none};
+        // Whether currently turning or not - influences certain thresholds and what values may be used.
+        bool isTurning {false};
 
         // The thread that updates.
         // Not in a state of execution by default (https://en.cppreference.com/w/cpp/thread/thread)
@@ -148,6 +150,10 @@ class PoseEstimator
         static constexpr int MAX_WHEEL_ODOM_DIFF {50};
         // Maximum diff for IMU angle values between two iterations. Based on max speed of two rounds per second for robot
         static constexpr double MAX_IMU_Z_ROT_DIFF {1.25};
+        // Maximum diff for IMU angle that is considered frozen in place (frozen without reset), while wheels are also moving
+        static constexpr double MAX_IMU_FROZEN_ANGLE {0.01}; // Approx. 0.6 degrees
+        // Minimum diff between IMU and wheelRotation for the IMU to be considered frozen
+        static constexpr double MIN_IMU_WHEEL_DIFF_FROZEN {0.02}; // Approx. 3 degrees
         // Maximum diff for ToF sensor values between two measurements
         static constexpr int MAX_TOF_Y_DIFF {50};
         // Maximum angle for ToF to be used for diff calc
@@ -155,7 +161,9 @@ class PoseEstimator
         // Maximum angle for ToF to be used for abs calc y direction
         static constexpr double MAX_Z_ROTATION_Y_TOF_ABS {MAX_Z_ROTATION_Y_TOF_DIFF};
         // Maximum angle for ToF X trans and Z rot calculation
-        static constexpr double MAX_ZROT_XTRANS_TOF_ABS {M_PI_4/4};
+        static constexpr double MAX_ZROT_XTRANS_TOF_ABS {M_PI_4/2};
+        // Maximum angle for ToF X trans and Z rot calculation while turning
+        static constexpr double MAX_ZROT_XTRANS_TOF_ABS_TURNING {M_PI_4/4};
         // Maximum distance that can be used for abs calc with Y Tof
         static constexpr double MAX_TOF_Y_DIST_ABS {600};
         // If robot centre to wall/calculated sensor measurement is > this, wall is not deemed present
