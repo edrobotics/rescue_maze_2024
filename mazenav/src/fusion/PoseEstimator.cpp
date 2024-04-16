@@ -155,13 +155,20 @@ communication::PoseCommunicator PoseEstimator::updateSimple()
     rotAbs.terms.push_back(robotAngle);
 
     ConditionalAverageTerm wheelRot {getWheelRotDiff()};
+    std::cout << "wheel=" << wheelRot.value*180/M_PI;
     wheelRot.value += resultPose.lastRobotFrame.transform.rot_z;
     rotAbs.terms.push_back(wheelRot);
 
     ConditionalAverageTerm imuRot {getIMURotDiff()};
     // std::cout << imuRot.value << "\n";
+    std::cout << "  imu=" << imuRot.value*180/M_PI << "\n";
     imuRot.value += resultPose.lastRobotFrame.transform.rot_z;
     rotAbs.terms.push_back(imuRot);
+    if (imuRot.weight==0)
+    {
+        std::cout << "could not use IMU\n";
+    }
+
 
     rotAbs.stripZeroWeight();
     wrapVectorSameScale(rotAbs.terms, minZRot, maxZRot);
@@ -484,10 +491,10 @@ void PoseEstimator::calcWheelDistanceDiffs()
     // lastMotorDistances = motorDistances;
 
     motorDistanceDiffs = sensors->motors.getDistances();
-    std::cout << "Motor distance diffs: lf=" << motorDistanceDiffs.lf << "  ";
-    std::cout << "lb=" << motorDistanceDiffs.lb << "  ";
-    std::cout << "rf=" << motorDistanceDiffs.rf << "  ";
-    std::cout << "rb=" << motorDistanceDiffs.rb << "\n";
+    // std::cout << "Motor distance diffs: lf=" << motorDistanceDiffs.lf << "  ";
+    // std::cout << "lb=" << motorDistanceDiffs.lb << "  ";
+    // std::cout << "rf=" << motorDistanceDiffs.rf << "  ";
+    // std::cout << "rb=" << motorDistanceDiffs.rb << "\n";
 }
 
 ConditionalAverageTerm PoseEstimator::getWheelTransDiff()
@@ -773,7 +780,79 @@ ConditionalAverageTerm PoseEstimator::getWheelRotDiff()
 {
     ConditionalAverageTerm result {0, 0};
 
-    #warning not yet implemented
+    Average leftAvg {};
+    Average rightAvg {};
+
+    leftAvg.terms.push_back(ConditionalAverageTerm{motorDistanceDiffs.lf, 1});
+    leftAvg.terms.push_back(ConditionalAverageTerm{motorDistanceDiffs.lb, 1});
+
+    rightAvg.terms.push_back(ConditionalAverageTerm{motorDistanceDiffs.rf, 1});
+    rightAvg.terms.push_back(ConditionalAverageTerm{motorDistanceDiffs.rb, 1});
+
+
+    // Filter out bad values
+    for (auto& term : leftAvg.terms)
+    {
+        if (abs(term.value) > MAX_WHEEL_ODOM_DIFF)
+        {
+            term.weight = 0;
+        }
+        else
+        {
+            term.weight = 1;
+        }
+    }
+    for (auto& term : rightAvg.terms)
+    {
+        if (abs(term.value) > MAX_WHEEL_ODOM_DIFF)
+        {
+            term.weight = 0;
+        }
+        else
+        {
+            term.weight = 1;
+        }
+    }
+    
+    double leftDist {};
+    double rightDist {};
+    int succeeded {0};
+
+    try
+    {
+        leftDist = leftAvg.calc();
+        ++succeeded;
+    }
+    catch (std::runtime_error& e)
+    {
+        // No usable data, so do not use
+    }
+
+    try
+    {
+        rightDist = rightAvg.calc();
+        ++succeeded;
+    }
+    catch (std::runtime_error& e)
+    {
+        // No usable data, so do not use
+    }
+
+    if (succeeded==2)
+    {
+        result.weight = 1;
+
+        // Path along circumference
+        result.value = (rightDist-leftDist)/2.0;
+
+        // Path to angle - what we want in the end
+        result.value = result.value/WHEEL_TURN_RADIUS;
+    }
+    else
+    {
+        std::cout << "Could not use wheel diff\n";
+        result.weight = 0;
+    }
 
     return result;
 }
@@ -790,7 +869,7 @@ ConditionalAverageTerm PoseEstimator::getIMURotDiff()
     if (lastImuWasReset && !imuReset)
     {
         // Last sensor value was reset but not this one => startup imu calc again
-        std::cout << "Staring IMU after reset\n";
+        // std::cout << "Staring IMU after reset\n";
         // Communicate no-use
         result.value = 0;
         result.weight = 0;
@@ -803,7 +882,7 @@ ConditionalAverageTerm PoseEstimator::getIMURotDiff()
     else if (imuReset)
     {
         // Reset detected this run
-        std::cout << "IMU RESET!" << "\n";
+        // std::cout << "IMU RESET!" << "\n";
         lastImuWasReset = true;
         // Communicate no-use
         result.value = 0;

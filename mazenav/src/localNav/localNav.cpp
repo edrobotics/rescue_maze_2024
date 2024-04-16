@@ -10,15 +10,21 @@ void localNav::main(communication::Communicator* globComm)
 {
     PathFollower pathFollower {globComm};
 
-    globComm->navigationComm.pushCommand(communication::DriveCommand::driveForward);
+    MiniController controller {};
+
+    // globComm->navigationComm.pushCommand(communication::DriveCommand::driveForward);
     // globComm->navigationComm.pushCommand(communication::DriveCommand::driveForward);
     // globComm->navigationComm.pushCommand(communication::DriveCommand::turnLeft);
     // globComm->navigationComm.pushCommand(communication::DriveCommand::driveForward);
     // globComm->navigationComm.pushCommand(communication::DriveCommand::driveForward);
     // globComm->navigationComm.pushCommand(communication::DriveCommand::turnRight);
+
+    controller.start(globComm);
+    // std::thread control(&MiniController::runLoopFunc, &controller, globComm);
     
     std::thread pFollow(&PathFollower::runLoopLooper, &pathFollower);
     
+    controller.waitForfinish();
     pFollow.join();
 
     // testTfsys();

@@ -9,6 +9,7 @@
 
 #include "localNav/KinematicDriver.h"
 #include "localNav/PathFollower.h"
+#include "localNav/MiniController.h"
 
 namespace localNav
 {
