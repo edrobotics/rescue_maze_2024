@@ -129,9 +129,11 @@ void MotorController::startDistanceMeasure()
 }
 
 
-double MotorController::getDistance()
+int16_t MotorController::getDistanceDiff()
 {
-    return (encoderPos-tickStartDistance)/(cpr*encOutputRatio);
+    int16_t retVal {double(encoderPos-tickStartDistance)/double(cpr*encOutputRatio)*WHEEL_CIRCUMFERENCE};
+    startDistanceMeasure();
+    return retVal;
 }
 
 double MotorController::getOutputSpeed()

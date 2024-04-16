@@ -85,11 +85,14 @@ void Robot::getMotors()
 {
     int16_t speeds[MOTOR_NUM];
     int16_t positions[MOTOR_NUM];
+    // Serial.print("Motor dist: ");
     for (int i=0;i<MOTOR_NUM;++i)
     {
         speeds[i] = motorControllers[i]->getOutputSpeed();
-        positions[i] = motorControllers[i]->getDistance();
+        positions[i] = motorControllers[i]->getDistanceDiff();
+        // Serial.print(positions[i]);Serial.print("  ");
     }
+    // Serial.println("");
     communicator.transData.setRPM(speeds);
     communicator.transData.setPos(positions);
 }

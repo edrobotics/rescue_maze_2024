@@ -152,7 +152,7 @@ communication::PoseCommunicator PoseEstimator::updateSimple()
     // Rotation:
     Average rotAbs {};
     ConditionalAverageTerm robotAngle {getTofZRot(resultPose.lastRobotFrame.transform.rot_z)};
-    // rotAbs.terms.push_back(robotAngle);
+    rotAbs.terms.push_back(robotAngle);
 
     ConditionalAverageTerm wheelRot {getWheelRotDiff()};
     wheelRot.value += resultPose.lastRobotFrame.transform.rot_z;
@@ -188,12 +188,12 @@ communication::PoseCommunicator PoseEstimator::updateSimple()
     transXAbs.terms.push_back(getTofXTrans(resultPose.robotFrame.transform.rot_z));
     transYAbs.terms.push_back(getTofYTrans(resultPose.robotFrame.transform.rot_z, TOF_FY_OFFSET, TOF_FX_OFFSET));
 
-    // ConditionalAverageTerm wheelTransX {getWheelTransDiff()};
-    // ConditionalAverageTerm wheelTransY {wheelTransX};
-    // wheelTransX.value = wheelTransX.value*cos(resultPose.robotFrame.transform.rot_z) + resultPose.lastRobotFrame.transform.pos_x;
-    // wheelTransY.value = wheelTransY.value*sin(resultPose.robotFrame.transform.rot_z) + resultPose.lastRobotFrame.transform.pos_y;
-    // transXAbs.terms.push_back(wheelTransX);
-    // transYAbs.terms.push_back(wheelTransY);
+    ConditionalAverageTerm wheelTransX {getWheelTransDiff()};
+    ConditionalAverageTerm wheelTransY {wheelTransX};
+    wheelTransX.value = wheelTransX.value*sin(resultPose.robotFrame.transform.rot_z) + resultPose.lastRobotFrame.transform.pos_x;
+    wheelTransY.value = wheelTransY.value*cos(resultPose.robotFrame.transform.rot_z) + resultPose.lastRobotFrame.transform.pos_y;
+    transXAbs.terms.push_back(wheelTransX);
+    transYAbs.terms.push_back(wheelTransY);
 
     // ConditionalAverageTerm tofTransX {getTofTransYDiff()};
     // ConditionalAverageTerm tofTransY {tofTransX};
@@ -474,13 +474,20 @@ void PoseEstimator::updatePoseComm(communication::PoseCommunicator& pose)
 
 void PoseEstimator::calcWheelDistanceDiffs()
 {
-    MotorControllers::Distances motorDistances {};
-    motorDistanceDiffs.lf = motorDistances.lf - lastMotorDistances.lf;
-    motorDistanceDiffs.lb = motorDistances.lb - lastMotorDistances.lb;
-    motorDistanceDiffs.rf = motorDistances.rf - lastMotorDistances.rf;
-    motorDistanceDiffs.rb = motorDistances.rb - lastMotorDistances.rb;
+    // MotorControllers::Distances motorDistances {sensors->motors.getDistances()};
+    // motorDistanceDiffs.lf = motorDistances.lf - lastMotorDistances.lf;
+    // motorDistanceDiffs.lb = motorDistances.lb - lastMotorDistances.lb;
+    // motorDistanceDiffs.rf = motorDistances.rf - lastMotorDistances.rf;
+    // motorDistanceDiffs.rb = motorDistances.rb - lastMotorDistances.rb;
 
-    lastMotorDistances = motorDistances;
+
+    // lastMotorDistances = motorDistances;
+
+    motorDistanceDiffs = sensors->motors.getDistances();
+    std::cout << "Motor distance diffs: lf=" << motorDistanceDiffs.lf << "  ";
+    std::cout << "lb=" << motorDistanceDiffs.lb << "  ";
+    std::cout << "rf=" << motorDistanceDiffs.rf << "  ";
+    std::cout << "rb=" << motorDistanceDiffs.rb << "\n";
 }
 
 ConditionalAverageTerm PoseEstimator::getWheelTransDiff()
@@ -515,6 +522,7 @@ ConditionalAverageTerm PoseEstimator::getWheelTransDiff()
     catch (std::runtime_error& e)
     {
         // No usable data, so do not use
+        std::cout << "Could not use wheel odom diff\n";
         result.weight = 0;
     }
 

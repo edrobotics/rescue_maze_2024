@@ -4,6 +4,7 @@
 const int GRID_SIZE {300};
 const int WALL_THICKNESS {15};
 
+#warning OBS!!!!! WHEEL RADIUS ALSO CONTROLLED IN TEENSY CODE, CHECK THERE AS WELL!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! ;) !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! ;) !!!!!!!!!!----------------------------
 // Radius of the wheel
 const int WHEEL_RADIUS {39};
 

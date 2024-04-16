@@ -5,6 +5,7 @@
 #include <chrono>
 #include <array>
 
+#include "GlobalConstants.h"
 #include "transformations/tfsys.h"
 #include "fusion/MotorControllers.h"
 #include "communicator/logger.h"

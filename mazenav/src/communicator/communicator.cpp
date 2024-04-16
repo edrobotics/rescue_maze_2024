@@ -48,6 +48,9 @@ namespace communication
     PoseCommunicator::PoseCommunicator()
     {
         // robotSpeeds.fill(CoordinateFrame{nullptr});
+        robotFrame.transform.pos_x = GRID_SIZE/2;
+        robotFrame.transform.pos_y = GRID_SIZE/2;
+        lastRobotFrame = robotFrame.getWithoutChildren();
     }
 
     PoseCommunicator& PoseCommunicator::operator=(const PoseCommunicator& pComm)

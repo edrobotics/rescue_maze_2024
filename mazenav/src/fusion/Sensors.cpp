@@ -12,9 +12,12 @@ void Sensors::update(bool capture)
     {
         bool imuUpdated {false};
         bool tofUpdated {false};
+        bool motorsUpdated {false};
+
+        motors.setVals();
 
         // While at least one not updated exists
-        while (!imuUpdated || !tofUpdated)
+        while (!imuUpdated || !tofUpdated || !motorsUpdated)
         {
             if (!imuUpdated)
             {
@@ -25,6 +28,11 @@ void Sensors::update(bool capture)
             {
                 tofUpdated = tofs.updateVals();
             }
+
+            if (!motorsUpdated)
+            {
+                motorsUpdated = motors.getVals();
+            }
         }
         // tofs.printVals(true);
 
@@ -33,6 +41,8 @@ void Sensors::update(bool capture)
     {
         imu0.updateVals();
         tofs.updateVals();
+        motors.getVals();
+        motors.setVals();
     }
 }
 

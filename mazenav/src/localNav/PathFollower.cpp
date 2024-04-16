@@ -20,10 +20,11 @@ double PathFollower::getRotSpeedDriving()
     // std::cout << "xPos: " << globComm->poseComm.robotFrame.transform.pos_x << "  ";
     double wantedAngle {yPid.getCorrection(globComm->poseComm.robotFrame.transform.pos_x)};
     // std::cout << "wantedAngle: " << wantedAngle << "angle: " << globComm->poseComm.robotFrame.transform.rot_z << "  ";
-    angPid.setSetpoint(wantedAngle);
+    angPid.setSetpoint(-wantedAngle);
     double speedCorr {angPid.getCorrection(globComm->poseComm.robotFrame.transform.rot_z)};
     // std::cout << "speedCorr:" << speedCorr << "\n";
     return speedCorr;
+    // return 0;
 }
 
 double PathFollower::getTransSpeedDriving()
@@ -71,9 +72,9 @@ double PathFollower::getRotSpeedTurning(int direction)
     }
 
     turnRotSpeedPid.setSetpoint(turnSpeed);
-    std::cout << "direction fixed turnSpeed: " << direction*turnSpeed << "  speed: " << globComm->poseComm.robotSpeedAvg.transform.rot_z << "  ";
+    // std::cout << "direction fixed turnSpeed: " << direction*turnSpeed << "  speed: " << globComm->poseComm.robotSpeedAvg.transform.rot_z << "  ";
     double corr {turnRotSpeedPid.getCorrection(globComm->poseComm.robotSpeedAvg.transform.rot_z)};
-    std::cout << "rotSpeedCorr: " << corr << "\n";
+    // std::cout << "rotSpeedCorr: " << corr << "\n";
     return direction*(turnSpeed+corr);
 
 }
@@ -110,6 +111,7 @@ void PathFollower::runLoop()
         case communication::DriveCommand::driveForward:
             setLinePos(GRID_SIZE/2.0);
             drive(1);
+            std::cout << "Step done-----------------------------------------------------------------\n";
             break;
         
         case communication::DriveCommand::turnLeft:
@@ -158,7 +160,7 @@ void PathFollower::turn(int direction)
         {
             globComm->poseComm.updated = false;
             angLeftToTarget = getAngLeftToTarget();
-            std::cout << "angLeftToTarget: " << angLeftToTarget << "\n";
+            // std::cout << "angLeftToTarget: " << angLeftToTarget << "\n";
             driver.calcSpeeds(getTransSpeedTurning(), getRotSpeedTurning(direction));
             driver.setSpeeds();
             finished = checkIsFinishedTurning(direction);

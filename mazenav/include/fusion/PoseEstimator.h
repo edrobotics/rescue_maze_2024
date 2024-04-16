@@ -155,11 +155,9 @@ class PoseEstimator
         // Maximum angle for ToF to be used for abs calc y direction
         static constexpr double MAX_Z_ROTATION_Y_TOF_ABS {MAX_Z_ROTATION_Y_TOF_DIFF};
         // Maximum angle for ToF X trans and Z rot calculation
-        #warning untuned constant
-        static constexpr double MAX_ZROT_XTRANS_TOF_ABS {M_PI_4/5};
+        static constexpr double MAX_ZROT_XTRANS_TOF_ABS {M_PI_4/4};
         // Maximum distance that can be used for abs calc with Y Tof
-        #warning untuned constant
-        static constexpr double MAX_TOF_Y_DIST_ABS {555};
+        static constexpr double MAX_TOF_Y_DIST_ABS {600};
         // If robot centre to wall/calculated sensor measurement is > this, wall is not deemed present
         #warning untuned variable
         static constexpr double WALL_PRESENCE_THRESHOLD_CENTRE {220};

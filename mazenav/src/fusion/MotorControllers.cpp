@@ -30,11 +30,11 @@ int MotorControllers::MotorSpeeds::toRpm(double radians)
     return static_cast<int>(radians*30/M_PI);
 }
 
-void MotorControllers::updateVals()
-{
-    setVals();
-    getVals();
-}
+// bool MotorControllers::updateVals()
+// {
+//     setVals();
+//     return getVals();
+// }
 
 void MotorControllers::setVals()
 {
@@ -49,31 +49,60 @@ void MotorControllers::setVals()
     communicator->transData.tsSetRpmControl(values);
 }
 
-void MotorControllers::getVals()
+bool MotorControllers::getVals()
 {
-    // Speeds
-    mtx_speedGetter.lock();
 
-    communicator->transData.tsGetRPM(speeds);
 
-    motorSpeeds.rf = speeds[motor_rf];
-    motorSpeeds.lf = speeds[motor_lf];
-    motorSpeeds.rb = speeds[motor_rb];
-    motorSpeeds.lb = speeds[motor_lb];
+    if (!speedUpdated)
+    {
+        // Speeds
+        mtx_speedGetter.lock();
 
-    mtx_speedGetter.unlock();
+        speedUpdated = communicator->transData.tsGetRPM(speeds);
 
-    // Distances
-    mtx_distanceGetter.lock();
+        motorSpeeds.rf = speeds[motor_rf];
+        motorSpeeds.lf = speeds[motor_lf];
+        motorSpeeds.rb = speeds[motor_rb];
+        motorSpeeds.lb = speeds[motor_lb];
 
-    communicator->transData.tsGetPos(distances);
+        mtx_speedGetter.unlock();
+    }
 
-    motorDistances.rf = distances[motor_rf];
-    motorDistances.lf = distances[motor_lf];
-    motorDistances.rb = distances[motor_rb];
-    motorDistances.lb = distances[motor_lb];
-    
-    mtx_distanceGetter.unlock();
+    if (!posUpdated)
+    {
+        // Distances
+        mtx_distanceGetter.lock();
+
+        posUpdated = communicator->transData.tsGetPos(distances);
+
+        motorDistances.rf = distances[motor_rf];
+        motorDistances.lf = distances[motor_lf];
+        motorDistances.rb = distances[motor_rb];
+        motorDistances.lb = distances[motor_lb];
+
+        // if (posUpdated)
+        // {
+        //     std::cout << "motorDistances: lf=" << motorDistances.lf << "  ";
+        //     std::cout << "lb=" << motorDistances.lb << "  ";
+        //     std::cout << "rf=" << motorDistances.rf << "  ";
+        //     std::cout << "rb=" << motorDistances.rb << "\n";
+        // }
+        
+        mtx_distanceGetter.unlock();
+    }
+
+    if (speedUpdated && posUpdated)
+    {
+        // Reset variables for next use and return that both were updated
+        speedUpdated = false;
+        posUpdated = false;
+        return true;
+    }
+    else
+    {
+        return false;
+    }
+
 }
 
 
@@ -104,4 +133,16 @@ void MotorControllers::setSpeeds(MotorSpeeds speeds)
     mtx_speedSetter.lock();
     this->controlSpeeds = speeds;
     mtx_speedSetter.unlock();
+}
+
+MotorControllers::Distances MotorControllers::getDistances()
+{
+    std::lock_guard<std::mutex> lock(mtx_distanceGetter);
+    return motorDistances;
+}
+
+MotorControllers::MotorSpeeds MotorControllers::getSpeeds()
+{
+    std::lock_guard<std::mutex> lock(mtx_speedGetter);
+    return motorSpeeds;
 }
