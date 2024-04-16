@@ -41,7 +41,7 @@ namespace communication
         return std::to_string(duration_cast<seconds>(system_clock::now().time_since_epoch()).count());
     }
 
-    std::string Logger::getLogFileNumber()
+    std::string Logger::getLogFileNumber() const
     {
         int i;
         for (i = 0; std::filesystem::exists(LOGFILE_STARTSTRING + std::to_string(i) + LOGFILE_ENDSTRING); i++);

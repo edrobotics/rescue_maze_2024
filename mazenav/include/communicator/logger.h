@@ -17,7 +17,7 @@ class Logger
     #define LOGFILE_ENDSTRING (std::string) ".log"
 
     std::string getTimestampAsString();
-    std::string getLogFileNumber();
+    std::string getLogFileNumber() const;
     std::mutex mtx_logging;
     const std::string logFileName = LOGFILE_STARTSTRING + getLogFileNumber() + LOGFILE_ENDSTRING;
 

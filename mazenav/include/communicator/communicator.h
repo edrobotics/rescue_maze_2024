@@ -1,5 +1,4 @@
 #pragma once
-#include <queue>
 #include <mutex>
 #include <iostream>
 #include <chrono>
@@ -10,34 +9,12 @@
 #include "fusion/MotorControllers.h"
 #include "communicator/logger.h"
 #include "communicator/timer.h"
+#include "communicator/navigationCommunicator.h"
+#include "communicator/tileDrivePropertyCommunicator.h"
+#include "communicator/panicFlagCommunicator.h"
 
 namespace communication
 {
-    // Possible drive commands that can be issued from global navigation to local navigation
-    enum class DriveCommand
-    {
-        driveForward,
-        turnLeft,
-        turnRight,
-        turnBack,
-        noAction,
-        driveCommand_num,
-    };
-
-    // Methods for interacting with the communication
-    class NavigationCommunicator
-    {
-        public:
-        // Pushes a command to the command queue
-        void pushCommand(DriveCommand command);
-        // Gets the next command from the command queue and removes it from the queue
-        DriveCommand popCommand();
-
-        private:
-        std::mutex mtx_commands {};
-        std::queue<DriveCommand> commands {};
-    };
-
     class PoseCommunicator
     {
         private:
@@ -134,6 +111,8 @@ namespace communication
         NavigationCommunicator navigationComm;
         PoseCommunicator poseComm {};
         MotorControllerCommunicator motors{};
+        TileDrivePropertyCommunicator tileInfoComm;
+        PanicFlagCommunicator panicFlagComm;
         Logger logger {};
         Timer timer {};
     };
