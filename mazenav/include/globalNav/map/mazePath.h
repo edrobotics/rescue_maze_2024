@@ -5,10 +5,11 @@
 
 class MazePath
 {
+private:
+    std::stack<MazePosition> positionsInPath;
 public:
     MazePosition getNextPosition();
     void addPositionInFront(MazePosition position);
     bool isEmpty();
-private:
-    std::stack<MazePosition> positionsInPath;
+    std::size_t getPositionAmount() const { return positionsInPath.size(); };
 };
