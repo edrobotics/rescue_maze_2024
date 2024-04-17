@@ -45,9 +45,9 @@ class PathFollower
         KinematicDriver driver;
 
         // Input y error, get out wanted angle (correction)
-        PIDController yPid {0.01, 0, 0};
+        PIDController yPid {0.008, 0, 0.0017};
         // Input angle error, output wanted chassis speeds correction
-        PIDController angPid {10, 0, 0};
+        PIDController angPid {2, 0, 0.01};
 
         // Do the driving in accordance with parameters set earlier
         void drive(int direction);
@@ -132,7 +132,7 @@ class PathFollower
         // Untuned constant
         PIDController turnTransSpeedPid {1, 0, 0};
         // Tuned
-        PIDController turnRotSpeedPid {0.4, 0, 0};
+        PIDController turnRotSpeedPid {0.1, 0, 0};
 
 
         static constexpr double DRIVE_SPEED_STANDARD {200};
