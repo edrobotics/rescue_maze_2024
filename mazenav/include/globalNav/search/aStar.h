@@ -27,15 +27,16 @@ private:
 	};
 
     std::priority_queue<AStarTile*, std::vector<AStarTile*>, AStar::CompareWeights> aStarTileQueue;
-    std::vector<AStarTile> storageVector;
+    std::vector<AStarTile*> toDelete;
 
     void aStarSearch();
     AStarTile* getBestTile();
     void constructPath(AStarTile* finalTile);
     void expandTile(AStarTile* tile);
-    void storeAndAddTileToQueue(AStarTile tile);
+    void storeAndAddTileToQueue(AStarTile* tile);
+    AStarTile* createTile(MazePosition withPosition);
 
-    AStarTile setTileProperties(MazePosition newPosition, AStarTile* parentTile);
+    AStarTile* createTileWithProperties(MazePosition newPosition, AStarTile* parentTile);
     int heuristic(MazePosition fromPosition);
 
     bool neighborIsAvailable(MazePosition tile, MazePosition neighbor, GlobalDirections neighborDirection);
@@ -43,5 +44,6 @@ private:
 
 public:
     AStar(MazePosition currentPosition, MazePosition toPosition, MazeMap* map);
+    ~AStar();
     MazePath getAStarResult();
 };
