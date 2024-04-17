@@ -39,7 +39,7 @@ class PathPlanner
         std::vector<communication::DriveCommand> globalPath {};
 
         // Go forward one step
-        const Transform tfForward {0, GRID_SIZE, 0, 0, 0, 0};
+        const Transform tfForward {0, static_cast<double>(GRID_SIZE), 0, 0, 0, 0};
         // Turn right
         const Transform tfRight {0, 0, 0, 0, 0, -M_PI_2};
         // Turn left

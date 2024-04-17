@@ -52,11 +52,11 @@ double PathFollower::getTransSpeedDriving(int direction)
     if (distLeftToTarget<DRIVING_CLOSE_PID_THRESHOLD)
     {
         // Can replace with separate PID later (whose output would be used: driveSpeed = baseSpeed+correction))
-        driveSpeed = direction*DRIVE_SPEED_SLOW;
+        driveSpeed = DRIVE_SPEED_SLOW;
     }
     else
     {
-        driveSpeed = direction*DRIVE_SPEED_STANDARD;
+        driveSpeed = DRIVE_SPEED_STANDARD;
     }
 
     driveTransSpeedPid.setSetpoint(driveSpeed);
@@ -308,7 +308,7 @@ bool PathFollower::checkIsFinishedTurning(int direction)
 
 void PathFollower::setTargetPointTf(communication::DriveCommand dC)
 {
-    Transform resultTf {GRID_SIZE/2, GRID_SIZE/2, 0, 0, 0, 0};
+    Transform resultTf {static_cast<double>(GRID_SIZE)/2, static_cast<double>(GRID_SIZE)/2, 0, 0, 0, 0};
     switch (dC)
     {
         case communication::DriveCommand::driveForward:
@@ -338,7 +338,7 @@ void PathFollower::setTargetPointTf(communication::DriveCommand dC)
 
 void PathFollower::setBackWardTargetPointTf()
 {
-    Transform resultTf {GRID_SIZE/2, GRID_SIZE/2, 0, 0, 0, 0};
+    Transform resultTf {static_cast<double>(GRID_SIZE)/2, static_cast<double>(GRID_SIZE)/2, 0, 0, 0, 0};
 
     if (globComm->poseComm.hasDrivenStep())
     {

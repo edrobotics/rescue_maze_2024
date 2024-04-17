@@ -378,7 +378,7 @@ void PoseEstimator::wrapVectorSameScale(std::vector<ConditionalAverageTerm>& vec
     int lowerLimitIndex {-1};
 
     // Find the gap
-    for (int i=0;i<vec.size()-1;++i)
+    for (int i=0;i<static_cast<int>(vec.size()-1);++i)
     {
         if (vec.at(i+1).value-vec.at(i).value > diff/3.0)
         {
@@ -543,10 +543,10 @@ ConditionalAverageTerm PoseEstimator::getWheelTransDiff()
 
     Average avg {};
 
-    avg.terms.push_back(ConditionalAverageTerm{motorDistanceDiffs.lf, 1});
-    avg.terms.push_back(ConditionalAverageTerm{motorDistanceDiffs.lb, 1});
-    avg.terms.push_back(ConditionalAverageTerm{motorDistanceDiffs.rf, 1});
-    avg.terms.push_back(ConditionalAverageTerm{motorDistanceDiffs.rb, 1});
+    avg.terms.push_back(ConditionalAverageTerm{static_cast<double>(motorDistanceDiffs.lf), 1});
+    avg.terms.push_back(ConditionalAverageTerm{static_cast<double>(motorDistanceDiffs.lb), 1});
+    avg.terms.push_back(ConditionalAverageTerm{static_cast<double>(motorDistanceDiffs.rf), 1});
+    avg.terms.push_back(ConditionalAverageTerm{static_cast<double>(motorDistanceDiffs.rb), 1});
 
     // Filter out bad values
     for (auto& term : avg.terms)
@@ -830,11 +830,11 @@ ConditionalAverageTerm PoseEstimator::getWheelRotDiff()
     Average leftAvg {};
     Average rightAvg {};
 
-    leftAvg.terms.push_back(ConditionalAverageTerm{motorDistanceDiffs.lf, 1});
-    leftAvg.terms.push_back(ConditionalAverageTerm{motorDistanceDiffs.lb, 1});
+    leftAvg.terms.push_back(ConditionalAverageTerm{static_cast<double>(motorDistanceDiffs.lf), 1});
+    leftAvg.terms.push_back(ConditionalAverageTerm{static_cast<double>(motorDistanceDiffs.lb), 1});
 
-    rightAvg.terms.push_back(ConditionalAverageTerm{motorDistanceDiffs.rf, 1});
-    rightAvg.terms.push_back(ConditionalAverageTerm{motorDistanceDiffs.rb, 1});
+    rightAvg.terms.push_back(ConditionalAverageTerm{static_cast<double>(motorDistanceDiffs.rf), 1});
+    rightAvg.terms.push_back(ConditionalAverageTerm{static_cast<double>(motorDistanceDiffs.rb), 1});
 
 
     // Filter out bad values
@@ -1084,25 +1084,53 @@ std::vector<communication::Walls> PoseEstimator::getWallStates()
 {
     Tof::TofData td {sensors->tofs.tofData};
     std::vector<communication::Walls> result {};
+    std::cout << "[PoseEstimator] Wallstates: ";
+    std::cout << "left:";
     if (getLeftWallPresent(td))
     {
         result.push_back(communication::Walls::LeftWall);
+        std::cout << "1";
     }
+    else
+    {
+        std::cout << "0";
+    }
+    std::cout << "  right:";
 
     if (getRightWallPresent(td))
     {
         result.push_back(communication::Walls::RightWall);
+        std::cout << "1";
+    }
+    else
+    {
+        std::cout << "0";
     }
 
+    std::cout << "  front:";
     if (getFrontWallPresent(td))
     {
         result.push_back(communication::Walls::FrontWall);
+        std::cout << "1";
+    }
+    else
+    {
+        std::cout << "0";
     }
 
+    std::cout << "  back:";
     if (getBackWallPresent(td))
     {
         result.push_back(communication::Walls::BackWall);
+        std::cout << "1";
     }
+    else
+    {
+        std::cout << "0";
+    }
+
+    std::cout << std::endl;
+
 
     return result;
 }

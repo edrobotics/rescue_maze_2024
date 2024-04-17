@@ -231,8 +231,8 @@ class PoseEstimator
         // If y trans diff > this, then tile change has occured
         const double tileTransYDiffThreshold {GRID_SIZE/2.0};
         // Transforms to move the tile to wrap the pose
-        Transform tf_rotateTileRight {0, GRID_SIZE, 0, 0, 0, -M_PI_2};
-        Transform tf_rotateTileLeft {GRID_SIZE, 0, 0, 0, 0, M_PI_2};
+        Transform tf_rotateTileRight {0, static_cast<double>(GRID_SIZE), 0, 0, 0, -M_PI_2};
+        Transform tf_rotateTileLeft {static_cast<double>(GRID_SIZE), 0, 0, 0, 0, M_PI_2};
 
         // Get the wall presence. This is relative to the tile.
         bool getLeftWallPresent(Tof::TofData td);
