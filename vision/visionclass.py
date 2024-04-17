@@ -9,6 +9,8 @@ import socket
 import os
 import time
 import platform
+import ColoredVictimsLinkoping.ColoredSquareDetection as CD
+#import ColoredVictimsLinkoping.ColorDetection as CD
 
 if platform.system() == "Linux":
 
@@ -39,7 +41,7 @@ class letters:
         self.interpreter.invoke()
 
         output_data = self.interpreter.get_tensor(self.output_details[0]['index'])
-        print(output_data)
+        #print(output_data)
         percentage = output_data[0][np.argmax(output_data[0])] 
         victim = self.classes[np.argmax(output_data[0])]
 
@@ -53,17 +55,27 @@ class comms:
     port = 4242
     host = socket.gethostbyname(socket.gethostname())
     s = socket.socket(socket.AF_INET,socket.SOCK_STREAM)
+    FORMAT  = 'utf-8'
+
 
     def __init__(self,bComms = True):
         if bComms:
-            self.s.connect((self.host, self.port))
-            self.bComms = True
+            connected = False
+            while not connected:
+                try:
+                    self.s.connect((self.host, self.port))
+                    self.bComms = True
+                    connected = True
+                except:
+                    connected = False 
+                    time.sleep(0.42)
         else: self.bComms = False
 
     def send(self,messageType,victimType,camera,position,timeStamp):
 
         message = f"!{messageType},{victimType},{camera},{position},{timeStamp}"
         if self.bComms:
+            message = message.encode(self.FORMAT)
             self.s.send(message)
 
 
@@ -88,22 +100,37 @@ class imgproc:
 
         self.loadModel()
         self.com = comms(bComms=bComms)
+      #  self.detector = CD.ColorDetection()
+        self.detector = CD.ColoredSquareDetection()
 
 
     def do_the_work(self, image, camera):
-        print("working")
+        #print("working")
         self.imagecopy = image.copy()
         self.image = image.copy()
         self.camera = camera
         self.timestamp = time.time()
         self.log.save_image(image, camera)
         self.find_visual(image)
+        self.findColor(image)
+
+
+
+    def findColor(self, image):
+        #print("finding color")
+        result, color, _ = self.detector.detect_square(image)
+        #print(f"result:{result}, color: {color} ")
+        #result, color, middle_point = self.detector.detect_colored_square(image)
+        if result is not None:
+            print(f"{color} detected ")
+            self.framedetected.append(color)
+
 
     def cleanUp(self):
         self.framedetected = []
 
     def preprocessing(self,image):
-        print("preprocessing")
+        #print("preprocessing")
         gray = cv2.cvtColor(image,cv2.COLOR_BGR2GRAY)
         binary = cv2.adaptiveThreshold(gray,255,cv2.ADAPTIVE_THRESH_MEAN_C, cv2.THRESH_BINARY,21,10) 
         binary = np.invert(binary)
@@ -115,7 +142,7 @@ class imgproc:
         binary2 = binary.copy()
         contours, hierarchy = cv2.findContours(binary,cv2.RETR_LIST,cv2.CHAIN_APPROX_NONE)
         cv2.drawContours(binary2, contours, 1, (255,0,0),3)
-        print(len(contours))
+        #print(len(contours))
         for contour in contours:
             area = cv2.contourArea(contour)
             if area >1337: 
@@ -154,7 +181,7 @@ class imgproc:
         if victim != "none": self.framedetected.append(victim)
         cv2.putText(self.imagecopy, f"{victim}, {percentage:.2f}",self.vPos,cv2.FONT_HERSHEY_SIMPLEX,1.0,(0,255,0))
         if victim != "none" and percentage > 0.99:
-            print(f"{victim} {percentage}") 
+            #print(f"{victim} {percentage}") 
             self.com.send("C",victim,self.camera,self.vPos[0],self.timestamp)
             if self.training:
                 self.logTraining.save_image(section, victim)

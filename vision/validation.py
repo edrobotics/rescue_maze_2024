@@ -62,12 +62,18 @@ class Trackbars:
 
 class validation:
     stop = False
-    detected = {"H":0,"S":0,"U":0,"none":0}
+    detected = {"H":0,"S":0,"U":0, "red": 0, "green": 0, "yellow": 0}
 
-    def __init__(self,dir_path,showsource = False,training = False) -> None:
+    def __init__(self,dir_path,showsource = False,training = False,pause = False) -> None:
         self.TB = Trackbars() #trackbar object
         self.base_folder =  dir_path
-        self.showsource = showsource
+        self.pause = pause
+        if pause:
+            self.showWrong = True
+            self.showsource = True
+
+        else:
+            self.showsource = showsource
         self.config_path = os.path.join(self.base_folder, "config.ini")
         self.imgproc = vc.imgproc(bLogging=False, dir_path=dir_path,bComms=False,training=training)
 
@@ -83,7 +89,8 @@ class validation:
             "y":"yellow",
             "g":"green",
             "n":"none",
-            "o":"other"
+            "o":"other",
+            "d":"double"
         }
         moved = False
         key = 0
@@ -120,8 +127,8 @@ class validation:
 
     def move(self, file_name, type, source = None, base = None):
         
-        destination_path = os.path.join(self.source_path,type,file_name)
-        print(f"source: {self.source_path}")
+        destination_path = os.path.join(self.base_folder,"log/sorted", type,file_name)
+        print(f"source: {self.base_folder}")
         print(f"destination: {destination_path}")
         shutil.move(self.source_path, destination_path)
 
@@ -144,8 +151,8 @@ class validation:
         cams = ("picam", "cam1", "cam2")
         #for cam in cams:
         if True:
-            source_folder = os.path.join(self.base_folder,"log/previous",victim)
-            identifiedVictims =self.iterateFolder(source_folder)
+            source_folder = os.path.join(self.base_folder,"log/sorted",victim)
+            identifiedVictims =self.iterateFolder(source_folder, victim = victim)
 
                     
  #               if len(self.imgproc.framedetected) == 1:
@@ -165,7 +172,7 @@ class validation:
         
 
 
-    def iterateFolder(self,folder):
+    def iterateFolder(self,folder, victim = None):
         file_list = os.listdir(folder)
         ct = 0
         for file_name in file_list:
@@ -173,12 +180,22 @@ class validation:
             if self.stop:
                 break
             ct += 1
-            source_path = os.path.join(folder, file_name)
-            print(source_path)
+            self.source_path = os.path.join(folder, file_name)
+
+            #print(self.source_path)
 
             try:
-                image = cv2.imread(source_path) 
+                image = cv2.imread(self.source_path) 
                 self.imgproc.do_the_work(image, file_name)
+                if self.showWrong:
+                    if len(self.imgproc.framedetected) == 0 and victim != "none":
+                        print("victim not detected")
+                        self.showimage(self.imgproc.imagecopy)
+                    elif self.imgproc.framedetected[0] != victim:
+                        print(f"detected {self.imgproc.framedetected[0]} instead of {victim}")
+                        self.showimage(self.imgproc.imagecopy)
+                elif self.showsource:
+                    self.showimage(self.imgproc.imagecopy)
             
 
     #        except IndexError:
@@ -194,7 +211,13 @@ class validation:
                 self.detected[victim] += 1 
             
             self.imgproc.cleanUp()
-            print(self.detected)
+            #print(self.detected)
+        if ct < len(file_list):
+            print(f"run on {ct} out of {len(file_list)} images")
+        else:
+            print(f"finished all {ct} images")
+        print(f"detected {self.detected}")
+
 
 
     def clearstat(self):
