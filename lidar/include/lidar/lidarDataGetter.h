@@ -37,5 +37,5 @@ class LidarDataGetter
     ldlidar::LDLidarDriverLinuxInterface ldInterface;
     std::chrono::_V2::system_clock::time_point lastLidarUseTime;
 
-    const int64_t lidarScanTimeMS = 1000/10;
+    const int64_t lidarScanTimeMS = 100; //10 Hz
 };

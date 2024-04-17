@@ -14,6 +14,7 @@ namespace communication
         turnBack,
         noAction,
         driveCommand_num,
+        init
     };
 
     class NavigationCommunicator

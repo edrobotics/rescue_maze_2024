@@ -96,6 +96,7 @@ class MazeNavigator
 
     public:
     MazeNavigator(communication::Communicator* communicatorInstance) : communicatorSingleton(communicatorInstance) {};
+    void init();
     void makeNavigationDecision();
     void updateInfoAfterDriving();
 };

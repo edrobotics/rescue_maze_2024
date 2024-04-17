@@ -1,5 +1,15 @@
 #include "globalNav/mazeNavigator.h"
 
+void MazeNavigator::init()
+{
+    giveLowLevelInstruction(communication::DriveCommand::init);
+
+    checkFlagsUntilDriveIsFinished();
+
+    communication::TileDriveProperties tileDriveProperties = communicatorSingleton->tileInfoComm.readLatestTileProperties();
+    updateMap(tileDriveProperties);
+}
+
 void MazeNavigator::makeNavigationDecision()
 {
     addExplorableNeighborsToExplorationStack();
