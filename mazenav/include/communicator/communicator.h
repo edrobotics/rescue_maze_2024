@@ -53,6 +53,8 @@ namespace communication
 
             double frontObstacleDist {-1};
 
+            bool shouldflush {false};
+
         public:
             // Default constructor
             PoseCommunicator();
@@ -110,6 +112,10 @@ namespace communication
             CoordinateFrame startLocalTileFrame {&worldFrame};
             // Returns true if the robot is not on the same tile as startLocalTileFrame
             bool hasDrivenStep();
+
+            // Call to flush the pose data
+            void flushPose();
+            bool getShouldFlushPose();
 
     };
 

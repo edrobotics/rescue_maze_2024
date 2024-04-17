@@ -123,6 +123,8 @@ void PathFollower::runLoop()
     angPid.restartPID();
     driveTransSpeedPid.restartPID();
     turnRotSpeedPid.restartPID();
+    globComm->poseComm.flushPose();
+
     communication::DriveCommand dC {};
     if (driveBackwards)
     {
@@ -134,6 +136,7 @@ void PathFollower::runLoop()
         dC = globComm->navigationComm.popCommand();
         setTargetPointTf(dC);
     }
+
     switch(dC)
     {
         case communication::DriveCommand::driveForward:

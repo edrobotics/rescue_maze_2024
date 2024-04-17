@@ -27,16 +27,21 @@ void PoseEstimator::setFusionGroup(FusionGroup fgroup)
 //     stopThread = false;
 // }
 
+
+void PoseEstimator::flush(FusionGroup fgroup)
+{
+    for (int i=0;i<8;++i)
+    {
+        update(fgroup, false);
+    }
+    update(fgroup, true);
+}
+
 void PoseEstimator::runLoopLooper(communication::Communicator* globComm)
 {
     // std::cout << "Started runLoopLooper" << "\n";
     this->globComm = globComm;
-    for (int i=0;i<10;++i)
-    {
-        // sensors->update(true);
-        // std::cout << "updated sensors\n";
-        update(fusionGroup, false);
-    }
+    flush(FusionGroup::fg_simple);
     // std::cout << "Stored globcomm: " << this->globComm << "\n";
     while (true)
     {
@@ -48,6 +53,10 @@ void PoseEstimator::runLoopLooper(communication::Communicator* globComm)
 void PoseEstimator::runLoop()
 {
     // Currently: update as fast as possible for the given FusionGroup
+    if (globComm->poseComm.getShouldFlushPose())
+    {
+        flush(fusionGroup);
+    }
     update(fusionGroup, true);
 }
 
@@ -265,7 +274,6 @@ communication::PoseCommunicator PoseEstimator::updateSimple()
 
     return resultPose;
 
-    #warning (fixed?) IMPORTANT: tile changes are broken. Some systems fix it themselves before getting the values here, others are dependent on the wrappose. All need to be the same for averaging.
 }
 
 communication::PoseCommunicator PoseEstimator::updateLidar()
@@ -1208,40 +1216,3 @@ bool PoseEstimator::getBackWallPresent(Tof::TofData td)
         return false;
     }
 }
-
-
-// uint8_t PoseEstimator::getIsTofYDiff()
-// {
-//     // If angle is too large the sensors see the side walls instead of the one in front
-//     static const double MAX_Z_ROTATION_FOR_Y_DIFF {M_PI_4/2.0};
-//     #warning this changes with the distance to the wall in front. When we are closer, do we want to accept a greater angle? But how do we know if we are closer?
-//     if (abs(globComm->poseComm.robotFrame.transform.rot_z) > MAX_Z_ROTATION_FOR_Y_DIFF)
-//     {
-//         return 0;
-//     }
-
-//     // Calculate the diffs
-//     Tof::TofData td {sensors.tofs.tofData};
-//     double diffFL {td.fl-lastTofFL};
-//     double diffFR {td.fr-lastTofFR};
-//     double diffB {td.b - lastTofB};
-
-//     // Max diff limit
-//     static const int MAX_TOF_Y_DIFF {50};
-//     // Check if the diffs are OK
-//     uint8_t returnInt {};
-//     if (abs(diffFL)>MAX_TOF_Y_DIFF)
-//     {
-//         returnInt |= Y_TRANS_DIFF_FL;
-//     }
-//     if (abs(diffFR)>MAX_TOF_Y_DIFF)
-//     {
-//         returnInt |= Y_TRANS_DIFF_FR;
-//     }
-//     if (abs(diffB)>MAX_TOF_Y_DIFF)
-//     {
-//         returnInt |= Y_TRANS_DIFF_B;
-//     }
-
-//     return returnInt;
-// }

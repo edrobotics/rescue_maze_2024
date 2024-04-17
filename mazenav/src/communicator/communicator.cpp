@@ -69,6 +69,8 @@ namespace communication
 
         startLocalTileFrame = pComm.startLocalTileFrame.getWithoutChildren();
 
+        shouldflush = pComm.shouldflush;
+
         return *this;
     }
 
@@ -194,6 +196,31 @@ namespace communication
         {
             return false;
         }
+    }
+
+    void PoseCommunicator::flushPose()
+    {
+        mtx_controlVars.lock();
+        shouldflush = true;
+        bool goOn {shouldflush};
+        mtx_controlVars.unlock();
+
+        while (goOn)
+        {
+            std::this_thread::sleep_for(std::chrono::milliseconds(10));
+            mtx_controlVars.lock();
+            goOn = shouldflush;
+            mtx_controlVars.unlock();
+        }
+
+        std::this_thread::sleep_for(std::chrono::milliseconds(300));
+        
+    }
+
+    bool PoseCommunicator::getShouldFlushPose()
+    {
+        std::lock_guard<std::mutex> lock(mtx_controlVars);
+        return shouldflush;
     }
 
 }
