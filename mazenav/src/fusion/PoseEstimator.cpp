@@ -141,6 +141,7 @@ communication::PoseCommunicator PoseEstimator::updateSimple()
     communication::PoseCommunicator resultPose {globComm->poseComm};
     // std::cout << "done\n";
     resultPose.lastRobotFrame = resultPose.robotFrame;
+    // std::cout << "lastRobotFrame: " << resultPose.lastRobotFrame << "\n";
     // Update the times
     resultPose.lastRobotTime = resultPose.curRobotTime;
     resultPose.curRobotTime = std::chrono::steady_clock::now();
@@ -214,13 +215,13 @@ communication::PoseCommunicator PoseEstimator::updateSimple()
     Average transXAbs {};
     Average transYAbs {};
 
-    transXAbs.terms.push_back(getTofXTrans(resultPose.robotFrame.transform.rot_z));
-    transYAbs.terms.push_back(getTofYTrans(resultPose.robotFrame.transform.rot_z, TOF_FY_OFFSET, TOF_FX_OFFSET));
+    transXAbs.terms.push_back(getTofXTrans(resultPose.lastRobotFrame.transform.rot_z));
+    transYAbs.terms.push_back(getTofYTrans(resultPose.lastRobotFrame.transform.rot_z, TOF_FY_OFFSET, TOF_FX_OFFSET));
 
     ConditionalAverageTerm wheelTransX {getWheelTransDiff()};
     ConditionalAverageTerm wheelTransY {wheelTransX};
-    wheelTransX.value = wheelTransX.value*sin(resultPose.robotFrame.transform.rot_z) + resultPose.lastRobotFrame.transform.pos_x;
-    wheelTransY.value = wheelTransY.value*cos(resultPose.robotFrame.transform.rot_z) + resultPose.lastRobotFrame.transform.pos_y;
+    wheelTransX.value = wheelTransX.value*sin(resultPose.lastRobotFrame.transform.rot_z) + resultPose.lastRobotFrame.transform.pos_x;
+    wheelTransY.value = wheelTransY.value*cos(resultPose.lastRobotFrame.transform.rot_z) + resultPose.lastRobotFrame.transform.pos_y;
     transXAbs.terms.push_back(wheelTransX);
     transYAbs.terms.push_back(wheelTransY);
 
@@ -709,6 +710,9 @@ ConditionalAverageTerm PoseEstimator::getTofYTrans(double angle, double yoffset,
         // If not usable, do not use
         result.weight = 0;
     }
+
+    globComm->poseComm.setFrontObstacleDist(getFrontObstacleDist(td));
+
     
     // std::cout << "Result weight is: " << result.weight << std::endl;
 
@@ -1007,6 +1011,46 @@ bool PoseEstimator::getIsTofXRight()
 
     return true;
 
+}
+
+
+double PoseEstimator::getFrontObstacleDist(Tof::TofData td)
+{
+    int blockedSum {0};
+    int blockedValueSum {0};
+
+    if (td.fl.avg<FRONT_OBSTACLE_DETECTION_THRESHOLD)
+    {
+        blockedValueSum += td.fl.avg;
+        ++blockedSum;
+    }
+    if (td.fl.cur<FRONT_OBSTACLE_DETECTION_THRESHOLD)
+    {
+        blockedValueSum += td.fl.cur;
+        ++blockedSum;
+    }
+
+    if (td.fr.avg<FRONT_OBSTACLE_DETECTION_THRESHOLD)
+    {
+        blockedValueSum += td.fr.avg;
+        ++blockedSum;
+    }
+    if (td.fr.cur<FRONT_OBSTACLE_DETECTION_THRESHOLD)
+    {
+        blockedValueSum += td.fr.cur;
+        ++blockedSum;
+    }
+
+    if (blockedSum>=3)
+    {
+        // Return the average blocked distance
+        return static_cast<double>(blockedValueSum)/static_cast<double>(blockedSum);
+    }
+    else
+    {
+        // Return -1 - means that no obstacle is there
+        return -1;
+    }
 }
 
 

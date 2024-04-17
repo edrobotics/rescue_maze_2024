@@ -22,7 +22,7 @@ double PathFollower::getRotSpeedDriving()
     // std::cout << "wantedAngle: " << wantedAngle << "angle: " << globComm->poseComm.robotFrame.transform.rot_z << "  ";
     angPid.setSetpoint(-wantedAngle);
     double speedCorr {angPid.getCorrection(globComm->poseComm.robotFrame.transform.rot_z)};
-    // std::cout << "speedCorr:" << speedCorr << "\n";
+    std::cout << "speedCorr:" << speedCorr << "\n";
     return speedCorr;
     // return 0;
 }
@@ -201,6 +201,12 @@ bool PathFollower::checkIsFinishedDriving(int direction)
     }
 
     // distLeftToTarget is updated in another loop, as it is used both for this and for speed control
+
+    // If driving forward and there is an obstacle in front
+    if (direction==1 && globComm->poseComm.getFrontObstacleDist() !=-1 && globComm->poseComm.getFrontObstacleDist()<80)
+    {
+        return true;
+    }
 
     if (direction*distLeftToTarget < DRIVE_STOP_THRESHOLD)
     {

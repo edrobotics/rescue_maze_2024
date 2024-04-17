@@ -57,6 +57,8 @@ class PoseEstimator
         void setFusionGroup(FusionGroup fgroup);
 
 
+
+
     private:
 
         // For external data/communication:
@@ -158,7 +160,9 @@ class PoseEstimator
         // Maximum diff for ToF sensor values between two measurements
         static constexpr int MAX_TOF_Y_DIFF {50};
         // Maximum angle for ToF to be used for diff calc
-        static constexpr double MAX_Z_ROTATION_Y_TOF_DIFF {M_PI_4/2.0};
+        static constexpr double MAX_Z_ROTATION_Y_TOF_DIFF {M_PI_4/5.0};
+        // Maximum difference between front ToF sensor values (to prevent side walls from messing it up).
+        static constexpr double MAX_TOF_Y_ABS_DIFF {20};
         // Maximum angle for ToF to be used for abs calc y direction
         static constexpr double MAX_Z_ROTATION_Y_TOF_ABS {MAX_Z_ROTATION_Y_TOF_DIFF};
         // Maximum angle for ToF X trans and Z rot calculation
@@ -230,5 +234,17 @@ class PoseEstimator
         Transform tf_rotateTileRight {0, GRID_SIZE, 0, 0, 0, -M_PI_2};
         Transform tf_rotateTileLeft {GRID_SIZE, 0, 0, 0, 0, M_PI_2};
 
+        // Get the wall presence. This is relative to the tile.
+        bool getLeftWallPresent();
+        bool getRightWallPresent();
+        bool getFrontWallPresent();
+        bool getBackWallPresent();
+
+        // Returns true if there is either a wall or something else in front of the robot.
+        // Does not update sensor values - works with those that already exist
+        double getFrontObstacleDist(Tof::TofData td);
+        // Front sensor value where we think something is there.
+        #warning untuned constant
+        static constexpr int FRONT_OBSTACLE_DETECTION_THRESHOLD {100};
 
 };

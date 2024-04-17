@@ -62,6 +62,11 @@ namespace communication
         lastRobotTime = pComm.lastRobotTime;
         // std::cout << "done\n";
 
+        mtx_controlVars.lock();
+        isTurning = pComm.isTurning;
+        isDriving = pComm.isDriving;
+        mtx_controlVars.unlock();
+
         return *this;
     }
 
@@ -163,6 +168,18 @@ namespace communication
     {
         std::lock_guard<std::mutex> lock(mtx_controlVars);
         isDriving = driving;
+    }
+
+    double PoseCommunicator::getFrontObstacleDist()
+    {
+        std::lock_guard<std::mutex> lock(mtx_controlVars);
+        return frontObstacleDist;
+    }
+
+    void PoseCommunicator::setFrontObstacleDist(double dist)
+    {
+        std::lock_guard<std::mutex> lock(mtx_controlVars);
+        frontObstacleDist = dist;
     }
 
 }

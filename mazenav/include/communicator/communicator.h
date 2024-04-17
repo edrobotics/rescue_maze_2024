@@ -51,6 +51,8 @@ namespace communication
             bool isDriving {false};
             std::mutex mtx_controlVars {};
 
+            double frontObstacleDist {-1};
+
         public:
             // Default constructor
             PoseCommunicator();
@@ -99,6 +101,10 @@ namespace communication
             bool getTurning();
             void setDriving(bool driving);
             bool getDriving();
+
+
+            void setFrontObstacleDist(double dist);
+            double getFrontObstacleDist();
 
     };
 
