@@ -3,6 +3,7 @@
 void MazeNavigator::init()
 {
     std::this_thread::sleep_for(START_SLEEPTIME);
+    logToConsoleAndFile("sending init");
     giveLowLevelInstruction(communication::DriveCommand::init);
 
     checkFlagsUntilDriveIsFinished();
