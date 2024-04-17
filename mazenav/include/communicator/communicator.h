@@ -45,6 +45,12 @@ namespace communication
 
             std::array<CoordinateFrame, HISTORY_NUM> robotSpeeds {create_array<HISTORY_NUM, CoordinateFrame>(CoordinateFrame{nullptr})};
 
+
+            // Used for sensor data filtering
+            bool isTurning {false};
+            bool isDriving {false};
+            std::mutex mtx_controlVars {};
+
         public:
             // Default constructor
             PoseCommunicator();
@@ -87,6 +93,12 @@ namespace communication
             // Used by PathFollower. Is here to ensure synchronisation
             // DO NOT USE DIRECTLY! ACCESS THROUGH THREAD SAFE FUNCTIONS
             CoordinateFrame targetFrame {&localTileFrame};
+
+
+            void setTurning(bool turning);
+            bool getTurning();
+            void setDriving(bool driving);
+            bool getDriving();
 
     };
 

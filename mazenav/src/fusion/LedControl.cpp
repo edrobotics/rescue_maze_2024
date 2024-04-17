@@ -3,9 +3,17 @@
 
 LedControl::LedControl()
 {
+}
+
+void LedControl::init()
+{
+
+    #ifdef ENV_PI
     wiringPiSetupGpio();
     pinMode(led1Pin, OUTPUT);
     pinMode(led2Pin, OUTPUT);
+    std::this_thread::sleep_for(std::chrono::milliseconds(500));
+    #endif
 }
 
 void LedControl::blinkLedVictimFound()
@@ -16,6 +24,18 @@ void LedControl::blinkLedVictimFound()
 void LedControl::waitForFinish()
 {
     blinkThread.join();
+}
+
+void LedControl::test()
+{
+    turnLightsOn();
+    std::this_thread::sleep_for(std::chrono::milliseconds(500));
+    turnLightsOff();
+    std::this_thread::sleep_for(std::chrono::milliseconds(500));
+    turnLightsOn();
+    std::this_thread::sleep_for(std::chrono::milliseconds(500));
+    turnLightsOff();
+    std::this_thread::sleep_for(std::chrono::milliseconds(500));
 }
 
 
@@ -38,12 +58,17 @@ void LedControl::blinkLeds(int cycles, double freq)
 
 void LedControl::turnLightsOff()
 {
-    digitalWrite(led1Pin, LOW);
-    digitalWrite(led2Pin, LOW);
+    #ifdef ENV_PI
+    digitalWrite(led1Pin, 0);
+    digitalWrite(led2Pin, 0);
+    #endif
 }
 
 void LedControl::turnLightsOn()
 {
-    digitalWrite(led1Pin, HIGH);
-    digitalWrite(led2Pin, HIGH);
+    #ifdef ENV_PI
+    std::cout << "Turning lights on\n";
+    digitalWrite(led1Pin, 1);
+    digitalWrite(led2Pin, 1);
+    #endif
 }

@@ -12,6 +12,8 @@
 #include "fusion/MotorControllers.h"
 #include "fusion/PoseEstimator.h"
 
+#include "fusion/LedControl.h"
+
 namespace fusion
 {    
     void main(communication::Communicator* globComm);

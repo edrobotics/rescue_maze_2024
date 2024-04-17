@@ -141,4 +141,28 @@ namespace communication
 
     }
 
+    bool PoseCommunicator::getTurning()
+    {
+        std::lock_guard<std::mutex> lock(mtx_controlVars);
+        return isTurning;
+    }
+
+    void PoseCommunicator::setTurning(bool turning)
+    {
+        std::lock_guard<std::mutex> lock(mtx_controlVars);
+        isTurning = turning;
+    }
+
+    bool PoseCommunicator::getDriving()
+    {
+        std::lock_guard<std::mutex> lock(mtx_controlVars);
+        return isDriving;
+    }
+
+    void PoseCommunicator::setDriving(bool driving)
+    {
+        std::lock_guard<std::mutex> lock(mtx_controlVars);
+        isDriving = driving;
+    }
+
 }

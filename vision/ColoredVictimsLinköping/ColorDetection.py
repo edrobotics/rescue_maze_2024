@@ -1,7 +1,7 @@
 import cv2
 import numpy as np
 
-class ColoredSquareDetector:
+class ColorDetection:
     def __init__(self, min_area=500, white_balance=None):
         self.min_area = min_area
         self.white_balance = white_balance
@@ -19,6 +19,9 @@ class ColoredSquareDetector:
     def detect_colored_square(self, image):
         # Apply white balance
         image = self.apply_white_balance(image)
+
+        # Crop the image horizontally from the upper and lower edges
+        #image = image[50:-50, :]
 
         # Convert image to HSV
         hsv_image = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
@@ -68,7 +71,6 @@ class ColoredSquareDetector:
                 elif cv2.mean(mask_yellow[y:y+h, x:x+w])[0] > 0: 
                     color = 'yellow'
                 elif cv2.mean(mask_green_1[y:y+h, x:x+w])[0] > 0 or cv2.mean(mask_green_2[y:y+h, x:x+w])[0] > 0:
-                    
                     color = 'green'
                 else:
                     color = 'unknown'
@@ -77,46 +79,3 @@ class ColoredSquareDetector:
 
         # If no square is found, return None
         return None, None, None
-
-# Example Images
-
-#image_path = '/Users/arend/Desktop/NewTestImage/NormPos/Red/NewRed.jpg'
-#image_path = '/Users/arend/Desktop/NewTestImage/NormPos/Red/NewRed.jpg'
-#image_path = '/Users/arend/Desktop/NewTestImage/NormPos/Red/RedShadow.png'
-#image_path = '/Users/arend/Desktop/NewTestImage/NormPos/Red/RedShaky.png' #SHAKY
-#image_path = '/Users/arend/Desktop/NewTestImage/NormPos/Red/RedVeryShaky.png' #VERY SHAKY
-#image_path = '/Users/arend/Desktop/NewTestImage/NormPos/Red/RedRotated.png'
-#image_path = '/Users/arend/Desktop/NewTestImage/NormPos/Red/RedRotatedLittleShaky.png' #LITTLE SHAKY
-
-#image_path = '/Users/arend/Desktop/NewTestImage/NormPos/Green/NewGreen.jpg'
-#image_path = '/Users/arend/Desktop/NewTestImage/NormPos/Green/GreenAndRed.jpeg' #GREEN AND RED
-#image_path = '/Users/arend/Desktop/NewTestImage/NormPos/Green/GreenShadow.png'
-#image_path = '/Users/arend/Desktop/NewTestImage/NormPos/Green/GreenOddColor.png'
-#image_path = '/Users/arend/Desktop/NewTestImage/NormPos/Green/GreenShaky.png' #SHAKY
-#image_path = '/Users/arend/Desktop/NewTestImage/EARLPOS/Green/EarlGreen.png' #EARLY POS
-#image_path = '/Users/arend/Desktop/NewTestImage/NormPos/Green/LightGreen.jpeg' #LIGHT GREEN
-
-#image_path = '/Users/arend/Desktop/NewTestImage/NormPos/Yellow/NewYellow2.jpg' #ADJUSTED DARK
-#image_path = '/Users/arend/Desktop/NewTestImage/NormPos/Yellow/NewYellow.jpg'
-#image_path = '/Users/arend/Desktop/NewTestImage/NormPos/Yellow/NewYellow copy 2.jpg'
-#image_path = '/Users/arend/Desktop/NewTestImage/NormPos/Yellow/cam1179.png'
-
-min_area = 1000
-white_balance = (128, 128)  # White Balance
-detector = ColoredSquareDetector(min_area, white_balance)
-
-# Load image
-image = cv2.imread(image_path)
-
-# Detect colored square
-result, color, middle_point = detector.detect_colored_square(image)
-
-# Display result
-if result is not None:
-    cv2.imshow('Result', result)
-    cv2.waitKey(0)
-    cv2.destroyAllWindows()
-    print("Detected color:", color)
-    print("Middle point coordinates:", middle_point)
-else:
-    print("No square detected.")
