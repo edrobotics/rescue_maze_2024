@@ -123,7 +123,7 @@ void PathFollower::runLoop()
     angPid.restartPID();
     driveTransSpeedPid.restartPID();
     turnRotSpeedPid.restartPID();
-    globComm->poseComm.flushPose();
+    // globComm->poseComm.flushPose();
 
     communication::DriveCommand dC {};
     if (driveBackwards)

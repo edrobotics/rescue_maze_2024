@@ -202,7 +202,7 @@ namespace communication
     {
         mtx_controlVars.lock();
         shouldflush = true;
-        bool goOn {shouldflush};
+        bool goOn {true};
         mtx_controlVars.unlock();
 
         while (goOn)
@@ -213,6 +213,7 @@ namespace communication
             mtx_controlVars.unlock();
         }
 
+        shouldflush = false;
         std::this_thread::sleep_for(std::chrono::milliseconds(300));
         
     }
