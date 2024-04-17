@@ -72,6 +72,7 @@ class PoseEstimator
         FusionGroup fusionGroup {fg_none};
         // Whether currently turning or not - influences certain thresholds and what values may be used.
         bool isTurning {false};
+        bool isDriving {false};
 
         // The thread that updates.
         // Not in a state of execution by default (https://en.cppreference.com/w/cpp/thread/thread)

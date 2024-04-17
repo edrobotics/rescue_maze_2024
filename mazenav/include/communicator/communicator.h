@@ -47,6 +47,7 @@ namespace communication
 
             // Used for sensor data filtering
             bool isTurning {false};
+            bool isDriving {false};
             std::mutex mtx_controlVars {};
 
         public:
@@ -95,6 +96,8 @@ namespace communication
 
             void setTurning(bool turning);
             bool getTurning();
+            void setDriving(bool driving);
+            bool getDriving();
 
     };
 

@@ -64,6 +64,7 @@ void PoseEstimator::update(FusionGroup fgroup, bool doUpdate)
     // Lock poseComm to prevent concurrency issues with the targetPoint
     globComm->poseComm.mtx_general.lock();
     isTurning = globComm->poseComm.getTurning();
+    isDriving = globComm->poseComm.getDriving();
     // std::cout << "done\n";
     // Save the current value so that we can set it as the old one later
     // CoordinateFrame lastRobot {globComm->poseComm.robotFrame.getWithoutChildren()};
@@ -160,9 +161,9 @@ communication::PoseCommunicator PoseEstimator::updateSimple()
 
     if (wheelRot.weight != 0 && imuRot.weight != 0)
     {
-        std::cout << "wheel=" << std::setprecision(3) << abs(wheelRot.value);
-        std::cout << "  imu=" << std::setprecision(3) << abs(imuRot.value);
-        std::cout << "  diff=" << std::setprecision(3) << abs(imuRot.value-wheelRot.value) << "\n";
+        // std::cout << "wheel=" << std::setprecision(3) << abs(wheelRot.value);
+        // std::cout << "  imu=" << std::setprecision(3) << abs(imuRot.value);
+        // std::cout << "  diff=" << std::setprecision(3) << abs(imuRot.value-wheelRot.value) << "\n";
         if (abs(imuRot.value) < MAX_IMU_FROZEN_ANGLE && abs(imuRot.value-wheelRot.value) > MIN_IMU_WHEEL_DIFF_FROZEN)
         {
             // IMU freeze detected
@@ -176,11 +177,11 @@ communication::PoseCommunicator PoseEstimator::updateSimple()
     {
         if (wheelRot.weight==0)
         {
-            std::cout << "wheel unusable\n";
+            // std::cout << "wheel unusable\n";
         }
         if (imuRot.weight==0)
         {
-            std::cout << "imu unusable\n";
+            // std::cout << "imu unusable\n";
         }
     }
 
@@ -236,24 +237,27 @@ communication::PoseCommunicator PoseEstimator::updateSimple()
     transYAbs.stripZeroWeight();
     wrapVectorSameScale(transYAbs.terms, minYPos, maxYPos);
 
-    try
+    if (!isTurning)
     {
-        resultPose.robotFrame.transform.pos_x = wrapValue(transXAbs.calc(), minXPos, maxXPos);
-    }
-    catch(std::runtime_error& e)
-    {
-        // std::cerr << e.what() << " : " << "Cannot compute robot X position" << '\n';
-    }
+        try
+        {
+            resultPose.robotFrame.transform.pos_x = wrapValue(transXAbs.calc(), minXPos, maxXPos);
+        }
+        catch(std::runtime_error& e)
+        {
+            // std::cerr << e.what() << " : " << "Cannot compute robot X position" << '\n';
+        }
 
-    try
-    {
-        resultPose.robotFrame.transform.pos_y = wrapValue(transYAbs.calc(), minXPos, maxXPos);
+        try
+        {
+            resultPose.robotFrame.transform.pos_y = wrapValue(transYAbs.calc(), minXPos, maxXPos);
+        }
+        catch(std::runtime_error& e)
+        {
+            // std::cerr << e.what() << " : " << "Cannot compute robot Y position" << '\n';
+        }
+        // std::cout << "translation done\n";
     }
-    catch(std::runtime_error& e)
-    {
-        // std::cerr << e.what() << " : " << "Cannot compute robot Y position" << '\n';
-    }
-    // std::cout << "translation done\n";
 
 
     return resultPose;
@@ -419,21 +423,28 @@ void PoseEstimator::updatePoseComm(communication::PoseCommunicator& pose)
     // Turn right
     if ( rotDiff > tileRotDiffThreshold)
     {
-        std::cout << "Turned right--------------------------------------\n";
-        ghostTf.rot_z -= M_PI_2;
-        ghostTf.pos_y += GRID_SIZE;
+        if (!isDriving)
+        {
+            std::cout << "Turned right--------------------------------------\n";
+            ghostTf.rot_z -= M_PI_2;
+            ghostTf.pos_y += GRID_SIZE;
+        }
 
         pose.robotFrame.transform.rot_z -= M_PI_2;
     }
     // Turn left
     else if (rotDiff < -tileRotDiffThreshold)
     {
-        std::cout << "Turned left--------------------------------------\n";
-        ghostTf.rot_z += M_PI_2;
-        ghostTf.pos_x += GRID_SIZE;
-        pose.robotFrame.transform.rot_z += M_PI_2;
+        if (!isDriving)
+        {
+            std::cout << "Turned left--------------------------------------\n";
+            ghostTf.rot_z += M_PI_2;
+            ghostTf.pos_x += GRID_SIZE;
+        }
 
+        pose.robotFrame.transform.rot_z += M_PI_2;
     }
+
 
 
     double xDiff {pose.robotFrame.transform.pos_x - pose.lastRobotFrame.transform.pos_x};
@@ -521,6 +532,11 @@ void PoseEstimator::calcWheelDistanceDiffs()
 ConditionalAverageTerm PoseEstimator::getWheelTransDiff()
 {
     ConditionalAverageTerm result {0, 0};
+
+    // if (isTurning)
+    // {
+    //     return result;
+    // }
 
     Average avg {};
 
@@ -640,7 +656,7 @@ ConditionalAverageTerm PoseEstimator::getTofYTrans(double angle, double yoffset,
     Average avg {};
     avg.terms.push_back(flY);
     avg.terms.push_back(frY);
-    // avg.terms.push_back(bY);
+    avg.terms.push_back(bY);
     // std::cout << "bY: " << bY.value << "  ";
     // std::cout << "b.avg: " << td.b.avg << "  ";
     // std::cout << "b.cur: " << td.b.cur << "  ";
@@ -920,7 +936,7 @@ ConditionalAverageTerm PoseEstimator::getIMURotDiff()
 
     // Prepare for next iteration
     lastImuAngle = angle;
-    std::cout << "IMU angle: " << angle << "  ";
+    // std::cout << "IMU angle: " << angle << "  ";
 
     // Check if angle within span
     #warning assumes that no angle changes > 180 degrees can happen in one iteration
