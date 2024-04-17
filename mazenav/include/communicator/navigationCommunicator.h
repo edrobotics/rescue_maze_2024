@@ -13,8 +13,8 @@ namespace communication
         turnRight,
         turnBack,
         noAction,
+        init,
         driveCommand_num,
-        init
     };
 
     class NavigationCommunicator
