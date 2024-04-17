@@ -52,4 +52,8 @@ class Robot
         // Run the motor PID loop
         void updateMotors();
 
+        // Colour sensor LED
+        DFRobot_MCP23017::ePin_t ledPin {DFRobot_MCP23017::ePin_t::eGPB7};
+        void turnColsensLedOn();
+
 };

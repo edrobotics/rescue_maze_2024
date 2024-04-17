@@ -31,6 +31,8 @@ bool Robot::init()
         ++somethingFailed;
     }
 
+
+    turnColsensLedOn();
     delay(1000);
     if (somethingFailed>0)
     {
@@ -171,4 +173,11 @@ void Robot::calibrateMotorPid()
     motorRB.pwmRPMCalibration();
     Serial.println("Calibrating motorLB:");
     motorLB.pwmRPMCalibration();
+}
+
+
+void Robot::turnColsensLedOn()
+{
+    ioExpander.pinMode(ledPin, OUTPUT);
+    ioExpander.digitalWrite(ledPin, HIGH);
 }
