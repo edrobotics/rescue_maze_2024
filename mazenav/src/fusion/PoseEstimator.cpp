@@ -1115,7 +1115,7 @@ TileColours PoseEstimator::getTileColour()
 
 bool PoseEstimator::getHasLocalTileMoved()
 {
-    if (globComm->poseComm.localTileFrame.transform == globComm->poseComm.startLocalTileFrame.transform)
+    if (globComm->poseComm.hasDrivenStep())
     {
         return false;
     }

@@ -1,10 +1,12 @@
 #include "localNav/PathFollower.h"
 
-PathFollower::PathFollower(communication::Communicator* globComm)
+PathFollower::PathFollower(communication::Communicator* globComm, PiAbstractor* pAbs)
     : driver {globComm}
 {
     this->globComm = globComm;
     // targetPoint.setParentTS(&(globComm->poseComm.localTileFrame));
+    this->piAbs = pAbs;
+    ledController.init(piAbs);
 
     readPidFromFile();
 
@@ -15,30 +17,46 @@ PathFollower::~PathFollower()
     driver.stop();
 }
 
-double PathFollower::getRotSpeedDriving()
+double PathFollower::getRotSpeedDriving(int direction)
 {
+    if (direction>=0)
+    {
+        direction = 1;
+    }
+    else
+    {
+        direction = -1;
+    }
     // std::cout << "xPos: " << globComm->poseComm.robotFrame.transform.pos_x << "  ";
     double wantedAngle {yPid.getCorrection(globComm->poseComm.robotFrame.transform.pos_x)};
     // std::cout << "wantedAngle: " << wantedAngle << "angle: " << globComm->poseComm.robotFrame.transform.rot_z << "  ";
-    angPid.setSetpoint(-wantedAngle);
+    angPid.setSetpoint(-direction*wantedAngle);
     double speedCorr {angPid.getCorrection(globComm->poseComm.robotFrame.transform.rot_z)};
     std::cout << "speedCorr:" << speedCorr << "\n";
     return speedCorr;
     // return 0;
 }
 
-double PathFollower::getTransSpeedDriving()
+double PathFollower::getTransSpeedDriving(int direction)
 {
+    if (direction>=0)
+    {
+        direction = 1;
+    }
+    else
+    {
+        direction = -1;
+    }
     double driveSpeed {};
     // Simple slow-down when close by
     if (distLeftToTarget<DRIVING_CLOSE_PID_THRESHOLD)
     {
         // Can replace with separate PID later (whose output would be used: driveSpeed = baseSpeed+correction))
-        driveSpeed = DRIVE_SPEED_SLOW;
+        driveSpeed = direction*DRIVE_SPEED_SLOW;
     }
     else
     {
-        driveSpeed = DRIVE_SPEED_STANDARD;
+        driveSpeed = direction*DRIVE_SPEED_STANDARD;
     }
 
     driveTransSpeedPid.setSetpoint(driveSpeed);
@@ -64,18 +82,19 @@ double PathFollower::getRotSpeedTurning(int direction)
     if (angLeftToTarget<TURNING_CLOSE_PID_THRESHOLD)
     {
         // Can replace with separate PID later (see getTransSpeedDriving for inspiration)
-        turnSpeed = TURN_SPEED_SLOW;
+        turnSpeed = direction*TURN_SPEED_SLOW;
     }
     else
     {
-        turnSpeed = TURN_SPEED_STANDARD;
+        turnSpeed = direction*TURN_SPEED_STANDARD;
     }
 
+    #warning changed PID stuff - could break. Check here if it broke
     turnRotSpeedPid.setSetpoint(turnSpeed);
     // std::cout << "direction fixed turnSpeed: " << direction*turnSpeed << "  speed: " << globComm->poseComm.robotSpeedAvg.transform.rot_z << "  ";
     double corr {turnRotSpeedPid.getCorrection(globComm->poseComm.robotSpeedAvg.transform.rot_z)};
     // std::cout << "rotSpeedCorr: " << corr << "\n";
-    return direction*(turnSpeed+corr);
+    return (turnSpeed+corr);
 
 }
 
@@ -99,21 +118,52 @@ void PathFollower::setLinePos(double newYLine)
 
 void PathFollower::runLoop()
 {
+    abortMove = false;
     yPid.restartPID();
     angPid.restartPID();
     driveTransSpeedPid.restartPID();
     turnRotSpeedPid.restartPID();
-    communication::DriveCommand dC {globComm->navigationComm.popCommand()};
-    // Set the target to go to
-    setTargetPointTf(dC);
+    communication::DriveCommand dC {};
+    if (driveBackwards)
+    {
+        dC = communication::DriveCommand::driveBackward;
+        setBackWardTargetPointTf();
+    }
+    else
+    {
+        dC = globComm->navigationComm.popCommand();
+        setTargetPointTf(dC);
+    }
     switch(dC)
     {
         case communication::DriveCommand::driveForward:
+            globComm->tileInfoComm.startDrive();
             setLinePos(GRID_SIZE/2.0);
             drive(1);
             // We are ready to update data
-            globComm->tileInfoComm.setReadyForFill();
-            std::cout << "Step done-----------------------------------------------------------------\n";
+            if (!abortMove)
+            {
+                globComm->tileInfoComm.setReadyForFill();
+                std::cout << "[PathFollower] Drove forward-----------------------------------------------------------------\n";
+            }
+            else
+            {
+                std::cout << "[PathFollower] Aborted drive step\n";
+            }
+            break;
+
+        case communication::DriveCommand::driveBackward:
+            setLinePos(GRID_SIZE/2.0);
+
+            drive(-1);
+
+            if (!abortMove)
+            {
+                globComm->tileInfoComm.setReadyForFill();
+                std::cout << "[PathFollower] Drove back------------------------------------------------------------------------\n";
+            }
+            // Reset driveBackwards
+            driveBackwards = false;
             break;
         
         case communication::DriveCommand::turnLeft:
@@ -132,6 +182,7 @@ void PathFollower::runLoop()
 
             
         default:
+            checkAndHandlePanic();
             std::this_thread::sleep_for(std::chrono::milliseconds(4));
             // std::cerr << "Cannot yet execute this DriveCommand" << std::endl;
             break;
@@ -142,8 +193,6 @@ void PathFollower::runLoop()
 
 void PathFollower::drive(int direction)
 {
-    globComm->tileInfoComm.startDrive();
-
     bool finished {false};
     globComm->poseComm.setTurning(false);
     globComm->poseComm.setDriving(true);
@@ -152,9 +201,10 @@ void PathFollower::drive(int direction)
         if (globComm->poseComm.updated)
         {
             globComm->poseComm.updated = false;
+            checkAndHandlePanic();
             distLeftToTarget = getDistLeftToTarget();
             // std::cout << "distLeftToTarget: " << distLeftToTarget << "\n";
-            driver.calcSpeeds(getTransSpeedDriving(), getRotSpeedDriving());
+            driver.calcSpeeds(getTransSpeedDriving(direction), getRotSpeedDriving(direction));
             driver.setSpeeds();
             finished = checkIsFinishedDriving(direction);
         }
@@ -176,6 +226,7 @@ void PathFollower::turn(int direction)
         if (globComm->poseComm.updated)
         {
             globComm->poseComm.updated = false;
+            checkAndHandlePanic();
             angLeftToTarget = getAngLeftToTarget();
             // std::cout << "angLeftToTarget: " << angLeftToTarget << "\n";
             driver.calcSpeeds(getTransSpeedTurning(), getRotSpeedTurning(direction));
@@ -263,7 +314,11 @@ void PathFollower::setTargetPointTf(communication::DriveCommand dC)
         case communication::DriveCommand::driveForward:
             resultTf.pos_y += GRID_SIZE;
             break;
-        
+
+        case communication::DriveCommand::driveBackward:
+            resultTf.pos_y -= GRID_SIZE;
+            break;
+
         case communication::DriveCommand::turnLeft:
             resultTf.rot_z += M_PI_2;
             break;
@@ -281,17 +336,37 @@ void PathFollower::setTargetPointTf(communication::DriveCommand dC)
     
 }
 
+void PathFollower::setBackWardTargetPointTf()
+{
+    Transform resultTf {GRID_SIZE/2, GRID_SIZE/2, 0, 0, 0, 0};
+
+    if (globComm->poseComm.hasDrivenStep())
+    {
+        resultTf.pos_y -= GRID_SIZE;
+    }
+    // Else, do nothing as resultTf is already on the correct tile.
+}
+
 
 double PathFollower::getDistLeftToTarget()
 {
     // Transform targetPointTf {targetPoint.getTransformLevelTo(&(globComm->poseComm.robotFrame), 1, 1)};
     // return targetPointTf.pos_y;
+
+    if (abortMove==true)
+    {
+        return 0;
+    }
     
     return globComm->poseComm.getTargetFrame().transform.pos_y - globComm->poseComm.robotFrame.transform.pos_y;
 }
 
 double PathFollower::getAngLeftToTarget()
 {
+    if (abortMove==true)
+    {
+        return 0;
+    }
     // Transform targetPointTf {targetPoint.getTransformLevelTo(&(globComm->poseComm.robotFrame), 1, 1)};
     double rotDiff {globComm->poseComm.getTargetFrame().transform.rot_z - globComm->poseComm.robotFrame.transform.rot_z};
     if (rotDiff > M_PI)
@@ -348,179 +423,66 @@ void PathFollower::readPidFromFile()
 
 
 
+void PathFollower::checkAndHandlePanic()
+{
+    // LOP
+    if (globComm->panicFlagComm.readFlagFromThread(communication::PanicFlags::lackOfProgressActivated, communication::ReadThread::localNav))
+    {
+        handleLOP();
+    }
+
+    // Ramp
+    if (globComm->panicFlagComm.readFlagFromThread(communication::PanicFlags::onRamp, communication::ReadThread::localNav))
+    {
+        #warning not done
+    }
+
+    // Black tile
+    if (globComm->panicFlagComm.readFlagFromThread(communication::PanicFlags::sawBlackTile, communication::ReadThread::localNav))
+    {
+        handleBlackTile();
+    }
+
+    // Victim
+    if (globComm->panicFlagComm.readFlagFromThread(communication::PanicFlags::victimDetected, communication::ReadThread::localNav))
+    {
+        handleVictim();
+    }
+}
 
 
+void PathFollower::handleVictim()
+{
+    driver.stop();
 
+    // Do the blinking
+    ledController.blinkLedVictimFound();
+    ledController.waitForFinish();
 
+    // Reset so that we can continue
+    yPid.restartPID();
+    angPid.restartPID();
+    driveTransSpeedPid.restartPID();
+    turnRotSpeedPid.restartPID();
+}
 
+void PathFollower::handleBlackTile()
+{
+    // Do not do anything if we are already reversing due to black tile
+    if (driveBackwards)
+    {
+        return;
+    }
+    driver.stop();
 
+    // Reverse
+    driveBackwards = true;
+    abortMove = true;
+}
 
+void PathFollower::handleLOP()
+{
+    driver.stop();
 
-
-// void PathFollower::setPath(Path path)
-// {
-//     // Set the path
-//     this->path = path;
-
-//     // Update the last known frame 
-//     lastKnownFrame.setParentTS(&(path.parentFrame));
-//     // Reset the last known frame
-//     lastKnownFrame.transform = Transform{};
-// }
-
-
-
-// bool PathFollower::setLookaheadDistance(double distance)
-// {
-//     // Too low
-//     if (distance < minLookaheadDistance)
-//     {
-//         lookaheadDistance = minLookaheadDistance;
-//         return false;
-//     }
-
-//     // Too high
-//     if (distance > maxLookaheadDistance)
-//     {
-//         lookaheadDistance = maxLookaheadDistance;
-//         return false;
-//     }
-
-//     // Valid
-//     lookaheadDistance = distance;
-//     return true;
-// }
-
-
-// double PathFollower::getLookaheadAngle()
-// {
-//     Transform tf {getLookaheadTF()};
-//     return atan2(tf.pos_y, tf.pos_x)-M_PI_2;
-// }
-
-// Transform PathFollower::getLookaheadTF()
-// {
-//     return lookaheadCf.getTransformLevelTo(&(globComm->poseComm.robotFrame), 1, 2);
-// }
-
-
-// #warning handle division by zero somehow. Happens if two transforms are equal. Check for that instead or do that higher up in the chain?
-// Transform PathFollower::getLookaheadTF()
-// {
-//     int index {pathSegmentIndex};
-//     #warning not protected if index is out of bounds
-//     CoordinateFrame cf1 {path.keyFrames.at(index).frame};
-//     CoordinateFrame cf2 {path.keyFrames.at(index+1).frame};
-
-//     Transform tf1 {cf1.getTransformLevelTo(&(globComm->poseComm.robotFrame), 1, 2)};
-//     Transform tf2 {cf2.getTransformLevelTo(&(globComm->poseComm.robotFrame), 1, 2)};
-
-//     double dx {tf2.pos_x-tf1.pos_x};
-//     double dy {tf2.pos_y-tf1.pos_y};
-//     double dr2 {pow(dx, 2) + pow(dy, 2)};
-//     double D {tf1.pos_x*tf2.pos_y - tf2.pos_x*tf1.pos_y};
-    
-//     double discriminant {pow(lookaheadDistance, 2)*dr2 - pow(D, 2)};
-
-//     Transform returnTf {};
-
-//     if (discriminant >= 0)
-//     {
-//         // One or two intersections
-//         Transform sol1 {};
-//         sol1.pos_x = (D*dy+copysignl(1.0, dy)*dx*sqrt(discriminant))/(dr2);
-//         sol1.pos_y = (-D*dx+abs(dy)*sqrt(discriminant))/(dr2);
-//         sol1.rot_z = tf2.rot_z;
-
-//         Transform sol2 {};
-//         sol2.pos_x = (D*dy-copysignl(1.0, dy)*dx*sqrt(discriminant))/(dr2);
-//         sol2.pos_y = (-D*dx-abs(dy)*sqrt(discriminant))/(dr2);
-//         sol2.rot_z = tf2.rot_z;
-
-//         // Select the point that is is furthest along the line
-//         Transform diffTf = sol2-sol1;
-//         if (diffTf.pos_y > 0)
-//         {
-//             returnTf = sol2;
-//         }
-//         else
-//         {
-//             returnTf = sol1;
-//         }
-
-//         // Set the returnTf to the last known frame
-//         // Realtive to the robot
-//         CoordinateFrame lastKnown {&(globComm->poseComm.robotFrame), returnTf};
-//         // Transform to the parent of the lastknownframe
-//         lastKnownFrame.transform = lastKnown.getTransformLevelTo(lastKnownFrame.getParent(), 2, 2);
-
-//     }
-//     else
-//     {
-//         // No intersections
-        
-//         if (lastKnownFrame.transform == Transform{})
-//         {
-//             // If last known frame does not exist
-//             returnTf = tf2;
-            
-//         }
-//         else
-//         {
-//             // If last known frame does exist
-//             returnTf = lastKnownFrame.getTransformLevelTo(globComm->poseComm.robotFrame.getParent(), 2, 2);
-//         }
-
-
-//     }
-
-//     return returnTf;
-
-// }
-
-
-// void PathFollower::runLoop()
-// {
-//     // If the current target has been visited
-//     // if (pathFrameVisited(&(path.keyFrames.at(pathSegmentIndex+1))))
-//     // {
-//     //     // Go to the next target point
-//     //     ++pathSegmentIndex;
-//     // }
-
-//     // Calculate the wanted turn speed
-//     double turnSpeed {getRotSpeedDriving()};
-
-//     // Set the turnspeed to the kinematic driver and in turn the motor driver.
-//     #warning translational speed not set
-//     driver.calcSpeeds(0, turnSpeed);
-//     driver.setSpeeds();
-// }
-
-// CoordinateFrame PathFollower::getLookaheadCFInterpolated()
-// {
-    // Sort the coordinateFrames in the interpolatedframes from closest to furthest away from the lookaheadDistance.
-
-    // Then pick the two closest ones. These are the intersections points.
-
-    // Determine which one is forwards, but how?
-    // Ideas: Choose the one closest to the next keyframe? But then I would need to keep track of which keyframe I am on and how to detect a change. Maybe if you have come close enough it counts as passing?
-
-    // Special handling of when you get to the end of the path? (When the last interpolatedpoint on the whole path is closer than the lookaheadDistance)
-// }
-
-
-// bool PathFollower::pathFrameVisited(PathFrame* pFrame)
-// {
-//     // Get the robot pose in the coordinate system of the visiting tile
-//     Transform resultTf {globComm->poseComm.robotFrame.getTransformLevelTo(&(pFrame->frame), 1, 2)};
-//     // If you are past the line that is visitedradius from the point to the previous point
-//     if (resultTf.pos_y > -pFrame->visitedRadius)
-//     {
-//         return true;
-//     }
-//     else
-//     {
-//         return false;
-//     }
-// }
+    abortMove = true;
+}

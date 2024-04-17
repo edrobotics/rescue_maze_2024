@@ -19,11 +19,12 @@
 #include "communicator/communicator.h"
 #include "localNav/Path.h"
 #include "localNav/PIDController.h"
+#include "fusion/LedControl.h"
 
 class PathFollower
 {
     public:
-        PathFollower(communication::Communicator* globComm);
+        PathFollower(communication::Communicator* globComm, PiAbstractor* pAbs);
 
         ~PathFollower();
 
@@ -43,6 +44,8 @@ class PathFollower
     private:
         communication::Communicator* globComm;
         KinematicDriver driver;
+        PiAbstractor* piAbs {};
+        LedControl ledController {};
 
         // Input y error, get out wanted angle (correction)
         PIDController yPid {0.008, 0, 0.0017};
@@ -57,6 +60,8 @@ class PathFollower
 
         // Set the target point given a drivecommand
         void setTargetPointTf(communication::DriveCommand dC);
+        // Set the targetPoint to return to the tile which you started from.
+        void setBackWardTargetPointTf();
         // The target point
         // CoordinateFrame targetPoint {nullptr};
         // The transform from targetpoint to robotFrame (targetpoint in relation to robotframe)
@@ -74,6 +79,8 @@ class PathFollower
         // direction - (+1) or (-1), where the sign indicates the desired direction of movement.
         bool checkIsFinishedDriving(int direction);
         bool checkIsFinishedTurning(int direction);
+        // If true, abort the current move.
+        bool abortMove {};
 
         static constexpr double DRIVE_STOP_THRESHOLD {20};
         static constexpr double TURN_STOP_THRESHOLD {M_PI_4/3.0};
@@ -114,9 +121,9 @@ class PathFollower
         // bool pathFrameVisited(PathFrame* pFrame);
 
         // Calculate the wanted rotational speed of the robot for driving
-        double getRotSpeedDriving();
+        double getRotSpeedDriving(int direction);
         // Calculate the wanted translational speed of the robot for driving
-        double getTransSpeedDriving();
+        double getTransSpeedDriving(int direction);
 
         double getRotSpeedTurning(int direction);
         double getTransSpeedTurning();
@@ -143,5 +150,14 @@ class PathFollower
 
         // For getting PID values from file
         void readPidFromFile();
+
+
+        // Panic handling
+        void checkAndHandlePanic();
+        void handleVictim();
+        void handleBlackTile();
+        bool driveBackwards {false};
+        void handleLOP();
+
 
 };

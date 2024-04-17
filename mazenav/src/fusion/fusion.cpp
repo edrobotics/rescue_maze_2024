@@ -7,10 +7,8 @@ MotorControllers motors {&tComm};
 Sensors sensors {&tComm};
 PoseEstimator poseEstimator {&sensors};
 
-LedControl leds {};
 
-
-void fusion::main(communication::Communicator* globComm)
+void fusion::main(communication::Communicator* globComm, PiAbstractor* piAbs)
 {
     std::cout << "Init tComm... ";
     tComm.initiate();
@@ -35,12 +33,6 @@ void fusion::main(communication::Communicator* globComm)
         // std::cout << globComm->poseComm.robotFrame << "\n";
         // std::this_thread::sleep_for(std::chrono::milliseconds(100));
     // }
-
-    leds.init();
-
-    // leds.test();
-    leds.blinkLedVictimFound();
-    leds.waitForFinish();
 
     poseEst.join();
     std::cout << "joined\n";

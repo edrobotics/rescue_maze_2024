@@ -10,9 +10,10 @@
 #include "localNav/KinematicDriver.h"
 #include "localNav/PathFollower.h"
 #include "localNav/MiniController.h"
+#include "fusion/PiAbstractor.h"
 
 namespace localNav
 {
-    void main(communication::Communicator* globComm);
+    void main(communication::Communicator* globComm, PiAbstractor* piAbs);
 }
 

@@ -184,4 +184,16 @@ namespace communication
         frontObstacleDist = dist;
     }
 
+    bool PoseCommunicator::hasDrivenStep()
+    {
+        if (localTileFrame.transform==startLocalTileFrame.transform)
+        {
+            return true;
+        }
+        else
+        {
+            return false;
+        }
+    }
+
 }

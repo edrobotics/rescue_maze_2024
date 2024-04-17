@@ -5,7 +5,7 @@
 #include <mutex>
 
 #ifdef ENV_PI
-#include <wiringPi>
+#include "wiringPi.h"
 #endif
 
 

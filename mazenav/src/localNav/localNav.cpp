@@ -6,9 +6,9 @@ void testTfsys();
 
 
 
-void localNav::main(communication::Communicator* globComm)
+void localNav::main(communication::Communicator* globComm, PiAbstractor* piAbs)
 {
-    PathFollower pathFollower {globComm};
+    PathFollower pathFollower {globComm, piAbs};
 
     MiniController controller {};
 

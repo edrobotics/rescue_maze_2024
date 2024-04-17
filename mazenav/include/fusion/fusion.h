@@ -13,10 +13,11 @@
 #include "fusion/PoseEstimator.h"
 
 #include "fusion/LedControl.h"
+#include "fusion/PiAbstractor.h"
 
 namespace fusion
 {    
-    void main(communication::Communicator* globComm);
+    void main(communication::Communicator* globComm, PiAbstractor* piAbs);
 
     void motorDriveLoop(communication::Communicator* gCom, MotorControllers* mot);
     void motorDriveLoopLooper(communication::Communicator* gCom, MotorControllers* mot);

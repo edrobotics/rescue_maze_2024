@@ -11,6 +11,7 @@ void LedControl::init(PiAbstractor* piAbs)
     piAbs->pinModeTS(led1Pin, PiAbstractor::PinMode::output);
     piAbs->pinModeTS(led2Pin, PiAbstractor::PinMode::output);
     std::this_thread::sleep_for(std::chrono::milliseconds(500));
+    turnLightsOff();
 }
 
 void LedControl::blinkLedVictimFound()

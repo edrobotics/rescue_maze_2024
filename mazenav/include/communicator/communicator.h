@@ -108,6 +108,8 @@ namespace communication
 
 
             CoordinateFrame startLocalTileFrame {&worldFrame};
+            // Returns true if the robot is not on the same tile as startLocalTileFrame
+            bool hasDrivenStep();
 
     };
 

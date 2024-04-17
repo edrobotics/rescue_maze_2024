@@ -9,6 +9,7 @@ namespace communication
     enum class DriveCommand
     {
         driveForward,
+        driveBackward,
         turnLeft,
         turnRight,
         turnBack,
