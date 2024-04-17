@@ -59,8 +59,8 @@ void LedControl::blinkLeds(int cycles, double freq)
 void LedControl::turnLightsOff()
 {
     #ifdef ENV_PI
-    digitalWrite(led1Pin, 0);
-    digitalWrite(led2Pin, 0);
+    digitalWrite(led1Pin, LOW);
+    digitalWrite(led2Pin, LOW);
     #endif
 }
 
@@ -68,7 +68,7 @@ void LedControl::turnLightsOn()
 {
     #ifdef ENV_PI
     std::cout << "Turning lights on\n";
-    digitalWrite(led1Pin, 1);
-    digitalWrite(led2Pin, 1);
+    digitalWrite(led1Pin, HIGH);
+    digitalWrite(led2Pin, HIGH);
     #endif
 }
