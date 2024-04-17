@@ -123,7 +123,14 @@ void PathFollower::runLoop()
         case communication::DriveCommand::turnRight:
             turn(-1);
             break;
+        
+        case communication::DriveCommand::init:
+            globComm->tileInfoComm.startDrive();
+            std::this_thread::sleep_for(std::chrono::milliseconds(500));
+            globComm->tileInfoComm.setReadyForFill();
+            break;
 
+            
         default:
             std::this_thread::sleep_for(std::chrono::milliseconds(4));
             // std::cerr << "Cannot yet execute this DriveCommand" << std::endl;
