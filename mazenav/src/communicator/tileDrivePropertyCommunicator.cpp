@@ -9,6 +9,8 @@ namespace communication
         tileIsUnread = true;
         latestTileProperties = tileProperties;
 
+        readyForDataFill = false;
+
         mtx_tileInfo.unlock();
     }
 
@@ -28,5 +30,35 @@ namespace communication
     bool TileDrivePropertyCommunicator::hasNewTileInfo()
     {
         return tileIsUnread;
+    }
+
+    void TileDrivePropertyCommunicator::setReadyForFill()
+    {
+        mtx_tileInfo.lock();
+        readyForDataFill = true;
+        mtx_tileInfo.unlock();
+    }
+
+    bool TileDrivePropertyCommunicator::getIsReadyForFill()
+    {
+        std::lock_guard<std::mutex> lock(mtx_tileInfo);
+        return readyForDataFill;
+    }
+
+    void TileDrivePropertyCommunicator::startDrive()
+    {
+        std::lock_guard<std::mutex> lock(mtx_tileInfo);
+        driveStarted = true;
+    }
+
+    bool TileDrivePropertyCommunicator::getDriveStarted()
+    {
+        std::lock_guard<std::mutex> lock(mtx_tileInfo);
+        bool retVal {driveStarted};
+        if (driveStarted==true)
+        {
+            driveStarted = false;
+        }
+        return retVal;
     }
 }

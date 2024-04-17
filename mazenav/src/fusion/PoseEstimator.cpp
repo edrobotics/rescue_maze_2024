@@ -127,6 +127,8 @@ void PoseEstimator::update(FusionGroup fgroup, bool doUpdate)
     std::cout << "robotFrame: " << globComm->poseComm.robotFrame << /*"  lastRobotFrame: " << globComm->poseComm.lastRobotFrame << */ "\n";
     // sensors->tofs.printVals(true);
     // sensors->imu0.printVals(true);
+
+    updateTileProperties();
 }
 
 
@@ -1050,6 +1052,132 @@ double PoseEstimator::getFrontObstacleDist(Tof::TofData td)
     {
         // Return -1 - means that no obstacle is there
         return -1;
+    }
+}
+
+
+void PoseEstimator::updateTileProperties()
+{
+    if (globComm->tileInfoComm.getDriveStarted())
+    {
+        globComm->poseComm.startLocalTileFrame = globComm->poseComm.localTileFrame.getWithoutChildren();
+    }
+
+    // Check if requested
+    if (!globComm->tileInfoComm.getIsReadyForFill())
+    {
+        return;
+    }
+
+    communication::TileDriveProperties tProp {};
+
+    tProp.wallsOnNewTile = getWallStates();
+    tProp.tileColourOnNewTile = getTileColour();
+    tProp.droveTile = getHasLocalTileMoved();
+    tProp.usedRamp = getDroveRamp();
+
+    globComm->tileInfoComm.setNewTileProperties(tProp);
+}
+
+
+std::vector<communication::Walls> PoseEstimator::getWallStates()
+{
+    Tof::TofData td {sensors->tofs.tofData};
+    std::vector<communication::Walls> result {};
+    if (getLeftWallPresent(td))
+    {
+        result.push_back(communication::Walls::LeftWall);
+    }
+
+    if (getRightWallPresent(td))
+    {
+        result.push_back(communication::Walls::RightWall);
+    }
+
+    if (getFrontWallPresent(td))
+    {
+        result.push_back(communication::Walls::FrontWall);
+    }
+
+    if (getBackWallPresent(td))
+    {
+        result.push_back(communication::Walls::BackWall);
+    }
+
+    return result;
+}
+
+TileColours PoseEstimator::getTileColour()
+{
+    #warning not yet implemented
+    return TileColours::White;
+}
+
+bool PoseEstimator::getHasLocalTileMoved()
+{
+    if (globComm->poseComm.localTileFrame.transform == globComm->poseComm.startLocalTileFrame.transform)
+    {
+        return false;
+    }
+    else
+    {
+        return true;
+    }
+}
+
+bool PoseEstimator::getDroveRamp()
+{
+    #warning unimplemented
+    return false;
+}
+
+bool PoseEstimator::getLeftWallPresent(Tof::TofData td)
+{
+    if (td.lf.avg<WALL_PRESENCE_THRESHOLD_SENSOR && td.lb.avg<WALL_PRESENCE_THRESHOLD_SENSOR)
+    {
+        return true;
+    }
+    else
+    {
+        return false;
+    }
+
+}
+
+bool PoseEstimator::getRightWallPresent(Tof::TofData td)
+{
+    if (td.rf.avg<WALL_PRESENCE_THRESHOLD_SENSOR && td.rb.avg<WALL_PRESENCE_THRESHOLD_SENSOR)
+    {
+        return true;
+    }
+    else
+    {
+        return false;
+    }
+}
+
+bool PoseEstimator::getFrontWallPresent(Tof::TofData td)
+{
+    if (td.fl.avg<WALL_PRESENCE_THRESHOLD_SENSOR && td.fr.avg<WALL_PRESENCE_THRESHOLD_SENSOR)
+    {
+        return true;
+    }
+    else
+    {
+        return false;
+    }
+
+}
+
+bool PoseEstimator::getBackWallPresent(Tof::TofData td)
+{
+    if (td.b.avg<WALL_PRESENCE_THRESHOLD_SENSOR)
+    {
+        return true;
+    }
+    else
+    {
+        return false;
     }
 }
 
