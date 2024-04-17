@@ -1,6 +1,7 @@
 #pragma once
 
 #include <stack>
+#include <string>
 #include "globalNav/map/position.h"
 
 class MazePath
@@ -11,5 +12,8 @@ public:
     MazePosition getNextPosition();
     void addPositionInFront(MazePosition position);
     bool isEmpty();
+
     std::size_t getPositionAmount() const { return positionsInPath.size(); };
+    
+    std::string toLog();
 };

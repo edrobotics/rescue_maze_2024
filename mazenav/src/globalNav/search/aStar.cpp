@@ -1,8 +1,18 @@
 #include "globalNav/search/aStar.h"
 
-AStar::AStar(MazePosition currentPosition, MazePosition toPosition, MazeMap* map) : startPosition(currentPosition), endPosition(toPosition), mazeMap(map)
+AStar::AStar(MazePosition currentPosition, MazePosition toPosition, MazeMap* map) : 
+            startPosition(currentPosition), endPosition(toPosition), mazeMap(map)
 {
     aStarSearch();
+}
+
+AStar::~AStar()
+{
+    while (!toDelete.empty())
+    {
+        delete toDelete.back();
+        toDelete.erase(toDelete.end()-1);
+    }
 }
 
 MazePath AStar::getAStarResult()
@@ -12,7 +22,7 @@ MazePath AStar::getAStarResult()
 
 void AStar::aStarSearch()
 {
-    AStarTile startTile(startPosition);
+    AStarTile* startTile = createTile(startPosition);
     storeAndAddTileToQueue(startTile);
 
     while (!aStarTileQueue.empty())
@@ -27,6 +37,13 @@ void AStar::aStarSearch()
 
         expandTile(currentTile);
     }
+}
+
+AStarTile* AStar::createTile(MazePosition withPosition)
+{
+    AStarTile* newTile = new AStarTile(withPosition);
+    toDelete.push_back(newTile);
+    return newTile;
 }
 
 AStarTile* AStar::getBestTile()
@@ -54,17 +71,19 @@ void AStar::expandTile(AStarTile* tile)
         MazePosition newPosition = mazeMap->neighborInDirection(tile->position, neighborDirection);
 		
         if (neighborIsAvailable(tile->position, newPosition, neighborDirection))
-            storeAndAddTileToQueue(setTileProperties(newPosition, tile));
+        {
+            storeAndAddTileToQueue(createTileWithProperties(newPosition, tile));
+        }
     }
 }
 
-AStarTile AStar::setTileProperties(MazePosition newPosition, AStarTile* parentTile)
+AStarTile* AStar::createTileWithProperties(MazePosition newPosition, AStarTile* parentTile)
 {
-    AStarTile newTile(newTile);
+    AStarTile* newTile = createTile(newPosition);
 
-	newTile.g = parentTile->g + 1;
-	newTile.h = heuristic(newPosition);
-	newTile.parent = parentTile;
+	newTile->g = parentTile->g + 1;
+	newTile->h = heuristic(newPosition);
+	newTile->parent = parentTile;
 	mazeMap->setTileProperty(newPosition, Tile::TileProperty::SearchAlgorithmVisited, true);
 
     return newTile;
@@ -75,10 +94,9 @@ int AStar::heuristic(MazePosition fromPosition)
     return std::abs(fromPosition.tileX - endPosition.tileX) + std::abs(fromPosition.tileY - endPosition.tileY);
 }
 
-void AStar::storeAndAddTileToQueue(AStarTile tile)
+void AStar::storeAndAddTileToQueue(AStarTile* tile)
 {
-    storageVector.push_back(tile);
-    aStarTileQueue.push(&storageVector.back());
+    aStarTileQueue.push(tile);
 }
 
 bool AStar::neighborIsAvailable(MazePosition tile, MazePosition neighbor, GlobalDirections neighborDirection)

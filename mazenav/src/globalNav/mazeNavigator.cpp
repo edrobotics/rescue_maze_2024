@@ -4,10 +4,13 @@ void MazeNavigator::init()
 {
     giveLowLevelInstruction(communication::DriveCommand::init);
 
-    checkFlagsUntilDriveIsFinished();
+    // checkFlagsUntilDriveIsFinished();
 
     communication::TileDriveProperties tileDriveProperties = communicatorSingleton->tileInfoComm.readLatestTileProperties();
-    updateMap(tileDriveProperties);
+    // updateMap(tileDriveProperties);
+    std::vector<Tile::TileProperty> tileProperties = {Tile::TileProperty::WallNorth};
+
+    mazeMap.makeTileExploredWithProperties(currentPosition, tileProperties);
 }
 
 void MazeNavigator::makeNavigationDecision()
@@ -79,7 +82,7 @@ void MazeNavigator::startFollowingPathToLastUnexploredTile()
 
 MazePath MazeNavigator::pathTo(MazePosition toPosition)
 {
-    logToConsoleAndFile("Finding path");
+    logToConsoleAndFile("Finding path to" + std::to_string(toPosition.tileX) + "," + std::to_string(toPosition.tileY));
     return pathFinder.findPathTo(currentPosition, toPosition);
 }
 
@@ -91,9 +94,21 @@ void MazeNavigator::goToNeighborInDirection(LocalDirections direction)
 
 void MazeNavigator::turnToDirection(LocalDirections direction)
 {
-    if (direction == LocalDirections::Right) giveLowLevelInstruction(communication::DriveCommand::turnRight);
-    if (direction == LocalDirections::Left) giveLowLevelInstruction(communication::DriveCommand::turnLeft);
-    if (direction == LocalDirections::Back) giveLowLevelInstruction(communication::DriveCommand::turnBack);
+    if (direction == LocalDirections::Right) 
+    {
+        giveLowLevelInstruction(communication::DriveCommand::turnRight);
+        logToConsoleAndFile("turning right");
+    }
+    if (direction == LocalDirections::Left)
+    {
+        giveLowLevelInstruction(communication::DriveCommand::turnLeft);
+        logToConsoleAndFile("turning left");
+    }
+    if (direction == LocalDirections::Back)
+    { 
+        giveLowLevelInstruction(communication::DriveCommand::turnBack);
+        logToConsoleAndFile("turning to back");
+    }
     currentDirection = localToGlobalDirection(direction);
 }
 
