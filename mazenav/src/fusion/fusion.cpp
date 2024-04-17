@@ -1,18 +1,38 @@
 #include <fusion/fusion.h>
 
 
-TeensyCommunicator tComm {1, 0x69};
+i2cCommunicator i2cComm {1};
+TeensyCommunicator tComm {0x69, &i2cComm};
 
 MotorControllers motors {&tComm};
 Sensors sensors {&tComm};
 PoseEstimator poseEstimator {&sensors};
 
+Adafruit_TCS34725 tcs {TCS34725_INTEGRATIONTIME_614MS, TCS34725_GAIN_1X, &i2cComm};
+
 
 void fusion::main(communication::Communicator* globComm, PiAbstractor* piAbs)
 {
+    if(!i2cComm.init())
+    {
+        std::cout << "Initialization of I2C failed";
+    }
+
     std::cout << "Init tComm... ";
     tComm.initiate();
     std::cout << "done." << "\n";
+
+    if (tcs.begin())
+    {
+        std::cout << "Found TCS34725\n";
+    }
+    else
+    {
+        std::cout << "Could not find TCS34725\n";
+    }
+
+    tcs.test();
+
 
     // Set the correct fusion group
     poseEstimator.setFusionGroup(PoseEstimator::fg_simple);

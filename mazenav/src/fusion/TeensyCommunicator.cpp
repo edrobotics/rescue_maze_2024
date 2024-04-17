@@ -1,19 +1,13 @@
 #include "fusion/TeensyCommunicator.h"
 
-TeensyCommunicator::TeensyCommunicator(uint8_t portNum, uint8_t addr)
-    : i2cComm{portNum, addr}
+TeensyCommunicator::TeensyCommunicator(uint8_t addr, i2cCommunicator* i2cComm)
 {
-
+    this->i2cComm = i2cComm;
+    this->_addr = addr;
 }
 
 bool TeensyCommunicator::initiate()
 {
-    if(!i2cComm.init())
-    {
-        std::cout << "Initialization of I2C failed";
-        return false;
-    }
-
     return true;
 }
 
@@ -52,13 +46,13 @@ bool TeensyCommunicator::writeSettings()
 
     transData.tsGetControlArr(data);
     
-    if (!i2cComm.writeRegister(reg_controlVals, transData.W_SETTING_LEN, data))
+    if (!i2cComm->writeReg(_addr, reg_controlVals, transData.W_SETTING_LEN, data))
     {
         return false;
     }
 
     uint8_t dataWritten[] {1};
-    if (!i2cComm.writeRegister(reg_dataWritten, 1, dataWritten))
+    if (!i2cComm->writeReg(_addr, reg_dataWritten, 1, dataWritten))
     {
         return false;
     }
@@ -84,12 +78,12 @@ bool TeensyCommunicator::readFrequent()
 
     uint8_t indata [transData.W_DATA_LEN] {};
 
-    if (!i2cComm.readRegister(reg_byteArr, transData.W_DATA_LEN, indata))
+    if (!i2cComm->readReg(_addr, reg_byteArr, transData.W_DATA_LEN, indata))
     {
         return false;
     }
     uint8_t dataRead[] {1};
-    if (!i2cComm.writeRegister(reg_dataRead, 1, dataRead))
+    if (!i2cComm->writeReg(_addr, reg_dataRead, 1, dataRead))
     {
         return false;
     }
@@ -104,7 +98,7 @@ bool TeensyCommunicator::readFrequent()
 bool TeensyCommunicator::checkRdy()
 {
     uint8_t result[] {0};
-    i2cComm.readRegister(reg_rdyFlag, 1, result);
+    i2cComm->readReg(_addr, reg_rdyFlag, 1, result);
     if (result[0]==1)
     {
         return true;

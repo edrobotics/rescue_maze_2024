@@ -14,6 +14,7 @@
 
 #include "fusion/LedControl.h"
 #include "fusion/PiAbstractor.h"
+#include "fusion/TCS34725.h"
 
 namespace fusion
 {    

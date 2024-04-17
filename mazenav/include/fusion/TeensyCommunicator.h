@@ -17,7 +17,7 @@ class TeensyCommunicator
     public:
         // portNum - the port of the i2c bus
         // addr - the slave address to communicate with
-        TeensyCommunicator(uint8_t portNum, uint8_t addr);
+        TeensyCommunicator(uint8_t addr, i2cCommunicator* i2cComm);
 
         bool initiate();
 
@@ -41,7 +41,8 @@ class TeensyCommunicator
         // int getDistanceTravelled();
 
     private:
-        i2cCommunicator i2cComm;
+        i2cCommunicator* i2cComm;
+        uint8_t _addr {};
         enum i2cRegisters
         {
             reg_dataWritten = 0,
@@ -56,6 +57,7 @@ class TeensyCommunicator
         bool readFrequent();
         bool readInfrequent();
         bool checkRdy();
+
 
 
 };

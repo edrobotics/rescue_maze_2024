@@ -1,9 +1,9 @@
 #include "fusion/i2cCommunicator.h"
 
-i2cCommunicator::i2cCommunicator(uint8_t portNum, uint8_t addr)
+i2cCommunicator::i2cCommunicator(uint8_t portNum)
 {
     this->portNum = portNum;
-    this->slaveAddr = addr;
+    // this->slaveAddr = addr;
     snprintf(filename, 19, "/dev/i2c-%d", portNum);
     std::cout << "Constructed filename: " << filename << "\n";
 }
@@ -14,25 +14,36 @@ bool i2cCommunicator::init()
     {
         return false;
     }
-    if (ioctl(i2cFile, I2C_SLAVE, slaveAddr) < 0)
-    {
-        return false;
-    }
+    // if (ioctl(i2cFile, I2C_SLAVE, slaveAddr) < 0)
+    // {
+    //     return false;
+    // }
 
     return true;
 
 
 }
 
-bool i2cCommunicator::readRegister(uint8_t reg, uint8_t size, uint8_t values[])
+// bool i2cCommunicator::readRegister(uint8_t reg, uint8_t size, uint8_t values[])
+// {
+//     return readReg(i2cFile, slaveAddr, reg, size, values);
+// }
+
+// bool i2cCommunicator::writeRegister(uint8_t reg, uint8_t size, uint8_t values[])
+// {
+//     return writeReg(i2cFile, slaveAddr, reg, size, values);
+// }
+
+bool i2cCommunicator::readReg(uint8_t addr, uint8_t reg, uint8_t size, uint8_t values[])
 {
-    return readReg(i2cFile, slaveAddr, reg, size, values);
+    return readReg(i2cFile, addr, reg, size, values);
 }
 
-bool i2cCommunicator::writeRegister(uint8_t reg, uint8_t size, uint8_t values[])
+bool i2cCommunicator::writeReg(uint8_t addr, uint8_t reg, uint8_t size, uint8_t values[])
 {
-    return writeReg(i2cFile, slaveAddr, reg, size, values);
+    return writeReg(i2cFile, addr, reg, size, values);
 }
+
 
 bool i2cCommunicator::readReg(int file, uint8_t addr, uint8_t reg, uint8_t size, uint8_t values[])
 {
