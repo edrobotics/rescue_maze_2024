@@ -9,7 +9,7 @@ void LedControl::init()
 {
 
     #ifdef ENV_PI
-    wiringPiSetupGpio();
+    wiringPiSetup();
     pinMode(led1Pin, OUTPUT);
     pinMode(led2Pin, OUTPUT);
     std::this_thread::sleep_for(std::chrono::milliseconds(500));
