@@ -91,6 +91,7 @@ class MazeNavigator
     std::chrono::seconds estimateTimeForPath(MazePath path);
 
     void logTileProperties(std::vector<Tile::TileProperty> properties);
+    void logDirection();
     void logToFile(std::string message);
     void logToConsole(std::string message);
     void logToConsoleAndFile(std::string message);

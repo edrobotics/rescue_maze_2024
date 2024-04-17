@@ -286,6 +286,8 @@ void MazeNavigator::updateInfoFromNewRamp()
 
 void MazeNavigator::updateMap(const communication::TileDriveProperties& tileDriveProperties)
 {
+    logDirection();
+
     std::vector<Tile::TileProperty> tileProperties = getWallProperties(tileDriveProperties.wallsOnNewTile);
 
     if (tileDriveProperties.tileColourOnNewTile == TileColours::Checkpoint){
@@ -355,6 +357,18 @@ void MazeNavigator::returnIfLittleTime()
 std::chrono::seconds MazeNavigator::estimateTimeForPath(MazePath path)
 {
     return path.getPositionAmount() * DRIVE_AND_TURN_TIME;
+}
+
+void MazeNavigator::logDirection()
+{
+    std::string logString = "Current direction: ";
+
+    if (currentDirection == GlobalDirections::North) logString += "North";
+    if (currentDirection == GlobalDirections::South) logString += "South";
+    if (currentDirection == GlobalDirections::West) logString += "West";
+    if (currentDirection == GlobalDirections::East) logString += "East";
+
+    logToConsoleAndFile(logString);
 }
 
 void MazeNavigator::logTileProperties(std::vector<Tile::TileProperty> properties)

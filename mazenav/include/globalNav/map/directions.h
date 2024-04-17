@@ -4,8 +4,8 @@
 
 enum class GlobalDirections
 {
-    North = 0,
-    West = 1,
+    North = 0, //-Y
+    West = 1, //-X
     South = 2,
     East = 3
 }; //MUST BE IN THIS ORDER
