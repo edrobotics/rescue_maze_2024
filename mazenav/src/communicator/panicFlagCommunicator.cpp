@@ -18,11 +18,31 @@ namespace communication
     void PanicFlagCommunicator::raiseFlag(PanicFlags flag)
     {
         getPanicFlag(flag)->flagIsRaised = true;
+        for (auto& dependency : getPanicFlag(flag)->dependencies)
+        {
+            *dependency = false;
+        }
     }
 
     bool PanicFlagCommunicator::readFlagFromThread(PanicFlags flag, ReadThread fromThread)
     {
         PanicFlag* panicFlag = getPanicFlag(flag);
+
+        switch (fromThread)
+        {
+            case ReadThread::fusion:
+                panicFlag->readByFusion = true;
+                break;
+            case ReadThread::localNav:
+                panicFlag->readByLocalNav = true;
+                break;
+            case ReadThread::globalNav:
+                panicFlag->readByFusion = true;
+                break;
+            default:
+                break;
+        }
+
         if (panicFlag->flagIsRaised)
         {
             if (hasBeenSeenByEveryone(panicFlag)) panicFlag->flagIsRaised = false;
