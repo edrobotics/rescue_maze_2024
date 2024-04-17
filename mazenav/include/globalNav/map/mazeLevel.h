@@ -12,5 +12,5 @@ private:
 public:
     void setTilePropertyAt(LevelPosition position, Tile::TileProperty property, bool toState);
     bool tileHasProperty(LevelPosition tilePosition, Tile::TileProperty property);
-    inline Tile& tileAt(int x, int y) { return mazeLevel[y][x]; };
+    void resetTileAt(LevelPosition tilePosition);
 };

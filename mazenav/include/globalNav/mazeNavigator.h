@@ -1,8 +1,13 @@
 #pragma once
 
 #include <vector>
+#include <chrono>
+#include <thread>
+#include <stack>
 
 #include "communicator/communicator.h"
+#include "communicator/navigationCommunicator.h"
+#include "fusion/Victim.h"
 #include "globalNav/map/mazeMap.h"
 #include "globalNav/map/position.h"
 #include "globalNav/map/mazePath.h"
@@ -13,20 +18,25 @@
 #define START_Y LEVELSIZE/2
 #define START_LEVEL 0
 #define START_DIRECTION GlobalDirections::North
+#define LOOP_SLEEPTIME std::chrono::milliseconds(20)
+#define DRIVE_AND_TURN_TIME std::chrono::seconds(7)
 
 class MazeNavigator
 {
     private:
     communication::Communicator* communicatorSingleton;
-    std::vector<MazePosition> knownUnexploredTilePositions;
+
+    std::stack<MazePosition> knownUnexploredTilePositions;
+    std::stack<MazePosition> checkpointedKnownUnexploredTilePositions;
     
-    bool shouldTurnAroundAndGoBack = false;
+    bool shouldReturnFromTile = false;
+    bool sentNewDriveCommand = false;
 
     MazePosition currentPosition = MazePosition(START_X, START_Y, START_LEVEL);
     GlobalDirections currentDirection = START_DIRECTION;
+    MazePosition latestCheckpointPosition = currentPosition;
 
     MazeMap mazeMap;
-
     PathFinder pathFinder{&mazeMap};
     MazePath pathToFollow;
 
@@ -39,19 +49,53 @@ class MazeNavigator
 
     void giveLowLevelInstruction(communication::DriveCommand command);
 
-    bool exploreBestNeighbor();
+    void addExplorableNeighborsToExplorationStack();
+    void addNeighborToExplorationStackIfExplorable(LocalDirections direction);
     bool canExploreNeighborInDirection(LocalDirections neighborDirection);
     void goToNeighborInDirection(LocalDirections direction);
     void turnToDirection(LocalDirections direction);
     void driveTile();
+    MazePosition getNeighborInDirection(LocalDirections direction);
 
+    void checkFlagsUntilDriveIsFinished();
+    bool driveIsFinished();
+
+    void handleActivePanicFlags();
+    bool lackOfProgressFlagRaised();
+    bool victimFlagRaised();
+    bool hasAlreadyFoundVictimInCameraDirection(Victim::RobotCamera camera);
+    void saveVictimInCameraDirection(Victim::RobotCamera camera);
+    GlobalDirections cameraDirectionToGlobalDirection(Victim::RobotCamera camera);
+    Tile::TileProperty globalDirectionToVictim(GlobalDirections direction);
+
+
+    void updatePosition(const communication::TileDriveProperties& tileDriveProperties);
+    void updatePositionNormally();
+    void updateInfoFromRamp();
     void updateInfoFromNewRamp();
+    void couldNotCreateNewRamp();
     void updateInfoFromOldRamp();
+
+    void updateMap(const communication::TileDriveProperties& tileDriveProperties);
+    std::vector<Tile::TileProperty> getWallProperties(std::vector<communication::Walls> walls);
+    Tile::TileProperty wallToTileProperty(communication::Walls wall);
+    Tile::TileProperty wallPropertyInDirection(LocalDirections direction);
 
     GlobalDirections localToGlobalDirection(LocalDirections localDirections);
     LocalDirections globalToLocalDirection(GlobalDirections globalDirections);
 
+    void saveCheckpointInfo();
+    void resetToLastCheckpoint();
+
+    void returnIfLittleTime();
+    std::chrono::seconds estimateTimeForPath(MazePath path);
+
+    void logToFile(std::string message);
+    void logToConsole(std::string message);
+    void logToConsoleAndFile(std::string message);
+
     public:
     MazeNavigator(communication::Communicator* communicatorInstance) : communicatorSingleton(communicatorInstance) {};
     void makeNavigationDecision();
+    void updateInfoAfterDriving();
 };

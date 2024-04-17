@@ -49,6 +49,15 @@ void MazeMap::setTileProperty(MazePosition tilePosition, Tile::TileProperty tile
     mazeLevels[tilePosition.levelIndex].setTilePropertyAt(tilePosition, tileProperty, toState);
 }
 
+void MazeMap::makeTileExploredWithProperties(MazePosition tilePosition, std::vector<Tile::TileProperty> tileProperties)
+{
+    setTileProperty(tilePosition, Tile::TileProperty::Explored, true);
+    for (auto i = tileProperties.begin(); i != tileProperties.end(); i++)
+    {
+        setTileProperty(tilePosition, *i, true);
+    }
+    uncheckpointedTiles.push_back(tilePosition);
+}
 
 Tile::TileProperty MazeMap::directionToWallProperty(GlobalDirections direction)
 {
@@ -110,11 +119,13 @@ bool MazeMap::neighborIsInDirection(MazePosition basePosition, MazePosition neig
     return neighborInDirection(basePosition, direction) == neighborPosition;
 }
 
-void MazeMap::createNewRamp(MazePosition previousPosition, MazePosition newPosition, GlobalDirections direction)
+void MazeMap::createNewRampAndLevel(MazePosition previousPosition, MazePosition newPosition, GlobalDirections direction)
 {
     ramps.push_back(Ramp(previousPosition, newPosition, direction));
     createNewLevel();
-    // #error think through
+    
+    setTileProperty(previousPosition, Tile::TileProperty::ContainsRamp, true);
+    setTileProperty(newPosition, Tile::TileProperty::ContainsRamp, true);
 }
 
 void MazeMap::createNewLevel()
@@ -156,4 +167,52 @@ MazePosition MazeMap::positionAfterUsingRamp(MazePosition fromPosition, GlobalDi
             return i->getPositionInSecondLevel();
     }
     return fromPosition;
+}
+
+void MazeMap::checkpointData()
+{
+    uncheckpointedTiles.clear();
+    
+    for (auto i = ramps.begin(); i != ramps.end(); i++)
+    {
+        i->setAsCheckpointed();
+    }
+}
+
+void MazeMap::resetSinceLastCheckpoint()
+{
+    eraseUncheckpointedRamps();
+    resetUncheckpointedTiles();
+}
+
+void MazeMap::resetUncheckpointedTiles()
+{
+    for (auto i = uncheckpointedTiles.begin(); i != uncheckpointedTiles.end(); i++)
+    {
+        mazeLevels[i->levelIndex].resetTileAt(*i);
+    }
+}
+
+void MazeMap::eraseUncheckpointedRamps()
+{
+    for (auto i = ramps.begin(); i != ramps.end(); i++)
+    {
+        if (!i->isCheckpointed())
+        {
+            ramps.erase(i);
+            i--;
+        }
+    }
+}
+
+Ramp MazeMap::getRampFromLevel(int levelIndex) //VERY BAD FUNCION
+{
+    for (auto i = ramps.begin(); i != ramps.end(); i++)
+    {
+        if (i->getFirstLevel() == levelIndex)
+            return *i;
+        if (i->getSecondLevel() == levelIndex)
+            return *i;
+    }
+    return ramps[0];
 }

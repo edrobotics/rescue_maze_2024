@@ -9,3 +9,8 @@ bool MazeLevel::tileHasProperty(LevelPosition tilePosition, Tile::TileProperty p
 {
     return mazeLevel[tilePosition.tileY][tilePosition.tileX].tileHasProperty(property);
 }
+
+void MazeLevel::resetTileAt(LevelPosition tilePosition)
+{
+    mazeLevel[tilePosition.tileY][tilePosition.tileX].resetTileExceptVictims();
+}

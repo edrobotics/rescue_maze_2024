@@ -17,7 +17,13 @@ private:
     bool tileHasWallInDirection(MazePosition position, GlobalDirections directionToNeighbor);
     bool neighborIsInDirection(MazePosition basePosition, MazePosition neighborPosition, GlobalDirections direction);
 
+    std::vector<MazePosition> uncheckpointedTiles;
+
     void createNewLevel();
+    
+    void setRampsAsCheckpointed();
+    void eraseUncheckpointedRamps();
+    void resetUncheckpointedTiles();
     
 public:
     MazeMap();
@@ -29,12 +35,17 @@ public:
     bool tileHasProperty(MazePosition tilePosition, Tile::TileProperty tileProperty);
     bool neighborHasProperty(MazePosition basePosition, GlobalDirections neighborDirection, Tile::TileProperty tileProperty);
     void setTileProperty(MazePosition tilePosition, Tile::TileProperty tileProperty, bool toState);
+    void makeTileExploredWithProperties(MazePosition tilePosition, std::vector<Tile::TileProperty> tileProperties);
     
     MazePosition neighborInDirection(MazePosition basePosition, GlobalDirections stepDirection);
     std::optional<GlobalDirections> neighborToDirection(MazePosition basePosition, MazePosition neighborPosition);
 
-    void createNewRamp(MazePosition previousPosition, MazePosition newPosition, GlobalDirections direction);
+    void createNewRampAndLevel(MazePosition previousPosition, MazePosition newPosition, GlobalDirections direction);
     bool canCreateNewRamps();
     bool rampHasBeenUsedBefore(MazePosition rampPosition, GlobalDirections rampDirection);
     MazePosition positionAfterUsingRamp(MazePosition fromPosition, GlobalDirections fromDirection);
+    Ramp getRampFromLevel(int levelIndex); //DELETE
+
+    void checkpointData();
+    void resetSinceLastCheckpoint();
 };

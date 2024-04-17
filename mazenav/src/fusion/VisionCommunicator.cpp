@@ -70,7 +70,7 @@ vector<Victim> VisionCommunicator::getVictims()
         //Check for 'p'/'c' - potential/confirmed
         auto detType = findChar(segments[2], {'p', 'c'});
         if (!detType) continue;
-        vicData.isConfirmed = (detType.value() == 'c');
+        vicData.isConfirmedByVision = (detType.value() == 'c');
 
         //Check type - 'g'/'y'/'r'/'u'/'s'/'h'
         auto vicType = parseVictimType(segments[3]);

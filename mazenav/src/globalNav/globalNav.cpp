@@ -4,12 +4,21 @@ namespace globalNav
 {
 	void main(communication::Communicator* communicatorInstance)
 	{
-		MazeNavigator mazeNavigator(communicatorInstance);
-
-		while (true)
+		try
 		{
-			mazeNavigator.makeNavigationDecision();
-			// #error I need to update the map, check for victims and so on
+			MazeNavigator mazeNavigator(communicatorInstance);
+
+			while (true)
+			{
+				mazeNavigator.makeNavigationDecision();
+				mazeNavigator.updateInfoAfterDriving();
+			}
 		}
+		catch(const std::exception& e)
+		{
+			//Left wall follower
+			std::cerr << e.what() << '\n';
+		}
+		
 	}
 }

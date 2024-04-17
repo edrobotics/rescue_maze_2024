@@ -12,6 +12,7 @@
 #include "communicator/navigationCommunicator.h"
 #include "communicator/tileDrivePropertyCommunicator.h"
 #include "communicator/panicFlagCommunicator.h"
+#include "communicator/victimDataCommunicator.h"
 
 namespace communication
 {
@@ -113,6 +114,7 @@ namespace communication
         MotorControllerCommunicator motors{};
         TileDrivePropertyCommunicator tileInfoComm;
         PanicFlagCommunicator panicFlagComm;
+        VictimDataCommunicator victimDataComm{};
         Logger logger {};
         Timer timer {};
     };

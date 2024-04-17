@@ -20,7 +20,7 @@ struct Victim
 
     VictimType victimType;
     RobotCamera captureCamera;
-    bool isConfirmed;
+    bool isConfirmedByVision;
     int xPos;
     int yPos;
     long captureUnixTimestamp;

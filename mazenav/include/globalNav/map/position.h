@@ -1,7 +1,5 @@
 #pragma once
 
-#include "globalNav/map/directions.h"
-
 struct LevelPosition
 {
     int tileX;
@@ -25,17 +23,3 @@ struct MazePosition
                this->levelIndex == otherPosition.levelIndex;
     };
 };
-
-// struct MazePose
-// {
-//     int tileX;
-//     int tileY;
-//     int levelIndex;
-//     GlobalDirections direction;
-
-//     MazePose(MazePosition levelPosition, GlobalDirections globalDirection) : 
-//         tileX(levelPosition.tileY), tileY(levelPosition.tileY), 
-//         levelIndex(levelPosition.levelIndex), direction(globalDirection) {}
-    
-//     operator MazePosition() {return MazePosition(tileX, tileY, levelIndex);};
-// };

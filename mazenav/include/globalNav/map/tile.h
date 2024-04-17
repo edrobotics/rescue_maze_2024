@@ -17,11 +17,17 @@ class Tile
         Checkpoint,
         Black,
         Blue,
-        ContainsRamp
+        ContainsRamp,
+        VictimNorth,
+        VictimWest,
+        VictimSouth,
+        VictimEast
     };
 
     void setTileProperty(TileProperty set, bool state);
     bool tileHasProperty(TileProperty get);
+
+    void resetTileExceptVictims();
     
     private:
     typedef int16_t tileInfoIntType;

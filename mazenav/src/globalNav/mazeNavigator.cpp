@@ -2,6 +2,8 @@
 
 void MazeNavigator::makeNavigationDecision()
 {
+    addExplorableNeighborsToExplorationStack();
+
     if (anyTilesInPath()) 
         followPath();
     else
@@ -22,29 +24,29 @@ void MazeNavigator::followPath()
 
 void MazeNavigator::exploreMaze()
 {
-    if (shouldTurnAroundAndGoBack)
+    if (shouldReturnFromTile)
     {
         goToNeighborInDirection(LocalDirections::Back);
+        shouldReturnFromTile = false;
     }
-    else if (!exploreBestNeighbor())
+    else 
     {
         startFollowingPathToLastUnexploredTile();
     }
 }
 
-bool MazeNavigator::exploreBestNeighbor()
+void MazeNavigator::addExplorableNeighborsToExplorationStack()
 {
-    if (canExploreNeighborInDirection(LocalDirections::Left)) // Very sorry for really ugly code, I could not find a better way
-        goToNeighborInDirection(LocalDirections::Left);
-    else if (canExploreNeighborInDirection(LocalDirections::Front))
-        goToNeighborInDirection(LocalDirections::Front);
-    else if (canExploreNeighborInDirection(LocalDirections::Right))
-        goToNeighborInDirection(LocalDirections::Right);
-    else if (canExploreNeighborInDirection(LocalDirections::Back))
-        goToNeighborInDirection(LocalDirections::Back);
-    else return false;
+    addNeighborToExplorationStackIfExplorable(LocalDirections::Back); //Reverse exploration priority
+    addNeighborToExplorationStackIfExplorable(LocalDirections::Right);
+    addNeighborToExplorationStackIfExplorable(LocalDirections::Front);
+    addNeighborToExplorationStackIfExplorable(LocalDirections::Left);
+}
 
-    return true;
+void MazeNavigator::addNeighborToExplorationStackIfExplorable(LocalDirections direction)
+{
+    if (canExploreNeighborInDirection(direction))
+        knownUnexploredTilePositions.push(getNeighborInDirection(direction));
 }
 
 bool MazeNavigator::canExploreNeighborInDirection(LocalDirections neighborDirection)
@@ -52,17 +54,23 @@ bool MazeNavigator::canExploreNeighborInDirection(LocalDirections neighborDirect
     return mazeMap.neighborIsAvailableAndUnexplored(currentPosition, localToGlobalDirection(neighborDirection));
 }
 
+MazePosition MazeNavigator::getNeighborInDirection(LocalDirections direction)
+{
+    return mazeMap.neighborInDirection(currentPosition, localToGlobalDirection(direction));
+}
+
 void MazeNavigator::startFollowingPathToLastUnexploredTile()
 {
-    pathToFollow = pathTo(knownUnexploredTilePositions.back());
-    knownUnexploredTilePositions.pop_back();
+    pathToFollow = pathTo(knownUnexploredTilePositions.top());
+    knownUnexploredTilePositions.pop();
 
     followPath();
 }
 
 MazePath MazeNavigator::pathTo(MazePosition toPosition)
 {
-    pathFinder.findPathTo(currentPosition, toPosition);
+    logToConsoleAndFile("Finding path");
+    return pathFinder.findPathTo(currentPosition, toPosition);
 }
 
 void MazeNavigator::goToNeighborInDirection(LocalDirections direction)
@@ -81,7 +89,9 @@ void MazeNavigator::turnToDirection(LocalDirections direction)
 
 void MazeNavigator::driveTile()
 {
+    logToConsoleAndFile("Sending command to drive forward");
     giveLowLevelInstruction(communication::DriveCommand::driveForward);
+    sentNewDriveCommand = true;
 }
 
 void MazeNavigator::giveLowLevelInstruction(communication::DriveCommand command)
@@ -103,6 +113,137 @@ LocalDirections MazeNavigator::globalToLocalDirection(GlobalDirections globalDir
     return (LocalDirections)directionInt;
 }
 
+//***************************************************************************************************************************************
+//************************************************************ INFO UPDATING ************************************************************
+//***************************************************************************************************************************************
+
+void MazeNavigator::updateInfoAfterDriving()
+{
+    if (!sentNewDriveCommand) return;
+    sentNewDriveCommand = false;
+
+    checkFlagsUntilDriveIsFinished();
+
+    communication::TileDriveProperties tileDriveProperties = communicatorSingleton->tileInfoComm.readLatestTileProperties();
+    updatePosition(tileDriveProperties);
+    updateMap(tileDriveProperties);
+}
+
+void MazeNavigator::checkFlagsUntilDriveIsFinished()
+{
+    while (!driveIsFinished())
+    {
+        handleActivePanicFlags();
+        std::this_thread::sleep_for(LOOP_SLEEPTIME);
+    }
+}
+
+bool MazeNavigator::driveIsFinished()
+{
+    return communicatorSingleton->tileInfoComm.hasNewTileInfo();
+}
+
+void MazeNavigator::handleActivePanicFlags()
+{
+    if (victimFlagRaised())
+    {
+        std::vector<Victim> victims = communicatorSingleton->victimDataComm.getAllNonStatusVictims();
+        for (auto i = victims.begin(); i != victims.end(); i++)
+        {
+            if (!hasAlreadyFoundVictimInCameraDirection(i->captureCamera))
+            {
+                saveVictimInCameraDirection(i->captureCamera);
+                communicatorSingleton->victimDataComm.addVictimToRescueQueue(*i);
+            }
+        }
+    }
+    if (lackOfProgressFlagRaised())
+    {
+        resetToLastCheckpoint();
+    }
+}
+
+bool MazeNavigator::lackOfProgressFlagRaised()
+{
+    return communicatorSingleton->panicFlagComm.readFlagFromThread(communication::PanicFlags::lackOfProgressActivated, communication::ReadThread::globalNav);
+}
+
+bool MazeNavigator::victimFlagRaised()
+{
+    return communicatorSingleton->panicFlagComm.readFlagFromThread(communication::PanicFlags::victimDetected, communication::ReadThread::globalNav);
+}
+
+bool MazeNavigator::hasAlreadyFoundVictimInCameraDirection(Victim::RobotCamera camera)
+{
+    Tile::TileProperty victimProperty = globalDirectionToVictim(cameraDirectionToGlobalDirection(camera));
+    return mazeMap.tileHasProperty(currentPosition, victimProperty);
+}
+
+void MazeNavigator::saveVictimInCameraDirection(Victim::RobotCamera camera)
+{
+    Tile::TileProperty victimProperty = globalDirectionToVictim(cameraDirectionToGlobalDirection(camera));
+    return mazeMap.setTileProperty(currentPosition, victimProperty, true);
+}
+
+GlobalDirections MazeNavigator::cameraDirectionToGlobalDirection(Victim::RobotCamera camera)
+{
+    if (camera == Victim::RobotCamera::FrontCam) return localToGlobalDirection(LocalDirections::Front);
+    if (camera == Victim::RobotCamera::LeftCam) return localToGlobalDirection(LocalDirections::Left);
+    return localToGlobalDirection(LocalDirections::Right);
+}
+
+Tile::TileProperty MazeNavigator::globalDirectionToVictim(GlobalDirections direction)
+{
+    if (direction == GlobalDirections::North) return Tile::TileProperty::VictimNorth;
+    if (direction == GlobalDirections::West) return Tile::TileProperty::VictimWest;
+    if (direction == GlobalDirections::South) return Tile::TileProperty::VictimSouth;
+    return Tile::TileProperty::VictimEast;
+}
+
+void MazeNavigator::updatePosition(const communication::TileDriveProperties& tileDriveProperties)
+{
+    if (!tileDriveProperties.droveTile)
+    {
+        if (tileDriveProperties.tileColourOnNewTile == TileColours::Black)
+            mazeMap.setTileProperty(getNeighborInDirection(globalToLocalDirection(currentDirection)), Tile::TileProperty::Black, true);
+    }
+    else if(tileDriveProperties.usedRamp)
+    {
+        updateInfoFromRamp();
+    }
+    else
+    {
+        updatePositionNormally();
+    }
+}
+
+void MazeNavigator::updatePositionNormally()
+{
+    currentPosition = mazeMap.neighborInDirection(currentPosition, currentDirection);
+}
+
+void MazeNavigator::updateInfoFromRamp()
+{
+    if(mazeMap.rampHasBeenUsedBefore(currentPosition, currentDirection))
+    {
+        updateInfoFromOldRamp();
+    }
+    else
+    {
+        if (mazeMap.canCreateNewRamps())
+            updateInfoFromNewRamp();
+        else
+            couldNotCreateNewRamp();
+    }
+}
+
+void MazeNavigator::couldNotCreateNewRamp() //DELETE AFTER LINKÖPING
+{
+    shouldReturnFromTile = true; // Since we cannot create a new ramp we need to return via the ramp
+    updatePositionNormally();
+    mazeMap.setTileProperty(currentPosition, Tile::TileProperty::Black, true);
+}
+
 void MazeNavigator::updateInfoFromOldRamp()
 {
     currentPosition = mazeMap.positionAfterUsingRamp(currentPosition, currentDirection);
@@ -115,7 +256,92 @@ void MazeNavigator::updateInfoFromNewRamp()
     currentPosition.tileX = START_X;
     currentPosition.tileY = START_Y;
 
-    mazeMap.createNewRamp(previousPosition, currentPosition, currentDirection);
+    mazeMap.createNewRampAndLevel(previousPosition, currentPosition, currentDirection);
+}
 
-    // #error think through
+void MazeNavigator::updateMap(const communication::TileDriveProperties& tileDriveProperties)
+{
+    std::vector<Tile::TileProperty> tileProperties = getWallProperties(tileDriveProperties.wallsOnNewTile);
+
+    if (tileDriveProperties.tileColourOnNewTile == TileColours::Checkpoint){
+        saveCheckpointInfo();
+        tileProperties.push_back(Tile::TileProperty::Checkpoint);
+    }
+    else if (tileDriveProperties.tileColourOnNewTile == TileColours::Blue)
+        tileProperties.push_back(Tile::TileProperty::Blue);
+
+    mazeMap.makeTileExploredWithProperties(currentPosition, tileProperties);
+}
+
+std::vector<Tile::TileProperty> MazeNavigator::getWallProperties(std::vector<communication::Walls> walls)
+{
+    std::vector<Tile::TileProperty> tileProperties;
+
+    for (std::size_t i = 0; i < walls.size(); i++)
+    {
+        tileProperties.push_back(wallToTileProperty(walls[i]));
+    }
+    
+    return tileProperties;
+}
+
+Tile::TileProperty MazeNavigator::wallToTileProperty(communication::Walls wall)
+{
+    if (wall == communication::Walls::FrontWall) return wallPropertyInDirection(LocalDirections::Front);
+    if (wall == communication::Walls::LeftWall) return wallPropertyInDirection(LocalDirections::Left);
+    if (wall == communication::Walls::BackWall) return wallPropertyInDirection(LocalDirections::Back);
+    return wallPropertyInDirection(LocalDirections::Right);
+}
+
+Tile::TileProperty MazeNavigator::wallPropertyInDirection(LocalDirections direction)
+{
+    GlobalDirections globalDirection = localToGlobalDirection(direction);
+    if (globalDirection == GlobalDirections::North) return Tile::TileProperty::WallNorth;
+    if (globalDirection == GlobalDirections::West) return Tile::TileProperty::WallWest;
+    if (globalDirection == GlobalDirections::South) return Tile::TileProperty::WallSouth;
+    return Tile::TileProperty::WallEast;
+}
+
+void MazeNavigator::resetToLastCheckpoint()
+{
+    mazeMap.resetSinceLastCheckpoint();
+    currentPosition = latestCheckpointPosition;
+    knownUnexploredTilePositions = checkpointedKnownUnexploredTilePositions;
+}
+
+void MazeNavigator::saveCheckpointInfo()
+{
+    latestCheckpointPosition = currentPosition;
+    checkpointedKnownUnexploredTilePositions = knownUnexploredTilePositions;
+    mazeMap.checkpointData();
+}
+
+void MazeNavigator::returnIfLittleTime()
+{
+    MazePath pathHome = pathTo(MazePosition(START_X, START_Y, START_LEVEL));
+    if (communicatorSingleton->timer.timeRemaining() <= estimateTimeForPath(pathHome))
+    {
+        logToConsoleAndFile("RETURNING HOME");
+        pathToFollow = pathHome;
+    }
+}
+
+std::chrono::seconds MazeNavigator::estimateTimeForPath(MazePath path)
+{
+    return path.getPositionAmount() * DRIVE_AND_TURN_TIME;
+}
+
+void MazeNavigator::logToFile(std::string message)
+{
+    communicatorSingleton->logger.logToFile("globalNav: " + message);
+}
+
+void MazeNavigator::logToConsole(std::string message)
+{
+    communicatorSingleton->logger.logToConsole("globalNav: " + message);
+}
+
+void MazeNavigator::logToConsoleAndFile(std::string message)
+{
+    communicatorSingleton->logger.logToAll("globalNav: " + message);
 }
