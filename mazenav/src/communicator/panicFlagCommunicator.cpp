@@ -62,6 +62,8 @@ namespace communication
             return &rampFlag;
         case PanicFlags::sawBlackTile:
             return &blackFlag;
+        case PanicFlags::lackOfProgressDeactivated:
+            return &lOPDoneFlag;
         default:
             return &lOPFlag;
         }

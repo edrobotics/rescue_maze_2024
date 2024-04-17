@@ -17,7 +17,8 @@ namespace communication
         victimDetected,
         onRamp,
         sawBlackTile,
-        lackOfProgressActivated
+        lackOfProgressActivated,
+        lackOfProgressDeactivated,
     };
 
     struct PanicFlag
@@ -38,7 +39,8 @@ namespace communication
         PanicFlag victimFlag{{ ReadThread::localNav }};
         PanicFlag rampFlag{{ ReadThread::localNav }};
         PanicFlag blackFlag{{ ReadThread::localNav }};
-        PanicFlag lOPFlag{{ ReadThread::globalNav, ReadThread::localNav }};
+        PanicFlag lOPFlag{{ ReadThread::globalNav, ReadThread::localNav , ReadThread::fusion}};
+        PanicFlag lOPDoneFlag{{ReadThread::globalNav, ReadThread::localNav, ReadThread::fusion}};
 
         PanicFlag* getPanicFlag(PanicFlags flag);
         bool hasBeenSeenByEveryone(PanicFlag* flag);
