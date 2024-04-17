@@ -5,6 +5,7 @@ import visionclass
 import argparse
 from configparser import ConfigParser
 import os.path
+import time
 print("finished imports")
 
 
@@ -24,7 +25,7 @@ def openCams(cPi = True, c1 = True, c2 = True):
     print("opening cameras")
     if cPi:
         from picamera2 import PiCamera2, Preview
-        import time, libcamera 
+        import libcamera 
         print("opening picam")
         piCam = PiCamera2()
         piCam.start()
@@ -32,9 +33,22 @@ def openCams(cPi = True, c1 = True, c2 = True):
     if c1: 
         print("opening camera 1")
         cap = cv2.VideoCapture("/dev/video0")
+
+        cap.set(cv2.CAP_PROP_FRAME_WIDTH, 640)
+        cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 480)
+
+        time.sleep(2)
+        #cap.set(cv2.CAP_PROP_EXPOSURE, -8.0)
+
     if c2: 
         print("opening camera 2")
         cap2 = cv2.VideoCapture("/dev/video2")
+        cap2.set(cv2.CAP_PROP_FRAME_WIDTH, 640)
+        cap2.set(cv2.CAP_PROP_FRAME_HEIGHT, 480)
+        time.sleep(2)
+        #cap2.set(cv2.CAP_PROP_EXPOSURE, -8.0)
+
+
 
 def closeCams():
     global piCam
@@ -80,8 +94,10 @@ if __name__ == "__main__":
     parser.add_argument("-l", "--logging", type=bool, default= True)
     parser.add_argument("-t", "--testing", type=bool,default=False)
     parser.add_argument("-s", "--showSource", type=bool, default=False)
-    parser.add_argument("-c", "--comms", type=bool, default=True)
+    parser.add_argument("-w", "--showWrong", type=bool, default=False)
+    parser.add_argument("-c", "--comms", type=bool, default=False)
     parser.add_argument("-r", "--train", type=bool, default=False)
+    parser.add_argument("-p", "--pause", type=bool, default=False)
 
 
     args = parser.parse_args()
@@ -89,7 +105,13 @@ if __name__ == "__main__":
     showSource = args.showSource
     testing = args.testing
     bComms = args.comms
-
+    pause = args.pause
+    showWrong = args.showWrong
+    print("l" , bLogging)
+    print("s" , showSource)
+    print("t", testing)
+    print("c", bComms)
+    print("p", pause)
     if testing:
         bLogging = False
        # showSource = True
@@ -99,14 +121,15 @@ if __name__ == "__main__":
 
 
     paths_config = config["PATHS"]
+    width = config["WIDTH"]
+    height = config["HEIGHT"]
     #base_folder = paths_config["basefolder"]
    #print(f"basefolder{base_folder}")
-    imgProc= visionclass.imgproc(bLogging,dir_path,bComms=bComms)
 
     if testing:
         print("running validation")
         import validation as val
-        valC = val.validation(dir_path, showsource=showSource,training=args.train)
+        valC = val.validation(dir_path, showsource=showSource,training=args.train,pause=showWrong)
         sorted_images_local = "log/previous"
         sorted_images = os.path.join(dir_path, sorted_images_local)
         valC.runValidation()
@@ -114,6 +137,7 @@ if __name__ == "__main__":
         if showSource: 
             openWindows()
         
+        imgProc= visionclass.imgproc(bLogging,dir_path,bComms=bComms)
                     
 
 
