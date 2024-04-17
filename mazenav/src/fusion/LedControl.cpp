@@ -5,15 +5,12 @@ LedControl::LedControl()
 {
 }
 
-void LedControl::init()
+void LedControl::init(PiAbstractor* piAbs)
 {
-
-    #ifdef ENV_PI
-    wiringPiSetup();
-    pinMode(led1Pin, OUTPUT);
-    pinMode(led2Pin, OUTPUT);
+    this->piAbs = piAbs;
+    piAbs->pinModeTS(led1Pin, PiAbstractor::PinMode::output);
+    piAbs->pinModeTS(led2Pin, PiAbstractor::PinMode::output);
     std::this_thread::sleep_for(std::chrono::milliseconds(500));
-    #endif
 }
 
 void LedControl::blinkLedVictimFound()
@@ -58,17 +55,12 @@ void LedControl::blinkLeds(int cycles, double freq)
 
 void LedControl::turnLightsOff()
 {
-    #ifdef ENV_PI
-    digitalWrite(led1Pin, LOW);
-    digitalWrite(led2Pin, LOW);
-    #endif
+    piAbs->digitalWriteTS(led1Pin, 0);
+    piAbs->digitalWriteTS(led2Pin, 0);
 }
 
 void LedControl::turnLightsOn()
 {
-    #ifdef ENV_PI
-    std::cout << "Turning lights on\n";
-    digitalWrite(led1Pin, HIGH);
-    digitalWrite(led2Pin, HIGH);
-    #endif
+    piAbs->digitalWriteTS(led1Pin, 1);
+    piAbs->digitalWriteTS(led2Pin, 1);
 }

@@ -4,16 +4,14 @@
 #include <chrono>
 #include <iostream>
 
-#ifdef ENV_PI
-#include "wiringPi.h"
-#endif
+#include "fusion/PiAbstractor.h"
 
 class LedControl
 {
     public:
         LedControl();
         // Perform initialization
-        void init();
+        void init(PiAbstractor* piAbs);
         // Blinks the LEDs for 5 seconds
         void blinkLedVictimFound();
         void waitForFinish();
@@ -21,6 +19,7 @@ class LedControl
         void test();
 
     private:
+        PiAbstractor* piAbs {};
         double blinkFreq {1};
 
         int led1Pin {25};
