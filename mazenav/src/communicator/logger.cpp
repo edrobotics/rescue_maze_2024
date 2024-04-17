@@ -11,8 +11,7 @@ namespace communication
         std::ofstream oFile(logFileName, std::ios_base::app); //Also opens file
 
         if (!oFile){
-            std::cerr << "No file?" << std::endl;
-            return;
+            oFile = std::ofstream(logFileName);
         }
 
         oFile << getTimestampAsString() << ": " << logMessage << std::endl;

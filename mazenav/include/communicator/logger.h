@@ -22,7 +22,7 @@ class Logger
     std::string logFileName;
 
     public:
-    Logger::Logger() { logFileName = LOGFILE_STARTSTRING + getLogFileNumber() + LOGFILE_ENDSTRING; }
+    Logger() { logFileName = LOGFILE_STARTSTRING + getLogFileNumber() + LOGFILE_ENDSTRING; }
     void logToFile(std::string logMessage);
     void logToConsole(std::string logMessage);
     void logToAll(std::string logMessage);
