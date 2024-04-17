@@ -2,15 +2,13 @@
 
 void MazeNavigator::init()
 {
+    std::this_thread::sleep_for(START_SLEEPTIME);
     giveLowLevelInstruction(communication::DriveCommand::init);
 
-    // checkFlagsUntilDriveIsFinished();
+    checkFlagsUntilDriveIsFinished();
 
     communication::TileDriveProperties tileDriveProperties = communicatorSingleton->tileInfoComm.readLatestTileProperties();
-    // updateMap(tileDriveProperties);
-    std::vector<Tile::TileProperty> tileProperties = {Tile::TileProperty::WallNorth};
-
-    mazeMap.makeTileExploredWithProperties(currentPosition, tileProperties);
+    updateMap(tileDriveProperties);
 }
 
 void MazeNavigator::makeNavigationDecision()
