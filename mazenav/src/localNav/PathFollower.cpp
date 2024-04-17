@@ -111,6 +111,8 @@ void PathFollower::runLoop()
         case communication::DriveCommand::driveForward:
             setLinePos(GRID_SIZE/2.0);
             drive(1);
+            // We are ready to update data
+            globComm->tileInfoComm.setReadyForFill();
             std::cout << "Step done-----------------------------------------------------------------\n";
             break;
         
@@ -133,6 +135,8 @@ void PathFollower::runLoop()
 
 void PathFollower::drive(int direction)
 {
+    globComm->tileInfoComm.startDrive();
+
     bool finished {false};
     globComm->poseComm.setTurning(false);
     globComm->poseComm.setDriving(true);

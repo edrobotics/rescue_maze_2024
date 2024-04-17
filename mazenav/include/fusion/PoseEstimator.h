@@ -235,10 +235,10 @@ class PoseEstimator
         Transform tf_rotateTileLeft {GRID_SIZE, 0, 0, 0, 0, M_PI_2};
 
         // Get the wall presence. This is relative to the tile.
-        bool getLeftWallPresent();
-        bool getRightWallPresent();
-        bool getFrontWallPresent();
-        bool getBackWallPresent();
+        bool getLeftWallPresent(Tof::TofData td);
+        bool getRightWallPresent(Tof::TofData td);
+        bool getFrontWallPresent(Tof::TofData td);
+        bool getBackWallPresent(Tof::TofData td);
 
         // Returns true if there is either a wall or something else in front of the robot.
         // Does not update sensor values - works with those that already exist
@@ -246,5 +246,18 @@ class PoseEstimator
         // Front sensor value where we think something is there.
         #warning untuned constant
         static constexpr int FRONT_OBSTACLE_DETECTION_THRESHOLD {100};
+
+
+        // Updates tile properties if requested by another thread.
+        void updateTileProperties();
+        // Gets the wall states in a vector, as requested by TileProperties
+        std::vector<communication::Walls> getWallStates();
+        // Get the tile colour for the tile you just drove onto, or in case of black (meaning did not complete drive), colour of tile in front (black)
+        TileColours getTileColour();
+        // Return true if the currect localTileFrame is not the same as the last = tile change has occured
+        bool getHasLocalTileMoved();
+        // Return true if we have driven up a ramp since driveStart was called
+        #warning unimplemented
+        bool getDroveRamp();
 
 };

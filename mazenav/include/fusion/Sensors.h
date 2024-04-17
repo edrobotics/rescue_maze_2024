@@ -4,6 +4,7 @@
 #include "fusion/Imu.h"
 #include "fusion/Tof.h"
 #include "fusion/MotorControllers.h"
+#include "fusion/ColourSensor.h"
 
 class Sensors
 {

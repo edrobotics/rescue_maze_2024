@@ -67,6 +67,8 @@ namespace communication
         isDriving = pComm.isDriving;
         mtx_controlVars.unlock();
 
+        startLocalTileFrame = pComm.startLocalTileFrame.getWithoutChildren();
+
         return *this;
     }
 

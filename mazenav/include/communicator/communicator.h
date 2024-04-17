@@ -106,6 +106,9 @@ namespace communication
             void setFrontObstacleDist(double dist);
             double getFrontObstacleDist();
 
+
+            CoordinateFrame startLocalTileFrame {&worldFrame};
+
     };
 
     class MotorControllerCommunicator
