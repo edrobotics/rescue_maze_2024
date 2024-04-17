@@ -16,8 +16,3 @@ bool MazePath::isEmpty()
 {
     return positionsInPath.empty();
 }
-
-std::string MazePath::toLog()
-{
-    std::string logString;
-}

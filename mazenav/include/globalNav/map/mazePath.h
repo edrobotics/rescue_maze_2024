@@ -13,7 +13,5 @@ public:
     void addPositionInFront(MazePosition position);
     bool isEmpty();
 
-    std::size_t getPositionAmount() const { return positionsInPath.size(); };
-    
-    std::string toLog();
+    std::size_t getPositionAmount() const { return positionsInPath.size(); };  
 };

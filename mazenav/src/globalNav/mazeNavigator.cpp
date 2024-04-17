@@ -295,6 +295,7 @@ void MazeNavigator::updateMap(const communication::TileDriveProperties& tileDriv
     else if (tileDriveProperties.tileColourOnNewTile == TileColours::Blue)
         tileProperties.push_back(Tile::TileProperty::Blue);
 
+    logTileProperties(tileProperties);
     mazeMap.makeTileExploredWithProperties(currentPosition, tileProperties);
 }
 
@@ -354,6 +355,21 @@ void MazeNavigator::returnIfLittleTime()
 std::chrono::seconds MazeNavigator::estimateTimeForPath(MazePath path)
 {
     return path.getPositionAmount() * DRIVE_AND_TURN_TIME;
+}
+
+void MazeNavigator::logTileProperties(std::vector<Tile::TileProperty> properties)
+{
+    std::string logString = "TileProperties: ";
+    for (Tile::TileProperty& property : properties)
+    {
+        if (property == Tile::TileProperty::WallNorth) logString += ",nW";
+        if (property == Tile::TileProperty::WallWest) logString += ",wW";
+        if (property == Tile::TileProperty::WallSouth) logString += ",sW";
+        if (property == Tile::TileProperty::WallEast) logString += ",eW";
+        if (property == Tile::TileProperty::Black) logString += ",Bk";
+        if (property == Tile::TileProperty::Checkpoint) logString += ",Ch";
+    }
+    logToConsoleAndFile(logString);
 }
 
 void MazeNavigator::logToFile(std::string message)

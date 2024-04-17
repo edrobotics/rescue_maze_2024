@@ -10,6 +10,7 @@ AStar::~AStar()
 {
     while (!toDelete.empty())
     {
+        mazeMap->setTileProperty(toDelete.back()->position, Tile::TileProperty::SearchAlgorithmVisited, false);
         delete toDelete.back();
         toDelete.erase(toDelete.end()-1);
     }
