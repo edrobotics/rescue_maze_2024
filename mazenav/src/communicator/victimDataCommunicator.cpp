@@ -67,6 +67,8 @@ namespace communication
         bool hasVictim = !rescueQueue.empty();
 
         mtx_rescue.unlock();
+
+        return hasVictim;
     }
 
     Victim VictimDataCommunicator::getNextUnrescuedVictim()

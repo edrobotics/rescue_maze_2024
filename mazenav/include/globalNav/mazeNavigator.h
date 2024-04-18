@@ -64,10 +64,6 @@ class MazeNavigator
     void handleActivePanicFlags();
     bool lackOfProgressFlagRaised();
     bool victimFlagRaised();
-    bool hasAlreadyFoundVictimInCameraDirection(Victim::RobotCamera camera);
-    void saveVictimInCameraDirection(Victim::RobotCamera camera);
-    GlobalDirections cameraDirectionToGlobalDirection(Victim::RobotCamera camera);
-    Tile::TileProperty globalDirectionToVictim(GlobalDirections direction);
 
 
     void updatePosition(const communication::TileDriveProperties& tileDriveProperties);
@@ -91,6 +87,8 @@ class MazeNavigator
     void returnIfLittleTime();
     std::chrono::seconds estimateTimeForPath(MazePath path);
 
+    bool wallVectorHasWall(std::vector<communication::Walls> walls, communication::Walls searchWall);
+
     void logTileProperties(std::vector<Tile::TileProperty> properties);
     void logDirection();
     void logToFile(std::string message);
@@ -101,5 +99,6 @@ class MazeNavigator
     MazeNavigator(communication::Communicator* communicatorInstance) : communicatorSingleton(communicatorInstance) {};
     void init();
     void makeNavigationDecision();
+    void followLeftWall();
     void updateInfoAfterDriving();
 };

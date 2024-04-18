@@ -18,10 +18,7 @@ class Tile
         Black,
         Blue,
         ContainsRamp,
-        VictimNorth,
-        VictimWest,
-        VictimSouth,
-        VictimEast
+        HasVictim,
     };
 
     void setTileProperty(TileProperty set, bool state);

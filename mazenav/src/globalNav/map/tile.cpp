@@ -18,15 +18,9 @@ bool Tile::tileHasProperty(TileProperty propertyToGet)
 
 void Tile::resetTileExceptVictims()
 {
-    bool victimFront = tileHasProperty(TileProperty::VictimNorth); //The reason we save victims is because re-detecting victims is bad
-    bool victimLeft = tileHasProperty(TileProperty::VictimWest);
-    bool victimBack = tileHasProperty(TileProperty::VictimSouth);
-    bool victimRight = tileHasProperty(TileProperty::VictimEast);
+    bool hasVictim = tileHasProperty(TileProperty::HasVictim); //The reason we save victims is because re-detecting victims is bad
 
     tileInfo = 0;
 
-    if (victimFront) setTileProperty(TileProperty::VictimNorth, true);
-    if (victimLeft) setTileProperty(TileProperty::VictimWest, true);
-    if (victimBack) setTileProperty(TileProperty::VictimSouth, true);
-    if (victimRight) setTileProperty(TileProperty::VictimEast, true);
+    setTileProperty(TileProperty::HasVictim, hasVictim);
 }

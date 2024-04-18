@@ -59,7 +59,7 @@ void AStar::constructPath(AStarTile* finalTile)
     AStarTile* currentTile = finalTile;
     while (currentTile != nullptr) 
 	{
-		foundPath.addPositionInFront(currentTile->position);
+		foundPath.addPositionOnTop(currentTile->position);
 		currentTile = currentTile->parent;
 	}
 }

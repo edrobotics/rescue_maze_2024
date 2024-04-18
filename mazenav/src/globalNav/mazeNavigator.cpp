@@ -22,6 +22,44 @@ void MazeNavigator::makeNavigationDecision()
         exploreMaze();
 }
 
+void MazeNavigator::followLeftWall()
+{
+    //sendResetCommand
+    std::this_thread::sleep_for(DRIVE_AND_TURN_TIME);
+    giveLowLevelInstruction(communication::DriveCommand::init);
+
+    while (!driveIsFinished()) std::this_thread::sleep_for(LOOP_SLEEPTIME);
+    communication::TileDriveProperties tileDriveProperties = communicatorSingleton->tileInfoComm.readLatestTileProperties();
+    auto walls = tileDriveProperties.wallsOnNewTile;
+    
+    bool frontWall = wallVectorHasWall(walls, communication::Walls::FrontWall);
+    bool leftWall = wallVectorHasWall(walls, communication::Walls::LeftWall);
+    bool rightWall = wallVectorHasWall(walls, communication::Walls::RightWall);
+
+    if (!tileDriveProperties.droveTile && tileDriveProperties.tileColourOnNewTile == TileColours::Black)
+        frontWall = true;
+
+    if (!leftWall)
+        turnToDirection(LocalDirections::Left);
+    else if (frontWall)
+    {
+        if (rightWall) turnToDirection(LocalDirections::Back);
+        else turnToDirection(LocalDirections::Right);
+    }
+    
+    driveTile();
+}
+
+bool MazeNavigator::wallVectorHasWall(std::vector<communication::Walls> walls, communication::Walls searchWall)
+{
+    for (communication::Walls& vecWall : walls)
+    {
+        if (vecWall == searchWall)
+            return true;
+    }
+    return false;
+}
+
 bool MazeNavigator::anyTilesInPath()
 {
     return !pathToFollow.isEmpty();
@@ -82,7 +120,9 @@ void MazeNavigator::startFollowingPathToLastUnexploredTile()
 MazePath MazeNavigator::pathTo(MazePosition toPosition)
 {
     logToConsoleAndFile("Finding path to" + std::to_string(toPosition.tileX) + "," + std::to_string(toPosition.tileY));
-    return pathFinder.findPathTo(currentPosition, toPosition);
+    MazePath path = pathFinder.findPathTo(currentPosition, toPosition);
+    logToConsoleAndFile("Found " + pathToFollow.toLoggable());
+    return path;
 }
 
 void MazeNavigator::goToNeighborInDirection(LocalDirections direction)
@@ -174,9 +214,9 @@ void MazeNavigator::handleActivePanicFlags()
         std::vector<Victim> victims = communicatorSingleton->victimDataComm.getAllNonStatusVictims();
         for (auto i = victims.begin(); i != victims.end(); i++)
         {
-            if (!hasAlreadyFoundVictimInCameraDirection(i->captureCamera))
+            if (!mazeMap.tileHasProperty(currentPosition, Tile::TileProperty::HasVictim))
             {
-                saveVictimInCameraDirection(i->captureCamera);
+                mazeMap.setTileProperty(currentPosition, Tile::TileProperty::HasVictim, true);
                 communicatorSingleton->victimDataComm.addVictimToRescueQueue(*i);
             }
         }
@@ -195,33 +235,6 @@ bool MazeNavigator::lackOfProgressFlagRaised()
 bool MazeNavigator::victimFlagRaised()
 {
     return communicatorSingleton->panicFlagComm.readFlagFromThread(communication::PanicFlags::victimDetected, communication::ReadThread::globalNav);
-}
-
-bool MazeNavigator::hasAlreadyFoundVictimInCameraDirection(Victim::RobotCamera camera)
-{
-    Tile::TileProperty victimProperty = globalDirectionToVictim(cameraDirectionToGlobalDirection(camera));
-    return mazeMap.tileHasProperty(currentPosition, victimProperty);
-}
-
-void MazeNavigator::saveVictimInCameraDirection(Victim::RobotCamera camera)
-{
-    Tile::TileProperty victimProperty = globalDirectionToVictim(cameraDirectionToGlobalDirection(camera));
-    return mazeMap.setTileProperty(currentPosition, victimProperty, true);
-}
-
-GlobalDirections MazeNavigator::cameraDirectionToGlobalDirection(Victim::RobotCamera camera)
-{
-    if (camera == Victim::RobotCamera::FrontCam) return localToGlobalDirection(LocalDirections::Front);
-    if (camera == Victim::RobotCamera::LeftCam) return localToGlobalDirection(LocalDirections::Left);
-    return localToGlobalDirection(LocalDirections::Right);
-}
-
-Tile::TileProperty MazeNavigator::globalDirectionToVictim(GlobalDirections direction)
-{
-    if (direction == GlobalDirections::North) return Tile::TileProperty::VictimNorth;
-    if (direction == GlobalDirections::West) return Tile::TileProperty::VictimWest;
-    if (direction == GlobalDirections::South) return Tile::TileProperty::VictimSouth;
-    return Tile::TileProperty::VictimEast;
 }
 
 void MazeNavigator::updatePosition(const communication::TileDriveProperties& tileDriveProperties)

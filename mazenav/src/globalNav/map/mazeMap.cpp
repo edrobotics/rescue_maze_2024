@@ -24,7 +24,7 @@ bool MazeMap::neighborIsAvailableAndUnexplored(MazePosition position, GlobalDire
 
 bool MazeMap::neighborIsAvailable(MazePosition position, GlobalDirections neighborDirection)
 {
-    return tileHasWallInDirection(position, neighborDirection) && 
+    return !tileHasWallInDirection(position, neighborDirection) && 
           !tileHasProperty(neighborInDirection(position, neighborDirection), Tile::TileProperty::Black);
 }
 
@@ -51,12 +51,23 @@ void MazeMap::setTileProperty(MazePosition tilePosition, Tile::TileProperty tile
 
 void MazeMap::makeTileExploredWithProperties(MazePosition tilePosition, std::vector<Tile::TileProperty> tileProperties)
 {
-    setTileProperty(tilePosition, Tile::TileProperty::Explored, true);
+    if (tileHasProperty(tilePosition, Tile::TileProperty::Explored))
+    {
+        setTileProperty(tilePosition, Tile::TileProperty::WallNorth, false);
+        setTileProperty(tilePosition, Tile::TileProperty::WallWest, false);
+        setTileProperty(tilePosition, Tile::TileProperty::WallSouth, false);
+        setTileProperty(tilePosition, Tile::TileProperty::WallEast, false);
+    }
+    else
+    {
+        setTileProperty(tilePosition, Tile::TileProperty::Explored, true);
+        uncheckpointedTiles.push_back(tilePosition);
+    }
+    
     for (auto i = tileProperties.begin(); i != tileProperties.end(); i++)
     {
         setTileProperty(tilePosition, *i, true);
     }
-    uncheckpointedTiles.push_back(tilePosition);
 }
 
 Tile::TileProperty MazeMap::directionToWallProperty(GlobalDirections direction)
@@ -165,6 +176,8 @@ MazePosition MazeMap::positionAfterUsingRamp(MazePosition fromPosition, GlobalDi
                                 i->getDirectionInSecondLevel() == fromDirection;
         if (isFirstPosition) 
             return i->getPositionInSecondLevel();
+        if (isSecondPosition) 
+            return i->getPositionInFirstLevel();
     }
     return fromPosition;
 }

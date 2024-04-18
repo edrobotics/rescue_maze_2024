@@ -8,6 +8,7 @@ class PathFinder
 {
 private:
     MazeMap* mazeMap;
+    MazePath combineMazePathsAndAddRampTile(MazePath beforeRamp, MazePath afterRamp, int beforeRampLevelIndex);
 public:
     PathFinder(MazeMap* map) : mazeMap(map) {};
     MazePath findPathTo(MazePosition currentPosition, MazePosition toPosition);
