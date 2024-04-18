@@ -10,6 +10,7 @@ i2cCommunicator::i2cCommunicator(uint8_t portNum)
 
 bool i2cCommunicator::init()
 {
+    std::lock_guard<std::mutex> lock(mtx_general);
     if ((i2cFile = open(filename, O_RDWR)) < 0)
     {
         return false;
@@ -36,11 +37,13 @@ bool i2cCommunicator::init()
 
 bool i2cCommunicator::readReg(uint8_t addr, uint8_t reg, uint8_t size, uint8_t values[])
 {
+    std::lock_guard<std::mutex> lock(mtx_general);
     return readReg(i2cFile, addr, reg, size, values);
 }
 
 bool i2cCommunicator::writeReg(uint8_t addr, uint8_t reg, uint8_t size, uint8_t values[])
 {
+    std::lock_guard<std::mutex> lock(mtx_general);
     return writeReg(i2cFile, addr, reg, size, values);
 }
 
