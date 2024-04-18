@@ -19,12 +19,12 @@ class VisionCommunicator
     VisionCommunicator();
     ~VisionCommunicator();
 
-
     std::vector<Victim> getVictims();
 
     private:
     std::optional<std::string> getData();
     std::optional<Victim> constructVictim(std::string victimData);
+    bool hasWallInCameraDirection(Victim::RobotCamera camera);
 
     std::vector<std::string> split(std::string& split, char deliminator);
 

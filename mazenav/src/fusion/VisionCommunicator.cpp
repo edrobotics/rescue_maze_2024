@@ -127,6 +127,7 @@ std::optional<Victim> VisionCommunicator::constructVictim(std::string victimData
     auto cam = parseInt(segments[4]);
     if (!cam) return nullopt;
     vicData.captureCamera = (Victim::RobotCamera)cam.value();
+    if (!hasWallInCameraDirection(vicData.captureCamera)) return nullopt;
 
     //Position X int mm (+/-)
     auto victimX = parseInt(segments[5]);
@@ -141,6 +142,22 @@ std::optional<Victim> VisionCommunicator::constructVictim(std::string victimData
     if (!visionTimestamp) return nullopt;
     vicData.captureUnixTimestamp = visionTimestamp.value();
     return vicData;
+}
+
+bool VisionCommunicator::hasWallInCameraDirection(Victim::RobotCamera camera)
+{
+    #warning IMPLEMENT
+    switch (camera)
+    {
+    case Victim::RobotCamera::FrontCam:
+        return true;
+    case Victim::RobotCamera::LeftCam:
+        return true;
+    case Victim::RobotCamera::RightCam:
+        return true;
+    default:
+        return false;
+    }
 }
 
 vector<string> VisionCommunicator::split(string& split, char deliminator)
