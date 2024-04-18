@@ -28,20 +28,23 @@ void PoseEstimator::setFusionGroup(FusionGroup fgroup)
 // }
 
 
-void PoseEstimator::flush(FusionGroup fgroup)
+void PoseEstimator::flush(FusionGroup fgroup, bool updatePose)
 {
     for (int i=0;i<8;++i)
     {
         update(fgroup, false);
     }
-    update(fgroup, true);
+    if (updatePose)
+    {
+        update(fgroup, true);
+    }
 }
 
 void PoseEstimator::runLoopLooper(communication::Communicator* globComm)
 {
     // std::cout << "Started runLoopLooper" << "\n";
     this->globComm = globComm;
-    flush(FusionGroup::fg_simple);
+    flush(FusionGroup::fg_simple, true);
     // std::cout << "Stored globcomm: " << this->globComm << "\n";
     while (true)
     {
@@ -55,7 +58,8 @@ void PoseEstimator::runLoop()
     // Currently: update as fast as possible for the given FusionGroup
     if (globComm->poseComm.getShouldFlushPose())
     {
-        flush(fusionGroup);
+        flush(fusionGroup, true);
+        globComm->poseComm.flushDone();
     }
     update(fusionGroup, true);
 }
@@ -133,7 +137,7 @@ void PoseEstimator::update(FusionGroup fgroup, bool doUpdate)
     globComm->poseComm.mtx_general.unlock();
 
     // std::cout << "robotSpeed: " << globComm->poseComm.robotSpeedAvg << "\n";
-    std::cout << "robotFrame: " << globComm->poseComm.robotFrame << /*"  lastRobotFrame: " << globComm->poseComm.lastRobotFrame << */ "\n";
+    // std::cout << "robotFrame: " << globComm->poseComm.robotFrame << /*"  lastRobotFrame: " << globComm->poseComm.lastRobotFrame << */ "\n";
     // sensors->tofs.printVals(true);
     // sensors->imu0.printVals(true);
 
@@ -436,7 +440,7 @@ void PoseEstimator::updatePoseComm(communication::PoseCommunicator& pose)
     {
         if (!isDriving)
         {
-            std::cout << "Turned right--------------------------------------\n";
+            std::cout << "[PoseEstimator] Turned right--------------------------------------\n";
             ghostTf.rot_z -= M_PI_2;
             ghostTf.pos_y += GRID_SIZE;
         }
@@ -448,7 +452,7 @@ void PoseEstimator::updatePoseComm(communication::PoseCommunicator& pose)
     {
         if (!isDriving)
         {
-            std::cout << "Turned left--------------------------------------\n";
+            std::cout << "[PoseEstimator] Turned left--------------------------------------\n";
             ghostTf.rot_z += M_PI_2;
             ghostTf.pos_x += GRID_SIZE;
         }
@@ -464,14 +468,14 @@ void PoseEstimator::updatePoseComm(communication::PoseCommunicator& pose)
     // Move left
     if (xDiff > tileTransXDiffThreshold)
     {
-        std::cout << "Moved left---------------------------------------------\n";
+        std::cout << "[PoseEstimator] Moved left---------------------------------------------\n";
         ghostTf.pos_x -= GRID_SIZE;
         pose.robotFrame.transform.pos_x -= GRID_SIZE;
     }
     // Move right
     else if (xDiff < -tileTransXDiffThreshold)
     {
-        std::cout << "Moved right---------------------------------------------\n";
+        std::cout << "[PoseEstimator] Moved right---------------------------------------------\n";
         ghostTf.pos_x += GRID_SIZE;
         pose.robotFrame.transform.pos_x += GRID_SIZE;
     }
@@ -483,14 +487,14 @@ void PoseEstimator::updatePoseComm(communication::PoseCommunicator& pose)
     // Move back
     if (yDiff > tileTransYDiffThreshold)
     {
-        std::cout << "Moved back------------------------------------------------\n";
+        std::cout << "[PoseEstimator] Moved back------------------------------------------------\n";
         ghostTf.pos_y -= GRID_SIZE;
         pose.robotFrame.transform.pos_y -= GRID_SIZE;
     }
     // Move forward
     else if (yDiff < -tileTransYDiffThreshold)
     {
-        std::cout << "Moved forward-----------------------------------------------\n";
+        std::cout << "[PoseEstimator] Moved forward-----------------------------------------------\n";
         ghostTf.pos_y += GRID_SIZE;
         pose.robotFrame.transform.pos_y += GRID_SIZE;
     }
@@ -577,7 +581,7 @@ ConditionalAverageTerm PoseEstimator::getWheelTransDiff()
     catch (std::runtime_error& e)
     {
         // No usable data, so do not use
-        std::cout << "Could not use wheel odom diff\n";
+        // std::cout << "Could not use wheel odom diff\n";
         result.weight = 0;
     }
 
@@ -787,7 +791,7 @@ ConditionalAverageTerm PoseEstimator::getTofZRot(double curAng)
     #warning We want to check here so that we do not mess up when turning in enclosed space, but if we have lost tracking we will not be able to pick it up even if we are straight.
     if ((abs(curAng)>MAX_ZROT_XTRANS_TOF_ABS && !turning) || (abs(curAng)>MAX_ZROT_XTRANS_TOF_ABS_TURNING && turning))
     {
-        std::cout << "Angle too large for tof z rot" << std::endl;
+        // std::cout << "Angle too large for tof z rot" << std::endl;
         result.weight = 0;
         return result;
     }
@@ -905,7 +909,7 @@ ConditionalAverageTerm PoseEstimator::getWheelRotDiff()
     }
     else
     {
-        std::cout << "Could not use wheel diff\n";
+        // std::cout << "Could not use wheel diff\n";
         result.weight = 0;
     }
 
@@ -1029,6 +1033,11 @@ double PoseEstimator::getFrontObstacleDist(Tof::TofData td)
     int blockedSum {0};
     int blockedValueSum {0};
 
+    std::cout << "[PoseEstimator] fl.avg=" << td.fl.avg << "  "
+    << "fl.cur=" << td.fl.cur << "  "
+    << "fr.avg=" << td.fr.avg << "  "
+    << "fr.cur=" << td.fr.cur << "  \n";
+
     if (td.fl.avg<FRONT_OBSTACLE_DETECTION_THRESHOLD)
     {
         blockedValueSum += td.fl.avg;
@@ -1082,6 +1091,7 @@ void PoseEstimator::updateTileProperties()
     tProp.wallsOnNewTile = getWallStates();
     tProp.tileColourOnNewTile = getTileColour();
     tProp.droveTile = getHasLocalTileMoved();
+    std::cout << "[PoseEstimator] droveTile: " << tProp.droveTile << "\n";
     tProp.usedRamp = getDroveRamp();
 
     globComm->tileInfoComm.setNewTileProperties(tProp);

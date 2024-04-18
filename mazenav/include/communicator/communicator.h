@@ -116,6 +116,7 @@ namespace communication
             // Call to flush the pose data
             void flushPose();
             bool getShouldFlushPose();
+            void flushDone();
 
     };
 

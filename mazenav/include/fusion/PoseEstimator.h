@@ -88,8 +88,9 @@ class PoseEstimator
         bool stopThread {false};
         // Update the pose with the supplied FusionGroup
         void update(FusionGroup fgroup, bool doUpdate);
-        // Run the calculation without actually updating. Does it 5 times.
-        void flush(FusionGroup fgroup);
+        // Run the calculation without actually updating. Does it 8 times.
+        // UpdatePose - whether or not to update the pose after done
+        void flush(FusionGroup fgroup, bool updatePose);
 
 
         // High-level pose estimation functions. Return the estimated pose.

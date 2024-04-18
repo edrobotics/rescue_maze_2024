@@ -223,13 +223,18 @@ namespace communication
         bool retVal {false};
         if (shouldflush)
         {
-            shouldflush = false;
+            // shouldflush = false;
             return true;
         }
         else
         {
             return shouldflush;
         }
+    }
+
+    void PoseCommunicator::flushDone()
+    {
+        shouldflush = false;
     }
 
 }
