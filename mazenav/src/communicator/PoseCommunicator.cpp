@@ -104,14 +104,14 @@ namespace communication
 
     bool PoseCommunicator::hasDrivenStep()
     {
-        PoseDataSyncBlob pdBlob {};
+        PoseDataSyncBlob pdBlob {poseDataBlob.getCopy()};
         if (pdBlob.getLocalTileFrame().transform==pdBlob.getStartLocalTileFrame().transform)
         {
-            return true;
+            return false;
         }
         else
         {
-            return false;
+            return true;
         }
     }
 
