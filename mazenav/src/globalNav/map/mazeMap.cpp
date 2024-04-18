@@ -170,12 +170,10 @@ MazePosition MazeMap::positionAfterUsingRamp(MazePosition fromPosition, GlobalDi
         bool isFirstPosition = i->getPositionInFirstLevel() == fromPosition && 
                                i->getDirectionInFirstLevel() == fromDirection;
         if (isFirstPosition) 
-            return i->getPositionInFirstLevel();
+            return i->getPositionInSecondLevel();
 
         bool isSecondPosition = i->getPositionInSecondLevel() == fromPosition && 
                                 i->getDirectionInSecondLevel() == fromDirection;
-        if (isFirstPosition) 
-            return i->getPositionInSecondLevel();
         if (isSecondPosition) 
             return i->getPositionInFirstLevel();
     }
