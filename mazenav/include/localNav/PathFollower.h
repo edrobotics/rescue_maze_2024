@@ -49,6 +49,10 @@ class PathFollower
 
         // Input y error, get out wanted angle (correction)
         PIDController yPid {0.008, 0, 0.0017};
+        // Caps a number within limits
+        #warning untuned constant
+        static constexpr double YPID_MAX_MIN_OUTPUT_ANGLE {M_PI_4*0.8};
+        double capYPidOutput(double output);
         // Input angle error, output wanted chassis speeds correction
         PIDController angPid {2, 0, 0.01};
 

@@ -29,6 +29,7 @@ double PathFollower::getRotSpeedDriving(int direction)
     }
     // std::cout << "xPos: " << globComm->poseComm.robotFrame.transform.pos_x << "  ";
     double wantedAngle {yPid.getCorrection(globComm->poseComm.robotFrame.transform.pos_x)};
+    wantedAngle = capYPidOutput(wantedAngle);
     // std::cout << "wantedAngle: " << wantedAngle << "angle: " << globComm->poseComm.robotFrame.transform.rot_z << "  ";
     angPid.setSetpoint(-direction*wantedAngle);
     double speedCorr {angPid.getCorrection(globComm->poseComm.robotFrame.transform.rot_z)};
@@ -541,4 +542,21 @@ void PathFollower::handleLOP()
     driver.stop();
 
     abortMove = true;
+}
+
+double PathFollower::capYPidOutput(double output)
+{
+    if (output>YPID_MAX_MIN_OUTPUT_ANGLE)
+    {
+        output = YPID_MAX_MIN_OUTPUT_ANGLE;
+    }
+    else if (output < -YPID_MAX_MIN_OUTPUT_ANGLE)
+    {
+        output = -YPID_MAX_MIN_OUTPUT_ANGLE;
+    }
+    else
+    {
+        // Do nothing
+    }
+    return output;
 }
