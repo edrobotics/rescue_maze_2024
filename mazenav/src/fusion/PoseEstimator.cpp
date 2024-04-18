@@ -70,37 +70,33 @@ void PoseEstimator::update(FusionGroup fgroup, bool doUpdate)
     // std::cout << "In update" << std::endl;
     sensors->update(true);
     // std::cout << "updated sensors  ";
-    // Should copy the tree of poseComm into poseResult
     // std::cout << "Creating poseResult... ";
-    communication::PoseCommunicator poseResult {};
+    // Borrow the dataBlob of poseComm. Use this borrowed version everywhere.
+    communication::PoseDataSyncBlob poseResult {globComm->poseComm.borrowData()};
     // std::cout << "done\n";
-    // std::cout << "lock poseComm mutex... ";
-    // Lock poseComm to prevent concurrency issues with the targetPoint
-    globComm->poseComm.mtx_general.lock();
+    // Store relevant variables for use during cycle
     isTurning = globComm->poseComm.getTurning();
     isDriving = globComm->poseComm.getDriving();
     // std::cout << "done\n";
     // Save the current value so that we can set it as the old one later
-    // CoordinateFrame lastRobot {globComm->poseComm.robotFrame.getWithoutChildren()};
-    // std::cout << "lastRobot: " << lastRobot << "\n";
     switch (fgroup)
     {
         case fg_lidar:
-            poseResult = updateLidar();
+            updateLidar(poseResult);
             break;
         case fg_simple:
             // std::cout << "Reached simple" << std::endl;
-            poseResult = updateSimple();
+            updateSimple(poseResult);
             // std::cout << "Finished simple" << std::endl;
             break;
         case fg_imu:
-            poseResult = updateIMU();
+            updateIMU(poseResult);
             break;
         case fg_lidar_imu:
             std::cerr << "[PoseEstimator][ERROR]: Lidar+IMU pose estimation not implemented";
             break;
         case fg_lidar_simple:
-            poseResult = updateLidarSimple();
+            updateLidarSimple(poseResult);
             break;
         case fg_none:
             std::cerr << "[PoseEstimator][ERROR]: No FusionGroup selected";
@@ -126,23 +122,24 @@ void PoseEstimator::update(FusionGroup fgroup, bool doUpdate)
 
     // std::cout << "In poseEstimator, before calcSpeeds\n";
     calcSpeeds(poseResult);
-    poseResult.updated = true;
 
     if (doUpdate)
     {
         // Write the new pose with only changes.
-        #warning concurrency issues?
-        globComm->poseComm = poseResult;
+        globComm->poseComm.giveBackData(poseResult);
+    }
+    else
+    {
+        globComm->poseComm.giveBackDummyData();
     }
     // Unlock poseComm to allow access to targetPoint again.
-    globComm->poseComm.mtx_general.unlock();
 
     // std::cout << "robotSpeed: " << globComm->poseComm.robotSpeedAvg << "\n";
     // std::cout << "robotFrame: " << globComm->poseComm.robotFrame << /*"  lastRobotFrame: " << globComm->poseComm.lastRobotFrame << */ "\n";
     // sensors->tofs.printVals(true);
     // sensors->imu0.printVals(true);
 
-    updateTileProperties();
+    updateTileProperties(poseResult);
 }
 
 
@@ -150,12 +147,8 @@ void PoseEstimator::update(FusionGroup fgroup, bool doUpdate)
 
 
 #warning currently a lot of code without the right conditional logic. Do not expect to work at all
-communication::PoseCommunicator PoseEstimator::updateSimple()
+void PoseEstimator::updateSimple(communication::PoseDataSyncBlob& resultPose)
 {
-    // communication::PoseCommunicator lastPose {globComm->poseComm};
-    // std::cout << "before resultPose copy from poseComm... ";
-    communication::PoseCommunicator resultPose {globComm->poseComm};
-    // std::cout << "done\n";
     resultPose.lastRobotFrame = resultPose.robotFrame;
     // std::cout << "lastRobotFrame: " << resultPose.lastRobotFrame << "\n";
     // Update the times
@@ -221,7 +214,7 @@ communication::PoseCommunicator PoseEstimator::updateSimple()
     catch(const std::runtime_error& e)
     {
         // std::cerr << e.what() << " : " << "Cannot compute robot angle" << '\n';
-        #warning what to do here, with no angle? Also what to do for further angle requirements
+        // #warning what to do here, with no angle? Also what to do for further angle requirements
     }
 
     // std::cout << "rotation done\n";
@@ -276,38 +269,29 @@ communication::PoseCommunicator PoseEstimator::updateSimple()
         // std::cout << "translation done\n";
     }
 
-
-    return resultPose;
-
 }
 
-communication::PoseCommunicator PoseEstimator::updateLidar()
+void PoseEstimator::updateLidar(communication::PoseDataSyncBlob& resultPose)
 {
-    communication::PoseCommunicator resultPose {globComm->poseComm};
 
     std::cout << "[PoseEstimator][ERROR]: Lidar pose estimation not implemented";
 
-    return resultPose;
 }
 
-communication::PoseCommunicator PoseEstimator::updateLidarSimple()
+void PoseEstimator::updateLidarSimple(communication::PoseDataSyncBlob& resultPose)
 {
-    communication::PoseCommunicator resultPose {globComm->poseComm};
 
     std::cout << "[PoseEstimator][ERROR]: Lidar+simple pose estimation not implemented";
 
-    return resultPose;
 }
 
-communication::PoseCommunicator PoseEstimator::updateIMU()
+void PoseEstimator::updateIMU(communication::PoseDataSyncBlob& resultPose)
 {
-    communication::PoseCommunicator resultPose {globComm->poseComm};
 
-    return resultPose;
 }
 
 
-void PoseEstimator::calcSpeeds(communication::PoseCommunicator& pose)
+void PoseEstimator::calcSpeeds(communication::PoseDataSyncBlob& pose)
 {
     double timeDiff {std::chrono::duration_cast<std::chrono::milliseconds>(pose.curRobotTime-pose.lastRobotTime).count()/1000.0};
 
@@ -409,7 +393,7 @@ void PoseEstimator::wrapVectorSameScale(std::vector<ConditionalAverageTerm>& vec
 }
 
 
-void PoseEstimator::wrapPoseComm(communication::PoseCommunicator& poseComm)
+void PoseEstimator::wrapPoseCommData(communication::PoseDataSyncBlob& poseComm)
 {
     Transform ghostTf {};
     // Z
@@ -425,7 +409,7 @@ void PoseEstimator::wrapPoseComm(communication::PoseCommunicator& poseComm)
 }
 
 
-void PoseEstimator::updatePoseComm(communication::PoseCommunicator& pose)
+void PoseEstimator::updatePoseComm(communication::PoseDataSyncBlob& pose)
 {
     // If it has never been used before, do not judge (because it will jump).
     if (pose.freshness>0)
@@ -515,7 +499,7 @@ void PoseEstimator::updatePoseComm(communication::PoseCommunicator& pose)
     // << "lastRobot: " << pose.lastRobotFrame << "  "
     // << "tile: " << pose.localTileFrame << "  "
     // << "\n";
-    // wrapPoseComm(pose);
+    // wrapPoseCommData(pose);
     // std::cout << "After wrapping: " << "\n"
     // << "robot: " << pose.robotFrame << "  "
     // << "lastRobot: " << pose.lastRobotFrame << "  "
@@ -590,7 +574,7 @@ ConditionalAverageTerm PoseEstimator::getWheelTransDiff()
 }
 
 
-ConditionalAverageTerm PoseEstimator::getTofTransYDiff()
+ConditionalAverageTerm PoseEstimator::getTofTransYDiff(const communication::PoseDataSyncBlob& pose)
 {
     ConditionalAverageTerm result {0, 0};
 
@@ -605,7 +589,7 @@ ConditionalAverageTerm PoseEstimator::getTofTransYDiff()
 
     // If angle is too large the sensors see the side walls instead of the one in front
     #warning this changes with the distance to the wall in front. When we are closer, do we want to accept a greater angle? But how do we know if we are closer?
-    if (abs(globComm->poseComm.robotFrame.transform.rot_z) > MAX_Z_ROTATION_Y_TOF_DIFF)
+    if (abs(pose.robotFrame.transform.rot_z) > MAX_Z_ROTATION_Y_TOF_DIFF)
     {
         return result;
     }
@@ -649,6 +633,7 @@ ConditionalAverageTerm PoseEstimator::getTofYTrans(double angle, double yoffset,
 {
     ConditionalAverageTerm result {0, 1};
     Tof::TofData td {sensors->tofs.tofData};
+    // Set front obstacle data to posecomm
     globComm->poseComm.setFrontObstacleDist(getFrontObstacleDist(td));
 
     // Check if angle is too great
@@ -958,7 +943,7 @@ ConditionalAverageTerm PoseEstimator::getIMURotDiff()
     // std::cout << "IMU angle: " << angle << "  ";
 
     // Check if angle within span
-    #warning assumes that no angle changes > 180 degrees can happen in one iteration
+    // #warning assumes that no angle changes > 180 degrees can happen in one iteration
     if (result.value > M_PI)
     {
         result.value = result.value - 2*M_PI;
@@ -1034,10 +1019,10 @@ double PoseEstimator::getFrontObstacleDist(Tof::TofData td)
     int blockedSum {0};
     int blockedValueSum {0};
 
-    std::cout << "[PoseEstimator] fl.avg=" << td.fl.avg << "  "
-    << "fl.cur=" << td.fl.cur << "  "
-    << "fr.avg=" << td.fr.avg << "  "
-    << "fr.cur=" << td.fr.cur << "  \n";
+    // std::cout << "[PoseEstimator] fl.avg=" << td.fl.avg << "  "
+    // << "fl.cur=" << td.fl.cur << "  "
+    // << "fr.avg=" << td.fr.avg << "  "
+    // << "fr.cur=" << td.fr.cur << "  \n";
 
     if (td.fl.avg<FRONT_OBSTACLE_DETECTION_THRESHOLD)
     {
@@ -1074,11 +1059,11 @@ double PoseEstimator::getFrontObstacleDist(Tof::TofData td)
 }
 
 
-void PoseEstimator::updateTileProperties()
+void PoseEstimator::updateTileProperties(communication::PoseDataSyncBlob& pose)
 {
     if (globComm->tileInfoComm.getDriveStarted())
     {
-        globComm->poseComm.startLocalTileFrame = globComm->poseComm.localTileFrame.getWithoutChildren();
+        pose.startLocalTileFrame = pose.localTileFrame.getWithoutChildren();
     }
 
     // Check if requested

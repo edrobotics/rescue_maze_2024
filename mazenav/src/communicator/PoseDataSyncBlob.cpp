@@ -49,8 +49,16 @@ namespace communication
 
     PoseDataSyncBlob PoseDataSyncBlob::borrow()
     {
-        // Forbid write access
+        // Restrict reading while copying
+        std::lock_guard<std::mutex> lock(mtx_readRights);
+        // Forbid write access until given back
         mtx_writeRights.lock();
+        return *this;
+    }
+
+    PoseDataSyncBlob PoseDataSyncBlob::getCopy()
+    {
+        std::lock_guard<std::mutex> lock(mtx_readRights);
         return *this;
     }
 
@@ -60,6 +68,13 @@ namespace communication
         // The borrow function guarantees that only one object is ever borrowed, so if you never giveBack without borrowing first, you should be safe.
         mtx_readRights.lock();
         *this = blob;
+        mtx_readRights.unlock();
+        mtx_writeRights.unlock();
+    }
+
+    void PoseDataSyncBlob::giveBackDummyData()
+    {
+        mtx_readRights.lock();
         mtx_readRights.unlock();
         mtx_writeRights.unlock();
     }
@@ -96,6 +111,8 @@ namespace communication
         targetFrame.setParentTS(&localTileFrame);
 
         startLocalTileFrame = pdBlob.startLocalTileFrame.getWithoutChildren();
+
+        freshness = pdBlob.freshness;
 
         return *this;
     }
@@ -165,6 +182,13 @@ namespace communication
     {
         std::lock_guard<std::mutex> lock(mtx_readRights);
         return startLocalTileFrame.getWithoutChildren();
+    }
+
+
+    int PoseDataSyncBlob::getFreshness()
+    {
+        std::lock_guard<std::mutex> lock(mtx_readRights);
+        return freshness;
     }
 
 }

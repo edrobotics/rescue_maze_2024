@@ -7,33 +7,63 @@ namespace communication
         
     }
 
-    // PoseCommunicator& PoseCommunicator::operator=(const PoseCommunicator& pComm)
-    // {
-    //     // std::cout << "Began assignment of PoseCommunicator" << std::endl;
+    PoseCommunicator& PoseCommunicator::operator=(const PoseCommunicator& pComm)
+    {
+        // std::cout << "Began assignment of PoseCommunicator" << std::endl;
 
-    //     poseDataBlob = pComm.poseDataBlob;
+        poseDataBlob = pComm.poseDataBlob;
 
-    //     freshness = pComm.freshness;
-    //     updated = pComm.updated;
+        updated = pComm.updated;
 
-    //     // std::cout << "copying times... ";
-    //     // std::cout << "done\n";
+        // std::cout << "copying times... ";
+        // std::cout << "done\n";
 
-    //     mtx_actionControl.lock();
-    //     isTurning = pComm.isTurning;
-    //     isDriving = pComm.isDriving;
-    //     mtx_actionControl.unlock();
+        mtx_actionControl.lock();
+        isTurning = pComm.isTurning;
+        isDriving = pComm.isDriving;
+        mtx_actionControl.unlock();
 
 
-    //     shouldflush = pComm.shouldflush;
+        shouldflush = pComm.shouldflush;
 
-    //     return *this;
-    // }
+        return *this;
+    }
 
-    // PoseCommunicator::PoseCommunicator(const PoseCommunicator& pComm)
-    // {
-    //     *this = pComm;
-    // }
+    PoseCommunicator::PoseCommunicator(const PoseCommunicator& pComm)
+    {
+        *this = pComm;
+    }
+
+
+    PoseDataSyncBlob PoseCommunicator::borrowData()
+    {
+        return poseDataBlob.borrow();
+    }
+
+    PoseDataSyncBlob PoseCommunicator::copyData(bool markAsRead)
+    {
+        if (markAsRead)
+        {
+            updated = false;
+        }
+        return poseDataBlob.getCopy();
+    }
+
+    void PoseCommunicator::giveBackData(PoseDataSyncBlob pdBlob)
+    {
+        poseDataBlob.giveBack(pdBlob);
+        mtx_updated.lock();
+        updated = true;
+        mtx_updated.unlock();
+    }
+
+    void PoseCommunicator::giveBackDummyData()
+    {
+        poseDataBlob.giveBackDummyData();
+    }
+
+    
+
 
 
     bool PoseCommunicator::getTurning()

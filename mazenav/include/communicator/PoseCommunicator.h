@@ -25,10 +25,9 @@ namespace communication
 
 
             // Control the updatedness of data
-            // Indicates whether or not values have been set before
-            int freshness {6};
-            // Indicates whether new values have been set. Set to true when putting in new values (PoseEstimator), false when reading (PathFollower)
+            // Indicates whether a new poseDataBlob has been set. Set to true when putting in new values (PoseEstimator), false when reading (PathFollower)
             bool updated {false};
+            std::mutex mtx_updated {};
 
             // Current robot action. Used for sensor data filtering
             bool isTurning {false};
@@ -48,27 +47,20 @@ namespace communication
             // Default constructor
             PoseCommunicator();
             // Copy constructor
-            // PoseCommunicator(const PoseCommunicator& pComm);
+            PoseCommunicator(const PoseCommunicator& pComm);
 
             // Copy the whole structure of frames.
-            // PoseCommunicator& operator=(const PoseCommunicator& pComm);
+            PoseCommunicator& operator=(const PoseCommunicator& pComm);
             
             PoseDataSyncBlob borrowData();
-            void giveBackData(PoseDataSyncBlob);
+            PoseDataSyncBlob copyData(bool markAsRead);
+            void giveBackData(PoseDataSyncBlob pdBlob);
+            // Return ownership without updating anything
+            void giveBackDummyData();
 
 
+            // Getters and setters -------------------------
 
-            // Getters, setters and calculations
-
-            // Take in a new speed and calculate robotSpeedAvg based on this.
-            void calcRobotSpeedAvg(CoordinateFrame newSpeed);
-
-
-            // // Control the target frame (used by PathFollower)
-            // void setTargetFrameTS(CoordinateFrame& frame);
-            // CoordinateFrame getTargetFrame();
-            // void setTargetFrameTransformTS(Transform tf);
-            
             // Returns true if the robot is not on the same tile as startLocalTileFrame
             bool hasDrivenStep();
 
