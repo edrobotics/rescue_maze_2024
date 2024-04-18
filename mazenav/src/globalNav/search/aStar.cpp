@@ -29,6 +29,7 @@ void AStar::aStarSearch()
     while (!aStarTileQueue.empty())
     {
         AStarTile* currentTile = getBestTile();
+        std::cout << "AS: On tile " << currentTile->position.toLoggable() << std::endl;
 
         if (currentTile->position == endPosition) 
 		{
@@ -38,6 +39,8 @@ void AStar::aStarSearch()
 
         expandTile(currentTile);
     }
+    std::cout << "AS: END BAD BAD " << std::endl;
+
 }
 
 AStarTile* AStar::createTile(MazePosition withPosition)
@@ -56,9 +59,11 @@ AStarTile* AStar::getBestTile()
 
 void AStar::constructPath(AStarTile* finalTile)
 {
+    std::cout << "AS: found way back" << std::endl;
     AStarTile* currentTile = finalTile;
     while (currentTile != nullptr) 
 	{
+        std::cout << "AS: Add tile back " << currentTile->position.toLoggable() << std::endl;
 		foundPath.addPositionOnTop(currentTile->position);
 		currentTile = currentTile->parent;
 	}
@@ -66,6 +71,7 @@ void AStar::constructPath(AStarTile* finalTile)
 
 void AStar::expandTile(AStarTile* tile)
 {
+    std::cout << "AS: Expanding tile " << tile->position.toLoggable() << std::endl;
     for (int direction = 0; direction < 4; direction++) 
     {
         GlobalDirections neighborDirection = (GlobalDirections)direction;
@@ -73,6 +79,7 @@ void AStar::expandTile(AStarTile* tile)
 		
         if (neighborIsAvailable(tile->position, newPosition, neighborDirection))
         {
+            std::cout << "ASTAR: Adding tile to queue " << newPosition.toLoggable() << std::endl;
             storeAndAddTileToQueue(createTileWithProperties(newPosition, tile));
         }
     }

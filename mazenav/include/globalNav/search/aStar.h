@@ -9,6 +9,7 @@
 #include "globalNav/map/mazeMap.h"
 #include "globalNav/map/mazePath.h"
 
+#include <iostream>
 class AStar
 {
 private:
