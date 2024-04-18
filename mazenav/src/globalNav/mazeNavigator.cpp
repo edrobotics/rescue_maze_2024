@@ -121,7 +121,7 @@ MazePath MazeNavigator::pathTo(MazePosition toPosition)
 {
     logToConsoleAndFile("Finding path to" + std::to_string(toPosition.tileX) + "," + std::to_string(toPosition.tileY));
     MazePath path = pathFinder.findPathTo(currentPosition, toPosition);
-    logToConsoleAndFile("Found " + pathToFollow.toLoggable());
+    logToConsoleAndFile("Found " + path.toLoggable());
     return path;
 }
 
