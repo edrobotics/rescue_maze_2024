@@ -95,6 +95,7 @@ class MazeNavigator
     void logToFile(std::string message);
     void logToConsole(std::string message);
     void logToConsoleAndFile(std::string message);
+    void logAndThrowException(std::string logText);
 
     public:
     MazeNavigator(communication::Communicator* communicatorInstance) : communicatorSingleton(communicatorInstance) {};

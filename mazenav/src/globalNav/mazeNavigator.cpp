@@ -67,18 +67,21 @@ bool MazeNavigator::anyTilesInPath()
 
 void MazeNavigator::followPath()
 {
+    if (pathToFollow.isEmpty())
+        logAndThrowException("followPath() EMPTY PATH");
+
     MazePosition nextPositionInPath = pathToFollow.getNextPosition();
     while (nextPositionInPath == currentPosition)
-        pathToFollow.getNextPosition();
+    {
+        nextPositionInPath = pathToFollow.getNextPosition();
+        if (pathToFollow.isEmpty()) break;
+    }
     
-    auto globalDirectionOfNextPosition = mazeMap.neighborToDirection(currentPosition, pathToFollow.getNextPosition());
+    auto globalDirectionOfNextPosition = mazeMap.neighborToDirection(currentPosition, nextPositionInPath);
     if (globalDirectionOfNextPosition.has_value())
         goToNeighborInDirection(globalToLocalDirection(globalDirectionOfNextPosition.value()));
     else
-    {
-        logToConsoleAndFile("NEXT TILE IS NOT NEIGHBOR");
-        throw std::exception();
-    }
+        logAndThrowException("followPath() NEXT TILE IS NOT NEIGHBOR");
 }
 
 void MazeNavigator::exploreMaze()
@@ -127,8 +130,15 @@ void MazeNavigator::startFollowingPathToLastUnexploredTile()
     if (!knownUnexploredTilePositions.empty()) 
     {
         while (mazeMap.tileHasProperty(knownUnexploredTilePositions.top(), Tile::TileProperty::Explored) || knownUnexploredTilePositions.top() == currentPosition)
+        {
             knownUnexploredTilePositions.pop();
+            if (knownUnexploredTilePositions.empty())
+                break;
+        }
+    }
         
+    if (!knownUnexploredTilePositions.empty()) 
+    {
         pathToFollow = pathTo(knownUnexploredTilePositions.top());
         knownUnexploredTilePositions.pop();
     }
@@ -434,4 +444,10 @@ void MazeNavigator::logToConsole(std::string message)
 void MazeNavigator::logToConsoleAndFile(std::string message)
 {
     communicatorSingleton->logger.logToAll("globalNav: " + message);
+}
+
+void MazeNavigator::logAndThrowException(std::string logText)
+{
+    logToConsoleAndFile("ERROR: " + logText);
+    throw std::exception();
 }
