@@ -310,11 +310,11 @@ void MazeNavigator::updatePosition(const communication::TileDriveProperties& til
     }
     else
     {
-        updatePositionNormally();
+        updatePositionFromDirection();
     }
 }
 
-void MazeNavigator::updatePositionNormally()
+void MazeNavigator::updatePositionFromDirection()
 {
     currentPosition = mazeMap.neighborInDirection(currentPosition, currentDirection);
 }
@@ -337,7 +337,7 @@ void MazeNavigator::updateInfoFromRamp()
 void MazeNavigator::couldNotCreateNewRamp() //DELETE AFTER LINKÖPING
 {
     shouldReturnFromTile = true; // Since we cannot create a new ramp we need to return via the ramp
-    updatePositionNormally();
+    updatePositionFromDirection();
     mazeMap.setTileProperty(currentPosition, Tile::TileProperty::Black, true);
 }
 

@@ -75,7 +75,7 @@ class MazeNavigator
     bool victimFlagRaised();
 
     void updatePosition(const communication::TileDriveProperties& tileDriveProperties);
-    void updatePositionNormally();
+    void updatePositionFromDirection();
     void updateInfoFromRamp();
     void updateInfoFromNewRamp();
     void couldNotCreateNewRamp();
@@ -100,7 +100,7 @@ class MazeNavigator
     void logTileProperties(std::vector<Tile::TileProperty> properties);
     void logPosition();
     void logDirection();
-    
+
     void logToFile(std::string message);
     void logToConsole(std::string message);
     void logToConsoleAndFile(std::string message);
