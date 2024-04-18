@@ -142,7 +142,7 @@ void PathFollower::runLoop()
         case communication::DriveCommand::driveForward:
             globComm->tileInfoComm.startDrive();
             setLinePos(GRID_SIZE/2.0);
-            drive(1);
+            drive();
             // We are ready to update data
             if (!abortMove)
             {
@@ -157,8 +157,10 @@ void PathFollower::runLoop()
 
         case communication::DriveCommand::driveBackward:
             setLinePos(GRID_SIZE/2.0);
-
-            drive(-1);
+            alignAngle(true);
+            // Set target point again because it was reset by alignAngle
+            setTargetPointTf(dC);
+            drive();
 
             if (!abortMove)
             {
@@ -170,11 +172,11 @@ void PathFollower::runLoop()
             break;
         
         case communication::DriveCommand::turnLeft:
-            turn(1);
+            turn();
             break;
 
         case communication::DriveCommand::turnRight:
-            turn(-1);
+            turn();
             break;
         
         case communication::DriveCommand::init:
@@ -194,9 +196,10 @@ void PathFollower::runLoop()
     driver.stop();
 }
 
-void PathFollower::drive(int direction)
+void PathFollower::drive()
 {
     bool finished {false};
+    int direction = getDriveDirection();
     globComm->poseComm.setTurning(false);
     globComm->poseComm.setDriving(true);
     while(!finished)
@@ -219,9 +222,31 @@ void PathFollower::drive(int direction)
     globComm->poseComm.setDriving(false);
 }
 
-void PathFollower::turn(int direction)
+void PathFollower::alignAngle(bool usePidAngle)
+{
+    yPid.restartPID();
+    angPid.restartPID();
+    driveTransSpeedPid.restartPID();
+    turnRotSpeedPid.restartPID();
+    turnTransSpeedPid.restartPID();
+
+    if (usePidAngle)
+    {
+        setTargetPointTf(Transform{static_cast<double>(GRID_SIZE/2), static_cast<double>(GRID_SIZE/2), 0, 0, 0, yPid.getCorrection(globComm->poseComm.robotFrame.transform.rot_z)});
+    }
+    else
+    {
+        setTargetPointTf(Transform{static_cast<double>(GRID_SIZE/2), static_cast<double>(GRID_SIZE/2), 0, 0, 0, 0});
+    }
+
+    turn();
+
+}
+
+void PathFollower::turn()
 {
     bool finished {false};
+    int direction = getTurnDirection();
     globComm->poseComm.setTurning(true);
     globComm->poseComm.setDriving(false);
     while (!finished)
@@ -339,6 +364,11 @@ void PathFollower::setTargetPointTf(communication::DriveCommand dC)
     
 }
 
+void PathFollower::setTargetPointTf(Transform tf)
+{
+    globComm->poseComm.setTargetFrameTransformTS(tf);
+}
+
 void PathFollower::setBackWardTargetPointTf()
 {
     Transform resultTf {static_cast<double>(GRID_SIZE)/2, static_cast<double>(GRID_SIZE)/2, 0, 0, 0, 0};
@@ -350,6 +380,29 @@ void PathFollower::setBackWardTargetPointTf()
     // Else, do nothing as resultTf is already on the correct tile.
 }
 
+int PathFollower::getTurnDirection()
+{
+    if (globComm->poseComm.getTargetFrame().transform.rot_z - globComm->poseComm.robotFrame.transform.rot_z > 0)
+    {
+        return 1;
+    }
+    else
+    {
+        return -1;
+    }
+}
+
+int PathFollower::getTurnDirection()
+{
+    if (globComm->poseComm.getTargetFrame().transform.pos_y - globComm->poseComm.robotFrame.transform.pos_y > 0)
+    {
+        return 1;
+    }
+    else
+    {
+        return -1;
+    }
+}
 
 double PathFollower::getDistLeftToTarget()
 {

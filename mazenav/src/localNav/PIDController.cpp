@@ -61,6 +61,13 @@ double PIDController::getCorrectionFromError(double error)
         derivative = 0;
     }
 
+    if (firstTime)
+    {
+        integralSum = 0;
+        derivative = 0;
+        firstTime = false;
+    }
+
     // Compute correction
     double correction {(kP*error + kI*integralSum + kD*derivative)};
 
@@ -80,4 +87,5 @@ void PIDController::restartPID()
     lastTime = std::chrono::steady_clock::now();
     lastCorr = 0;
     lastError = 0;
+    firstTime = true;
 }

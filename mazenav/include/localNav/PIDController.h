@@ -40,4 +40,6 @@ class PIDController
         std::chrono::steady_clock::time_point lastTime {std::chrono::steady_clock::now()};
         double integralSum {};
         double lastError {};
+
+        bool firstTime {true};
 };

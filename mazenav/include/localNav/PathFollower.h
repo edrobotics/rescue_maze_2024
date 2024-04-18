@@ -53,15 +53,25 @@ class PathFollower
         PIDController angPid {2, 0, 0.01};
 
         // Do the driving in accordance with parameters set earlier
-        void drive(int direction);
+        void drive();
         // Turn in accordance with parameters set earlier
-        void turn(int direction);
+        void turn();
+        // Align angle
+        // usePidAng - if false, target angle is 0. If true, target angle is determined by what the driving PID wants for the given parameters.
+        void alignAngle(bool usePidAng);
 
 
         // Set the target point given a drivecommand
         void setTargetPointTf(communication::DriveCommand dC);
+        // Set target point manually with a transform (for alignment)
+        void setTargetPointTf(Transform tf);
         // Set the targetPoint to return to the tile which you started from.
         void setBackWardTargetPointTf();
+        // Get turning direction given current robot pose and target robot pose
+        int getTurnDirection();
+        // Get driving direction given current robot pose and target robot pose
+        int getDriveDirection();
+        
         // The target point
         // CoordinateFrame targetPoint {nullptr};
         // The transform from targetpoint to robotFrame (targetpoint in relation to robotframe)
