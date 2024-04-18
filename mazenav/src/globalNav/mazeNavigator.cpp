@@ -67,9 +67,18 @@ bool MazeNavigator::anyTilesInPath()
 
 void MazeNavigator::followPath()
 {
+    MazePosition nextPositionInPath = pathToFollow.getNextPosition();
+    while (nextPositionInPath == currentPosition)
+        pathToFollow.getNextPosition();
+    
     auto globalDirectionOfNextPosition = mazeMap.neighborToDirection(currentPosition, pathToFollow.getNextPosition());
     if (globalDirectionOfNextPosition.has_value())
         goToNeighborInDirection(globalToLocalDirection(globalDirectionOfNextPosition.value()));
+    else
+    {
+        logToConsoleAndFile("NEXT TILE IS NOT NEIGHBOR");
+        throw std::exception();
+    }
 }
 
 void MazeNavigator::exploreMaze()
@@ -96,7 +105,11 @@ void MazeNavigator::addExplorableNeighborsToExplorationStack()
 void MazeNavigator::addNeighborToExplorationStackIfExplorable(LocalDirections direction)
 {
     if (canExploreNeighborInDirection(direction))
-        knownUnexploredTilePositions.push(getNeighborInDirection(direction));
+    {
+        MazePosition tileToAdd = getNeighborInDirection(direction);
+        knownUnexploredTilePositions.push(tileToAdd);
+        logToConsoleAndFile("Added tile " + tileToAdd.toLoggable() + " to explorationStack");
+    }
 }
 
 bool MazeNavigator::canExploreNeighborInDirection(LocalDirections neighborDirection)
@@ -111,11 +124,18 @@ MazePosition MazeNavigator::getNeighborInDirection(LocalDirections direction)
 
 void MazeNavigator::startFollowingPathToLastUnexploredTile()
 {
-    while (mazeMap.tileHasProperty(knownUnexploredTilePositions.top(), Tile::TileProperty::Explored) || knownUnexploredTilePositions.top() == currentPosition)
+    if (!knownUnexploredTilePositions.empty()) 
+    {
+        while (mazeMap.tileHasProperty(knownUnexploredTilePositions.top(), Tile::TileProperty::Explored) || knownUnexploredTilePositions.top() == currentPosition)
+            knownUnexploredTilePositions.pop();
+        
+        pathToFollow = pathTo(knownUnexploredTilePositions.top());
         knownUnexploredTilePositions.pop();
-    
-    pathToFollow = pathTo(knownUnexploredTilePositions.top());
-    knownUnexploredTilePositions.pop();
+    }
+    else
+    {
+        pathToFollow = pathTo(MazePosition(START_X, START_Y, START_LEVEL));
+    }
 
     followPath();
 }
@@ -362,7 +382,7 @@ void MazeNavigator::saveCheckpointInfo()
 void MazeNavigator::returnIfLittleTime()
 {
     MazePath pathHome = pathTo(MazePosition(START_X, START_Y, START_LEVEL));
-    if (communicatorSingleton->timer.timeRemaining() <= estimateTimeForPath(pathHome))
+    if (communicatorSingleton->timer.timeRemaining() <= estimateTimeForPath(pathHome) + END_WAIT_TIME)
     {
         logToConsoleAndFile("RETURNING HOME");
         pathToFollow = pathHome;

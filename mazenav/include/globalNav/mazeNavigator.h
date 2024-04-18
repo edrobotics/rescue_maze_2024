@@ -21,6 +21,7 @@
 #define LOOP_SLEEPTIME std::chrono::milliseconds(20)
 #define START_SLEEPTIME std::chrono::milliseconds(50)
 #define DRIVE_AND_TURN_TIME std::chrono::seconds(7)
+#define END_WAIT_TIME std::chrono::seconds(10)
 
 class MazeNavigator
 {
