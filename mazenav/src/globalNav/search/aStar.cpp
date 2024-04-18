@@ -114,7 +114,7 @@ bool AStar::neighborIsAvailableFrom(MazePosition tile, MazePosition neighbor, Gl
 
     return mazeMap->neighborIsAvailableFrom(tile, neighborDirection) && 
         !mazeMap->tileHasProperty(neighbor, Tile::TileProperty::SearchAlgorithmVisited) &&
-         mazeMap->tileHasProperty(neighbor, Tile::TileProperty::Explored);
+        (mazeMap->tileHasProperty(neighbor, Tile::TileProperty::Explored) || neighbor == endPosition);
 }
 
 bool AStar::inBounds(MazePosition position)
