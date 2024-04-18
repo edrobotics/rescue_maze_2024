@@ -19,11 +19,11 @@ int main()
     
     std::thread fusionT = std::thread(fusion::main, &comm, &piAbs);
     // std::thread globNavT = std::thread(globalNav::main, &comm);
-    // std::thread locNavT = std::thread(localNav::main, &comm, &piAbs);
+    std::thread locNavT = std::thread(localNav::main, &comm, &piAbs);
 
     fusionT.join();
     // globNavT.join();
-    // locNavT.join();
+    locNavT.join();
 
     return 0;
 }

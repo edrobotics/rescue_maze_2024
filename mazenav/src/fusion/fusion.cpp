@@ -31,7 +31,7 @@ void fusion::main(communication::Communicator* globComm, PiAbstractor* piAbs)
         std::cout << "Could not find TCS34725\n";
     }
 
-    tcs.test();
+    // tcs.test();
 
 
     // Set the correct fusion group

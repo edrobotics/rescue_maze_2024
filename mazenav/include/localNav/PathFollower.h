@@ -98,6 +98,8 @@ class PathFollower
 
         static constexpr double DRIVE_STOP_THRESHOLD {20};
         static constexpr double TURN_STOP_THRESHOLD {M_PI_4/3.0};
+        static constexpr double FRONT_OBSTACLE_DRIVE_STOP_THRESHOLD {80};
+        static constexpr double FRONT_OBSTACLE_STANDING_STOP_THRESHOLD {20};
 
 
 
@@ -170,7 +172,7 @@ class PathFollower
         void checkAndHandlePanic();
         void handleVictim();
         void handleBlackTile();
-        bool driveBackwards {false};
+        bool driveBackwardsBlacktile {false};
         void handleLOP();
 
 

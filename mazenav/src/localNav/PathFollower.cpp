@@ -33,7 +33,7 @@ double PathFollower::getRotSpeedDriving(int direction)
     // std::cout << "wantedAngle: " << wantedAngle << "angle: " << globComm->poseComm.robotFrame.transform.rot_z << "  ";
     angPid.setSetpoint(-direction*wantedAngle);
     double speedCorr {angPid.getCorrection(globComm->poseComm.robotFrame.transform.rot_z)};
-    std::cout << "speedCorr:" << speedCorr << "\n";
+    // std::cout << "speedCorr:" << speedCorr << "\n";
     return speedCorr;
     // return 0;
 }
@@ -127,7 +127,7 @@ void PathFollower::runLoop()
     globComm->poseComm.flushPose();
 
     communication::DriveCommand dC {};
-    if (driveBackwards)
+    if (driveBackwardsBlacktile)
     {
         dC = communication::DriveCommand::driveBackward;
         setBackWardTargetPointTf();
@@ -143,6 +143,8 @@ void PathFollower::runLoop()
         case communication::DriveCommand::driveForward:
             globComm->tileInfoComm.startDrive();
             setLinePos(GRID_SIZE/2.0);
+            // alignAngle(true);
+            // setTargetPointTf(dC);
             drive();
             // We are ready to update data
             if (!abortMove)
@@ -158,7 +160,11 @@ void PathFollower::runLoop()
 
         case communication::DriveCommand::driveBackward:
             setLinePos(GRID_SIZE/2.0);
-            alignAngle(true);
+            // if (!driveBackwardsBlacktile)
+            // {
+            //     // Only align if not driving back due to black tile
+            //     alignAngle(true);
+            // }
             // Set target point again because it was reset by alignAngle
             setTargetPointTf(dC);
             drive();
@@ -168,8 +174,8 @@ void PathFollower::runLoop()
                 globComm->tileInfoComm.setReadyForFill();
                 std::cout << "[PathFollower] Drove back------------------------------------------------------------------------\n";
             }
-            // Reset driveBackwards
-            driveBackwards = false;
+            // Reset driveBackwardsBlacktile
+            driveBackwardsBlacktile = false;
             break;
         
         case communication::DriveCommand::turnLeft:
@@ -294,9 +300,22 @@ bool PathFollower::checkIsFinishedDriving(int direction)
     // distLeftToTarget is updated in another loop, as it is used both for this and for speed control
 
     // If driving forward and there is an obstacle in front
-    if (direction==1 && globComm->poseComm.getFrontObstacleDist() !=-1 && globComm->poseComm.getFrontObstacleDist()<80)
+    if (direction==1 && globComm->poseComm.getFrontObstacleDist() !=-1)
     {
-        return true;
+        if (globComm->poseComm.getFrontObstacleDist()<FRONT_OBSTACLE_DRIVE_STOP_THRESHOLD && globComm->poseComm.robotSpeedAvg.transform.pos_y >= (0.69*DRIVE_SPEED_SLOW))
+        {
+            std::cout << "[PathFollower] Obstacle in front\n";
+            return true;
+        }
+        else if (globComm->poseComm.getFrontObstacleDist()<FRONT_OBSTACLE_STANDING_STOP_THRESHOLD)
+        {
+            std::cout << "[PathFollower] Obstacle in front\n";
+            return true;
+        }
+        else
+        {
+            return false;
+        }
     }
 
     if (direction*distLeftToTarget < DRIVE_STOP_THRESHOLD)
@@ -393,7 +412,7 @@ int PathFollower::getTurnDirection()
     }
 }
 
-int PathFollower::getTurnDirection()
+int PathFollower::getDriveDirection()
 {
     if (globComm->poseComm.getTargetFrame().transform.pos_y - globComm->poseComm.robotFrame.transform.pos_y > 0)
     {
@@ -526,14 +545,14 @@ void PathFollower::handleVictim()
 void PathFollower::handleBlackTile()
 {
     // Do not do anything if we are already reversing due to black tile
-    if (driveBackwards)
+    if (driveBackwardsBlacktile)
     {
         return;
     }
     driver.stop();
 
     // Reverse
-    driveBackwards = true;
+    driveBackwardsBlacktile = true;
     abortMove = true;
 }
 

@@ -231,15 +231,15 @@ communication::PoseCommunicator PoseEstimator::updateSimple()
 
     ConditionalAverageTerm wheelTransX {getWheelTransDiff()};
     ConditionalAverageTerm wheelTransY {wheelTransX};
-    wheelTransX.value = wheelTransX.value*sin(resultPose.lastRobotFrame.transform.rot_z) + resultPose.lastRobotFrame.transform.pos_x;
+    wheelTransX.value = -wheelTransX.value*sin(resultPose.lastRobotFrame.transform.rot_z) + resultPose.lastRobotFrame.transform.pos_x;
     wheelTransY.value = wheelTransY.value*cos(resultPose.lastRobotFrame.transform.rot_z) + resultPose.lastRobotFrame.transform.pos_y;
     transXAbs.terms.push_back(wheelTransX);
     transYAbs.terms.push_back(wheelTransY);
 
     // ConditionalAverageTerm tofTransX {getTofTransYDiff()};
     // ConditionalAverageTerm tofTransY {tofTransX};
-    // tofTransX.value = tofTransX.value*cos(resultPose.robotFrame.transform.rot_z) + resultPose.lastRobotFrame.transform.pos_x;
-    // tofTransY.value = tofTransY.value*sin(resultPose.robotFrame.transform.rot_z) + resultPose.lastRobotFrame.transform.pos_y;
+    // tofTransX.value = -tofTransX.value*sin(resultPose.robotFrame.transform.rot_z) + resultPose.lastRobotFrame.transform.pos_x;
+    // tofTransY.value = tofTransY.value*cos(resultPose.robotFrame.transform.rot_z) + resultPose.lastRobotFrame.transform.pos_y;
     // transXAbs.terms.push_back(tofTransX);
     // transYAbs.terms.push_back(tofTransY);
 
