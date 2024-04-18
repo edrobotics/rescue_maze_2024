@@ -124,7 +124,6 @@ void PathFollower::runLoop()
     angPid.restartPID();
     driveTransSpeedPid.restartPID();
     turnRotSpeedPid.restartPID();
-    globComm->poseComm.flushPose();
 
     communication::DriveCommand dC {};
     if (driveBackwardsBlacktile)
@@ -136,6 +135,10 @@ void PathFollower::runLoop()
     {
         dC = globComm->navigationComm.popCommand();
         setTargetPointTf(dC);
+        if (dC!=communication::DriveCommand::noAction)
+        {
+            globComm->poseComm.flushPose();
+        }
     }
 
     switch(dC)

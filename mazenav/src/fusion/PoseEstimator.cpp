@@ -38,6 +38,7 @@ void PoseEstimator::flush(FusionGroup fgroup, bool updatePose)
     {
         update(fgroup, true);
     }
+    std::cout << "[PoseEstimator] Flushed\n";
 }
 
 void PoseEstimator::runLoopLooper(communication::Communicator* globComm)
@@ -647,6 +648,8 @@ ConditionalAverageTerm PoseEstimator::getTofTransYDiff()
 ConditionalAverageTerm PoseEstimator::getTofYTrans(double angle, double yoffset, double xoffset)
 {
     ConditionalAverageTerm result {0, 1};
+    Tof::TofData td {sensors->tofs.tofData};
+    globComm->poseComm.setFrontObstacleDist(getFrontObstacleDist(td));
 
     // Check if angle is too great
     if (abs(angle)>MAX_Z_ROTATION_Y_TOF_ABS)
@@ -656,7 +659,6 @@ ConditionalAverageTerm PoseEstimator::getTofYTrans(double angle, double yoffset,
         return result;
     }
 
-    Tof::TofData td {sensors->tofs.tofData};
     // Get Y distances
     ConditionalAverageTerm flY {td.fl.avg*cos(angle), 1};
     ConditionalAverageTerm frY {td.fr.avg*cos(angle), 1};
@@ -725,7 +727,6 @@ ConditionalAverageTerm PoseEstimator::getTofYTrans(double angle, double yoffset,
         result.weight = 0;
     }
 
-    globComm->poseComm.setFrontObstacleDist(getFrontObstacleDist(td));
 
     
     // std::cout << "Result weight is: " << result.weight << std::endl;

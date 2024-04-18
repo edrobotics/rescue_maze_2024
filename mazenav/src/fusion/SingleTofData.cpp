@@ -14,6 +14,7 @@ void SingleTofData::updateAvg(int newVal)
     // If the value is 0, something is probably wrong.
     if (newVal==0)
     {
+        std::cout << "[sensors] ToF rejected data because of 0\n";
         return;
     }
     
