@@ -13,9 +13,9 @@ struct Victim
     };
     enum class RobotCamera
     {
-        LeftCam = 0,
-        FrontCam = 1,
-        RightCam = 2
+        FrontCam = 0,
+        RightCam = 1,
+        LeftCam = 2,
     };
 
     VictimType victimType;
