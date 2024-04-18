@@ -57,9 +57,11 @@ namespace communication
             void giveBack(PoseDataSyncBlob blob);
             void giveBackDummyData();
 
-            void resetFreshness();
+            void setTargetTransformTS(Transform tf);
+
+            // void resetFreshness();
             int getFreshness();
-            void decrementFreshness();
+            // void decrementFreshness();
 
 
             // Getters

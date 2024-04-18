@@ -54,9 +54,15 @@ namespace communication
             
             PoseDataSyncBlob borrowData();
             PoseDataSyncBlob copyData(bool markAsRead);
-            void giveBackData(PoseDataSyncBlob pdBlob);
+            void giveBackData(PoseDataSyncBlob pdBlob, bool markUpdated);
             // Return ownership without updating anything
             void giveBackDummyData();
+            // True if data has been updated. Does not reset flag.
+            bool getUpdated();
+
+            void setTargetFrameTransformTS(Transform tf);
+            Transform getTargetFrameTransformTS();
+
 
 
             // Getters and setters -------------------------

@@ -28,11 +28,11 @@ double PathFollower::getRotSpeedDriving(int direction)
         direction = -1;
     }
     // std::cout << "xPos: " << globComm->poseComm.robotFrame.transform.pos_x << "  ";
-    double wantedAngle {yPid.getCorrection(globComm->poseComm.robotFrame.transform.pos_x)};
+    double wantedAngle {yPid.getCorrection(globPose.robotFrame.transform.pos_x)};
     wantedAngle = capYPidOutput(wantedAngle);
     // std::cout << "wantedAngle: " << wantedAngle << "angle: " << globComm->poseComm.robotFrame.transform.rot_z << "  ";
     angPid.setSetpoint(-direction*wantedAngle);
-    double speedCorr {angPid.getCorrection(globComm->poseComm.robotFrame.transform.rot_z)};
+    double speedCorr {angPid.getCorrection(globPose.robotFrame.transform.rot_z)};
     // std::cout << "speedCorr:" << speedCorr << "\n";
     return speedCorr;
     // return 0;
@@ -62,7 +62,7 @@ double PathFollower::getTransSpeedDriving(int direction)
 
     driveTransSpeedPid.setSetpoint(driveSpeed);
     // std::cout << "driveSpeed: " << driveSpeed << "  speed: " << globComm->poseComm.robotSpeedAvg.transform.pos_y << "  ";
-    double corr {driveTransSpeedPid.getCorrection(globComm->poseComm.robotSpeedAvg.transform.pos_y)};
+    double corr {driveTransSpeedPid.getCorrection(globPose.robotSpeedAvg.transform.pos_y)};
     // std::cout << "transSpeedCorr: " << corr << "\n";
     return driveSpeed+corr;
     // return 200;
@@ -90,10 +90,10 @@ double PathFollower::getRotSpeedTurning(int direction)
         turnSpeed = direction*TURN_SPEED_STANDARD;
     }
 
-    #warning changed PID stuff - could break. Check here if it broke
+    // #warning changed PID stuff - could break. Check here if it broke
     turnRotSpeedPid.setSetpoint(turnSpeed);
     // std::cout << "direction fixed turnSpeed: " << direction*turnSpeed << "  speed: " << globComm->poseComm.robotSpeedAvg.transform.rot_z << "  ";
-    double corr {turnRotSpeedPid.getCorrection(globComm->poseComm.robotSpeedAvg.transform.rot_z)};
+    double corr {turnRotSpeedPid.getCorrection(globPose.robotSpeedAvg.transform.rot_z)};
     // std::cout << "rotSpeedCorr: " << corr << "\n";
     return (turnSpeed+corr);
 
@@ -124,6 +124,8 @@ void PathFollower::runLoop()
     angPid.restartPID();
     driveTransSpeedPid.restartPID();
     turnRotSpeedPid.restartPID();
+
+    globPose = globComm->poseComm.copyData(true);
 
     communication::DriveCommand dC {};
     if (driveBackwardsBlacktile)
@@ -214,9 +216,10 @@ void PathFollower::drive()
     globComm->poseComm.setDriving(true);
     while(!finished)
     {
-        if (globComm->poseComm.updated)
+        if (globComm->poseComm.getUpdated())
         {
-            globComm->poseComm.updated = false;
+            // Create local copy of pose
+            globPose = globComm->poseComm.copyData(true);
             checkAndHandlePanic();
             distLeftToTarget = getDistLeftToTarget();
             // std::cout << "distLeftToTarget: " << distLeftToTarget << "\n";
@@ -232,26 +235,26 @@ void PathFollower::drive()
     globComm->poseComm.setDriving(false);
 }
 
-void PathFollower::alignAngle(bool usePidAngle)
-{
-    yPid.restartPID();
-    angPid.restartPID();
-    driveTransSpeedPid.restartPID();
-    turnRotSpeedPid.restartPID();
-    turnTransSpeedPid.restartPID();
+// void PathFollower::alignAngle(bool usePidAngle)
+// {
+//     yPid.restartPID();
+//     angPid.restartPID();
+//     driveTransSpeedPid.restartPID();
+//     turnRotSpeedPid.restartPID();
+//     turnTransSpeedPid.restartPID();
 
-    if (usePidAngle)
-    {
-        setTargetPointTf(Transform{static_cast<double>(GRID_SIZE/2), static_cast<double>(GRID_SIZE/2), 0, 0, 0, yPid.getCorrection(globComm->poseComm.robotFrame.transform.rot_z)});
-    }
-    else
-    {
-        setTargetPointTf(Transform{static_cast<double>(GRID_SIZE/2), static_cast<double>(GRID_SIZE/2), 0, 0, 0, 0});
-    }
+//     if (usePidAngle)
+//     {
+//         setTargetPointTf(Transform{static_cast<double>(GRID_SIZE/2), static_cast<double>(GRID_SIZE/2), 0, 0, 0, yPid.getCorrection(globPose.robotFrame.transform.rot_z)});
+//     }
+//     else
+//     {
+//         setTargetPointTf(Transform{static_cast<double>(GRID_SIZE/2), static_cast<double>(GRID_SIZE/2), 0, 0, 0, 0});
+//     }
 
-    turn();
+//     turn();
 
-}
+// }
 
 void PathFollower::turn()
 {
@@ -261,9 +264,9 @@ void PathFollower::turn()
     globComm->poseComm.setDriving(false);
     while (!finished)
     {
-        if (globComm->poseComm.updated)
+        if (globComm->poseComm.getUpdated())
         {
-            globComm->poseComm.updated = false;
+            globPose = globComm->poseComm.copyData(true);
             checkAndHandlePanic();
             angLeftToTarget = getAngLeftToTarget();
             // std::cout << "angLeftToTarget: " << angLeftToTarget << "\n";
@@ -305,7 +308,7 @@ bool PathFollower::checkIsFinishedDriving(int direction)
     // If driving forward and there is an obstacle in front
     if (direction==1 && globComm->poseComm.getFrontObstacleDist() !=-1)
     {
-        if (globComm->poseComm.getFrontObstacleDist()<FRONT_OBSTACLE_DRIVE_STOP_THRESHOLD && globComm->poseComm.robotSpeedAvg.transform.pos_y >= (0.69*DRIVE_SPEED_SLOW))
+        if (globComm->poseComm.getFrontObstacleDist()<FRONT_OBSTACLE_DRIVE_STOP_THRESHOLD && globPose.robotSpeedAvg.transform.pos_y >= (0.69*DRIVE_SPEED_SLOW))
         {
             std::cout << "[PathFollower] Obstacle in front\n";
             return true;
@@ -382,14 +385,21 @@ void PathFollower::setTargetPointTf(communication::DriveCommand dC)
             // std::cerr << "Cannot set target point with this DriveCommand";
             break;
     }
-    
-    globComm->poseComm.setTargetFrameTransformTS(resultTf);
+
+    setTargetPointTf(resultTf);
     
 }
 
 void PathFollower::setTargetPointTf(Transform tf)
 {
-    globComm->poseComm.setTargetFrameTransformTS(tf);
+    // std::cout << "PathFollower setTargetPointTf borrowing...";
+    communication::PoseDataSyncBlob poseBlob {globComm->poseComm.borrowData()};
+    // std::cout << "done\n";
+    poseBlob.targetFrame.transform = tf;
+    // std::cout << "PathFollower setTargetPointTf giving back...";
+    globComm->poseComm.giveBackData(poseBlob, false);
+    // std::cout << "done\n";
+    // globComm->poseComm.setTargetFrameTransformTS(tf);
 }
 
 void PathFollower::setBackWardTargetPointTf()
@@ -401,11 +411,14 @@ void PathFollower::setBackWardTargetPointTf()
         resultTf.pos_y -= GRID_SIZE;
     }
     // Else, do nothing as resultTf is already on the correct tile.
+    
+    // Update the targetPoint
+    setTargetPointTf(resultTf);
 }
 
 int PathFollower::getTurnDirection()
 {
-    if (globComm->poseComm.getTargetFrame().transform.rot_z - globComm->poseComm.robotFrame.transform.rot_z > 0)
+    if (globPose.getTargetFrame().transform.rot_z - globPose.robotFrame.transform.rot_z > 0)
     {
         return 1;
     }
@@ -417,7 +430,7 @@ int PathFollower::getTurnDirection()
 
 int PathFollower::getDriveDirection()
 {
-    if (globComm->poseComm.getTargetFrame().transform.pos_y - globComm->poseComm.robotFrame.transform.pos_y > 0)
+    if (globPose.getTargetFrame().transform.pos_y - globPose.robotFrame.transform.pos_y > 0)
     {
         return 1;
     }
@@ -437,7 +450,7 @@ double PathFollower::getDistLeftToTarget()
         return 0;
     }
     
-    return globComm->poseComm.getTargetFrame().transform.pos_y - globComm->poseComm.robotFrame.transform.pos_y;
+    return globPose.getTargetFrame().transform.pos_y - globPose.robotFrame.transform.pos_y;
 }
 
 double PathFollower::getAngLeftToTarget()
@@ -447,7 +460,7 @@ double PathFollower::getAngLeftToTarget()
         return 0;
     }
     // Transform targetPointTf {targetPoint.getTransformLevelTo(&(globComm->poseComm.robotFrame), 1, 1)};
-    double rotDiff {globComm->poseComm.getTargetFrame().transform.rot_z - globComm->poseComm.robotFrame.transform.rot_z};
+    double rotDiff {globPose.getTargetFrame().transform.rot_z - globPose.robotFrame.transform.rot_z};
     if (rotDiff > M_PI)
     {
         rotDiff -= 2*M_PI;

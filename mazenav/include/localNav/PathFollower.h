@@ -43,6 +43,9 @@ class PathFollower
 
     private:
         communication::Communicator* globComm;
+        // To store local copy of pose
+        communication::PoseDataSyncBlob globPose {};
+        // Misc.
         KinematicDriver driver;
         PiAbstractor* piAbs {};
         LedControl ledController {};
@@ -62,7 +65,7 @@ class PathFollower
         void turn();
         // Align angle
         // usePidAng - if false, target angle is 0. If true, target angle is determined by what the driving PID wants for the given parameters.
-        void alignAngle(bool usePidAng);
+        // void alignAngle(bool usePidAng);
 
 
         // Set the target point given a drivecommand

@@ -49,11 +49,14 @@ namespace communication
         return poseDataBlob.getCopy();
     }
 
-    void PoseCommunicator::giveBackData(PoseDataSyncBlob pdBlob)
+    void PoseCommunicator::giveBackData(PoseDataSyncBlob pdBlob, bool markUpdated)
     {
         poseDataBlob.giveBack(pdBlob);
         mtx_updated.lock();
-        updated = true;
+        if (markUpdated)
+        {
+            updated = true;
+        }
         mtx_updated.unlock();
     }
 
@@ -62,7 +65,22 @@ namespace communication
         poseDataBlob.giveBackDummyData();
     }
 
+    bool PoseCommunicator::getUpdated()
+    {
+        std::lock_guard<std::mutex> lock(mtx_updated);
+        return updated;
+    }
+
     
+    void PoseCommunicator::setTargetFrameTransformTS(Transform tf)
+    {
+        poseDataBlob.setTargetTransformTS(tf);
+    }
+
+    Transform PoseCommunicator::getTargetFrameTransformTS()
+    {
+        return poseDataBlob.getTargetFrame().transform;
+    }
 
 
 
@@ -137,16 +155,17 @@ namespace communication
     bool PoseCommunicator::getShouldFlushPose()
     {
         std::lock_guard<std::mutex> lock(mtx_flush);
-        bool retVal {false};
-        if (shouldflush)
-        {
-            // shouldflush = false;
-            return true;
-        }
-        else
-        {
-            return shouldflush;
-        }
+        return shouldflush;
+        // bool retVal {false};
+        // if (shouldflush)
+        // {
+        //     // shouldflush = false;
+        //     return true;
+        // }
+        // else
+        // {
+        //     return shouldflush;
+        // }
     }
 
     void PoseCommunicator::flushDone()

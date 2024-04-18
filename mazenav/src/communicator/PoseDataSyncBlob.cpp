@@ -47,12 +47,23 @@ namespace communication
 
     }
 
+    void PoseDataSyncBlob::calcRobotSpeedAvg(CoordinateFrame newSpeed)
+    {
+        // std::cout << "Begin speedCalc... ";
+        robotSpeedCur = newSpeed;
+        robotSpeeds.at(historyIndex) = robotSpeedCur;
+        incrementHistoryIndex();
+        calcAverage(robotSpeedAvg);
+        // robotSpeedAvg = robotSpeedCur;
+        // std::cout << "calc done" << "\n";
+    }
+
     PoseDataSyncBlob PoseDataSyncBlob::borrow()
     {
         // Restrict reading while copying
-        std::lock_guard<std::mutex> lock(mtx_readRights);
         // Forbid write access until given back
         mtx_writeRights.lock();
+        std::lock_guard<std::mutex> lock(mtx_readRights);
         return *this;
     }
 
@@ -75,6 +86,15 @@ namespace communication
     void PoseDataSyncBlob::giveBackDummyData()
     {
         mtx_readRights.lock();
+        mtx_readRights.unlock();
+        mtx_writeRights.unlock();
+    }
+
+    void PoseDataSyncBlob::setTargetTransformTS(Transform tf)
+    {
+        mtx_writeRights.lock();
+        mtx_readRights.lock();
+        targetFrame.transform = tf;
         mtx_readRights.unlock();
         mtx_writeRights.unlock();
     }

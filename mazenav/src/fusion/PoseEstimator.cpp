@@ -72,7 +72,9 @@ void PoseEstimator::update(FusionGroup fgroup, bool doUpdate)
     // std::cout << "updated sensors  ";
     // std::cout << "Creating poseResult... ";
     // Borrow the dataBlob of poseComm. Use this borrowed version everywhere.
+    // std::cout << "PoseEstimator borrowing...";
     communication::PoseDataSyncBlob poseResult {globComm->poseComm.borrowData()};
+    // std::cout << "done\n";
     // std::cout << "done\n";
     // Store relevant variables for use during cycle
     isTurning = globComm->poseComm.getTurning();
@@ -126,7 +128,9 @@ void PoseEstimator::update(FusionGroup fgroup, bool doUpdate)
     if (doUpdate)
     {
         // Write the new pose with only changes.
-        globComm->poseComm.giveBackData(poseResult);
+        // std::cout << "PoseEstimator giving back...";
+        globComm->poseComm.giveBackData(poseResult, true);
+        // std::cout << "done\n";
     }
     else
     {
@@ -135,7 +139,7 @@ void PoseEstimator::update(FusionGroup fgroup, bool doUpdate)
     // Unlock poseComm to allow access to targetPoint again.
 
     // std::cout << "robotSpeed: " << globComm->poseComm.robotSpeedAvg << "\n";
-    // std::cout << "robotFrame: " << globComm->poseComm.robotFrame << /*"  lastRobotFrame: " << globComm->poseComm.lastRobotFrame << */ "\n";
+    std::cout << "robotFrame: " << poseResult.robotFrame << /*"  lastRobotFrame: " << globComm->poseComm.lastRobotFrame << */ "\n";
     // sensors->tofs.printVals(true);
     // sensors->imu0.printVals(true);
 
