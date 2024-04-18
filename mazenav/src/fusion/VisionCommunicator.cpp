@@ -53,54 +53,22 @@ vector<Victim> VisionCommunicator::getVictims()
     vector<Victim> victimDatas;
     auto dataOptional = getData();
     if (!dataOptional) return victimDatas;
+    if (dataOptional.value().empty()) return victimDatas;
 
     std::vector<std::string> commands = split(dataOptional.value(), '!');
     if (dataOptional.value()[0] != '!') commands.erase(commands.begin()); //Remove first element, as it did not >start< with a '!'
 
     for (auto i = commands.begin(); i != commands.end(); i++)
     {
-        if ((*i).size() < 8) continue;
-        //Process
-        std::vector<std::string> segments = split(*i, ',');
-        struct Victim vicData;
-
-        //Check for !v
-        if (!findChar(segments[1], {'v'})) continue;
-
-        //Check for 'p'/'c' - potential/confirmed
-        auto detType = findChar(segments[2], {'p', 'c'});
-        if (!detType) continue;
-        vicData.isConfirmedByVision = (detType.value() == 'c');
-
-        //Check type - 'g'/'y'/'r'/'u'/'s'/'h'
-        auto vicType = parseVictimType(segments[3]);
-        if (!vicType) continue;
-        vicData.victimType = vicType.value();
-
-        //Parsing numbers
-        //Check which camera - 0++
-        auto cam = parseInt(segments[4]);
-        if (!cam) continue;
-        vicData.captureCamera = (Victim::RobotCamera)cam.value();
-
-        //Position X int mm (+/-)
-        auto victimX = parseInt(segments[5]);
-        if (!victimX) continue;
-
-        //Position Y int mm (+/-)
-        auto victimY = parseInt(segments[6]);
-        if (!victimY) continue;
-
-        //Unix timestamp
-        auto visionTimestamp = parseLong(segments[7]);
-        if (!visionTimestamp) continue;
-        vicData.captureUnixTimestamp = visionTimestamp.value();
-
-        victimDatas.push_back(vicData);
+        auto constructedVictimOptional = constructVictim(*i);
+        if (constructedVictimOptional)
+            victimDatas.push_back(constructedVictimOptional.value());
     }
     
     return victimDatas;
 }
+
+
 
 optional<string> VisionCommunicator::getData()
 {
@@ -131,6 +99,48 @@ optional<string> VisionCommunicator::getData()
     printf("Recived ::%s::\n", buffer);
 
     return make_optional<string>(buffer);
+}
+
+
+std::optional<Victim> VisionCommunicator::constructVictim(std::string victimData)
+{
+    if (victimData.size() < 8) return nullopt;
+    //Process
+    std::vector<std::string> segments = split(victimData, ',');
+    struct Victim vicData;
+
+    //Check for !v
+    if (!findChar(segments[1], {'v'})) return nullopt;
+
+    //Check for 'p'/'c' - potential/confirmed
+    auto detType = findChar(segments[2], {'p', 'c'});
+    if (!detType) return nullopt;
+    vicData.isConfirmedByVision = (detType.value() == 'c');
+
+    //Check type - 'g'/'y'/'r'/'u'/'s'/'h'
+    auto vicType = parseVictimType(segments[3]);
+    if (!vicType) return nullopt;
+    vicData.victimType = vicType.value();
+
+    //Parsing numbers
+    //Check which camera - 0++
+    auto cam = parseInt(segments[4]);
+    if (!cam) return nullopt;
+    vicData.captureCamera = (Victim::RobotCamera)cam.value();
+
+    //Position X int mm (+/-)
+    auto victimX = parseInt(segments[5]);
+    if (!victimX) return nullopt;
+
+    //Position Y int mm (+/-)
+    auto victimY = parseInt(segments[6]);
+    if (!victimY) return nullopt;
+
+    //Unix timestamp
+    auto visionTimestamp = parseLong(segments[7]);
+    if (!visionTimestamp) return nullopt;
+    vicData.captureUnixTimestamp = visionTimestamp.value();
+    return vicData;
 }
 
 vector<string> VisionCommunicator::split(string& split, char deliminator)

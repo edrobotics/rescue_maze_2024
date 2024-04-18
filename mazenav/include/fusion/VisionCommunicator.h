@@ -24,6 +24,8 @@ class VisionCommunicator
 
     private:
     std::optional<std::string> getData();
+    std::optional<Victim> constructVictim(std::string victimData);
+
     std::vector<std::string> split(std::string& split, char deliminator);
 
     std::optional<char> findChar(std::string& searchString, std::vector<char> chars);
