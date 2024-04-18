@@ -234,6 +234,7 @@ namespace communication
 
     void PoseCommunicator::flushDone()
     {
+        std::lock_guard<std::mutex> lock(mtx_controlVars);
         shouldflush = false;
     }
 
