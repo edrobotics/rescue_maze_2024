@@ -2,7 +2,8 @@ import cv2
 import numpy as np
 
 class ColoredSquareDetection:
-    def __init__(self, min_area=5000):
+    def __init__(self, min_area=5000, debug = False):
+        self.debug = False
         self.min_area = min_area
 
     def increase_brightness(self, image, value=115):
@@ -80,13 +81,13 @@ class ColoredSquareDetection:
                             cv2.drawContours(image, [approx], -1, (0, 0, 255), 2)
                             text = "Red ({}, {})".format(x + w // 2, y + h // 2)
                             cv2.putText(image, text, (x, y), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 2)
-                            print("Color: Red, Position: ({}, {})".format(x + w // 2, y + h // 2))
+                            if self.debug: print("Color: Red, Position: ({}, {})".format(x + w // 2, y + h // 2))
                             return image, "red", (x + w // 2, y + h // 2)
                         else:  # If no red is found, draw the square in green and add text
                             cv2.drawContours(image, [approx], -1, (0, 255, 0), 2)
                             text = "Green ({}, {})".format(x + w // 2, y + h // 2)
                             cv2.putText(image, text, (x, y), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
-                            print("Color: Green, Position: ({}, {})".format(x + w // 2, y + h // 2))
+                            if self.debug: print("Color: Green, Position: ({}, {})".format(x + w // 2, y + h // 2))
                             return image,  "green", (x + w // 2, y + h // 2) 
 
         return self.detect_yellow_square(original_image=image)

@@ -74,6 +74,7 @@ class validation:
 
         else:
             self.showsource = showsource
+            self.showWrong = False
         self.config_path = os.path.join(self.base_folder, "config.ini")
         self.imgproc = vc.imgproc(bLogging=False, dir_path=dir_path,bComms=False,training=training)
 
@@ -147,10 +148,12 @@ class validation:
 
 
     def evaluatefolder(self,victim):
+        self.detected = {"H":0,"S":0,"U":0, "red": 0, "green": 0, "yellow": 0}
         print("evaluating", victim)
         cams = ("picam", "cam1", "cam2")
         #for cam in cams:
         if True:
+            #source_folder = os.path.join(self.base_folder,"log/previous",victim)
             source_folder = os.path.join(self.base_folder,"log/sorted",victim)
             identifiedVictims =self.iterateFolder(source_folder, victim = victim)
 
@@ -168,6 +171,7 @@ class validation:
     def runLog(self,folder):
 
         source_folder = os.path.join(self.base_folder,"log/unsorted/log" + folder)
+
         identifiedVictims =self.iterateFolder(source_folder)
         
 
