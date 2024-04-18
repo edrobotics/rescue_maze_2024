@@ -188,6 +188,12 @@ void PathFollower::runLoop()
         case communication::DriveCommand::turnRight:
             turn();
             break;
+
+        case communication::DriveCommand::turnBack:
+            turn();
+            setTargetPointTf(communication::DriveCommand::turnLeft);
+            turn();
+            break;
         
         case communication::DriveCommand::init:
             globComm->tileInfoComm.startDrive();
@@ -376,6 +382,10 @@ void PathFollower::setTargetPointTf(communication::DriveCommand dC)
         
         case communication::DriveCommand::turnRight:
             resultTf.rot_z -= M_PI_2;
+            break;
+        
+        case communication::DriveCommand::turnBack:
+            resultTf.rot_z += M_PI;
             break;
 
         default:
