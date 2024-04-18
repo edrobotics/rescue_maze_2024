@@ -33,6 +33,7 @@ void Sensors::update(bool capture)
             {
                 motorsUpdated = motors.getVals();
             }
+            std::this_thread::sleep_for(std::chrono::milliseconds(2));
         }
         // tofs.printVals(true);
 

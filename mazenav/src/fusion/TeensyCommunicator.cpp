@@ -74,6 +74,8 @@ bool TeensyCommunicator::readFrequent()
         // {
         //     cont = true;
         // }
+
+        std::this_thread::sleep_for(std::chrono::milliseconds(3));
     }
 
     uint8_t indata [transData.W_DATA_LEN] {};
