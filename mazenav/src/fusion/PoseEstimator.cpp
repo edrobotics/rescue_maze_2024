@@ -53,10 +53,10 @@ void PoseEstimator::runLoopLooper(communication::Communicator* globComm)
 void PoseEstimator::runLoop()
 {
     // Currently: update as fast as possible for the given FusionGroup
-    // if (globComm->poseComm.getShouldFlushPose())
-    // {
-    //     flush(fusionGroup);
-    // }
+    if (globComm->poseComm.getShouldFlushPose())
+    {
+        flush(fusionGroup);
+    }
     update(fusionGroup, true);
 }
 

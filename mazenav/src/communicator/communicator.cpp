@@ -202,8 +202,8 @@ namespace communication
     {
         mtx_controlVars.lock();
         shouldflush = true;
-        bool goOn {true};
         mtx_controlVars.unlock();
+        bool goOn {true};
 
         while (goOn)
         {
@@ -213,7 +213,6 @@ namespace communication
             mtx_controlVars.unlock();
         }
 
-        shouldflush = false;
         std::this_thread::sleep_for(std::chrono::milliseconds(300));
         
     }
@@ -221,7 +220,16 @@ namespace communication
     bool PoseCommunicator::getShouldFlushPose()
     {
         std::lock_guard<std::mutex> lock(mtx_controlVars);
-        return shouldflush;
+        bool retVal {false};
+        if (shouldflush)
+        {
+            shouldflush = false;
+            return true;
+        }
+        else
+        {
+            return shouldflush;
+        }
     }
 
 }
