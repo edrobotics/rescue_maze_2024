@@ -30,7 +30,7 @@ public:
 
     bool availableNeighborTilesAreExplored(MazePosition position);
     bool neighborIsAvailableAndUnexplored(MazePosition position, GlobalDirections neighborDirection);
-    bool neighborIsAvailable(MazePosition position, GlobalDirections neighborDirection);
+    bool neighborIsAvailableFrom(MazePosition position, GlobalDirections neighborDirection);
 
     bool tileHasProperty(MazePosition tilePosition, Tile::TileProperty tileProperty);
     bool neighborHasProperty(MazePosition basePosition, GlobalDirections neighborDirection, Tile::TileProperty tileProperty);

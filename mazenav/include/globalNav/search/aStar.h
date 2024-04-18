@@ -40,11 +40,12 @@ private:
     AStarTile* createTileWithProperties(MazePosition newPosition, AStarTile* parentTile);
     int heuristic(MazePosition fromPosition);
 
-    bool neighborIsAvailable(MazePosition tile, MazePosition neighbor, GlobalDirections neighborDirection);
+    bool neighborIsAvailableFrom(MazePosition tile, MazePosition neighbor, GlobalDirections neighborDirection);
     bool inBounds(MazePosition position);
+
+    void cleanUp();
 
 public:
     AStar(MazePosition currentPosition, MazePosition toPosition, MazeMap* map);
-    ~AStar();
     MazePath getAStarResult();
 };

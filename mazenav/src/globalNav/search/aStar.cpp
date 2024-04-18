@@ -4,9 +4,10 @@ AStar::AStar(MazePosition currentPosition, MazePosition toPosition, MazeMap* map
             startPosition(currentPosition), endPosition(toPosition), mazeMap(map)
 {
     aStarSearch();
+    cleanUp();
 }
 
-AStar::~AStar()
+void AStar::cleanUp()
 {
     while (!toDelete.empty())
     {
@@ -77,9 +78,9 @@ void AStar::expandTile(AStarTile* tile)
         GlobalDirections neighborDirection = (GlobalDirections)direction;
         MazePosition newPosition = mazeMap->neighborInDirection(tile->position, neighborDirection);
 		
-        if (neighborIsAvailable(tile->position, newPosition, neighborDirection))
+        if (neighborIsAvailableFrom(tile->position, newPosition, neighborDirection))
         {
-            std::cout << "ASTAR: Adding tile to queue " << newPosition.toLoggable() << std::endl;
+            std::cout << "AS: Adding tile to queue " << newPosition.toLoggable() << std::endl;
             storeAndAddTileToQueue(createTileWithProperties(newPosition, tile));
         }
     }
@@ -107,13 +108,13 @@ void AStar::storeAndAddTileToQueue(AStarTile* tile)
     aStarTileQueue.push(tile);
 }
 
-bool AStar::neighborIsAvailable(MazePosition tile, MazePosition neighbor, GlobalDirections neighborDirection)
+bool AStar::neighborIsAvailableFrom(MazePosition tile, MazePosition neighbor, GlobalDirections neighborDirection)
 {
     if (!inBounds(neighbor)) return false;
 
-    return mazeMap->neighborIsAvailable(tile, neighborDirection) && 
-           !mazeMap->tileHasProperty(neighbor, Tile::TileProperty::SearchAlgorithmVisited) &&
-           !mazeMap->tileHasProperty(neighbor, Tile::TileProperty::Explored);
+    return mazeMap->neighborIsAvailableFrom(tile, neighborDirection) && 
+        !mazeMap->tileHasProperty(neighbor, Tile::TileProperty::SearchAlgorithmVisited) &&
+         mazeMap->tileHasProperty(neighbor, Tile::TileProperty::Explored);
 }
 
 bool AStar::inBounds(MazePosition position)
