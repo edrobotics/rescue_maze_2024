@@ -23,7 +23,7 @@ int main() //Expandera mer i riktningen åt senare och tidigare punkter? (om de 
     {
         auto start = std::chrono::high_resolution_clock::now();
 
-        lidar.getLidarData();
+        lidar.getLidarPose();
 
         auto end = std::chrono::high_resolution_clock::now();
         std::cout << "Full analysis:" << std::chrono::duration_cast<std::chrono::microseconds>(end-start).count() << "µs" << std::endl;

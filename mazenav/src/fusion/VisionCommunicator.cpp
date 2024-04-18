@@ -68,8 +68,6 @@ vector<Victim> VisionCommunicator::getVictims()
     return victimDatas;
 }
 
-
-
 optional<string> VisionCommunicator::getData()
 {
     fd_set rfd;
@@ -147,6 +145,7 @@ std::optional<Victim> VisionCommunicator::constructVictim(std::string victimData
 bool VisionCommunicator::hasWallInCameraDirection(Victim::RobotCamera camera)
 {
     #warning IMPLEMENT
+    //If onRamp return false
     switch (camera)
     {
     case Victim::RobotCamera::FrontCam:

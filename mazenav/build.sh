@@ -25,7 +25,7 @@ fi
 # rm -R ./build/
 mkdir ./build
 
-g++ -g -std=gnu++17 -pedantic -Wall -Wextra -Werror=return-type `find src -iregex ".*\.cpp"` `find ../shared_lib -iregex ".*\.cpp"` -I./include/ -I../shared_lib/ $wiringPiInclude -o ./build/mazenav -Og $envDefine #use O3 or O2 if not working (previously Ofast)
+g++ -g -std=gnu++17 -pedantic -Wall -Wextra -Werror=return-type `find src -iregex ".*\.cpp"` `find ../shared_lib -iregex ".*\.cpp"` -I./include/ -I../shared_lib/ $wiringPiInclude -o ./build/mazenav `pkg-config --cflags --libs opencv4` -Og $envDefine #use O3 or O2 if not working (previously Ofast)
 
 if [ $? -eq 1 ]; then
     echo "Could not build (compile/link/other dark magic)... :("

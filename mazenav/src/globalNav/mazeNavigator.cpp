@@ -6,10 +6,13 @@ void MazeNavigator::init()
     logToConsoleAndFile("sending init");
     giveLowLevelInstruction(communication::DriveCommand::init);
 
-    checkFlagsUntilDriveIsFinished();
+    // checkFlagsUntilDriveIsFinished();
 
     communication::TileDriveProperties tileDriveProperties = communicatorSingleton->tileInfoComm.readLatestTileProperties();
-    updateMap(tileDriveProperties);
+    // updateMap(tileDriveProperties);
+    std::vector<Tile::TileProperty> tileProperties = {Tile::TileProperty::WallNorth};
+
+    mazeMap.makeTileExploredWithProperties(currentPosition, tileProperties);
 }
 
 void MazeNavigator::makeNavigationDecision()
@@ -166,6 +169,21 @@ void MazeNavigator::goToNeighborInDirection(LocalDirections direction)
 
 void MazeNavigator::turnToDirection(LocalDirections direction)
 {
+    if (direction == LocalDirections::Right) 
+    {
+        giveLowLevelInstruction(communication::DriveCommand::turnRight);
+        logToConsoleAndFile("turning right");
+    }
+    if (direction == LocalDirections::Left)
+    {
+        giveLowLevelInstruction(communication::DriveCommand::turnLeft);
+        logToConsoleAndFile("turning left");
+    }
+    if (direction == LocalDirections::Back)
+    { 
+        giveLowLevelInstruction(communication::DriveCommand::turnBack);
+        logToConsoleAndFile("turning to back");
+    }
     if (direction == LocalDirections::Right) 
     {
         giveLowLevelInstruction(communication::DriveCommand::turnRight);

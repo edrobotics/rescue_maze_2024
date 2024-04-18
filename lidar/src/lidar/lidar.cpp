@@ -1,6 +1,6 @@
 #include "lidar/lidar.h"
 
-LidarData Lidar::getLidarData()
+LidarData Lidar::getLidarPose()
 {
     LidarLineMaker lineMaker(lidarDataGetter.getData());
     LidarLineAnalyser lineAnalyser(lineMaker.getLines());

@@ -14,5 +14,5 @@ private:
     LidarDataGetter lidarDataGetter;
 public:
     
-    LidarData getLidarPose();
+    LidarTilePose getLidarPose();
 };
