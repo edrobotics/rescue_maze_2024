@@ -6,18 +6,18 @@ void MazeNavigator::init()
     logToConsoleAndFile("sending init");
     giveLowLevelInstruction(communication::DriveCommand::init);
 
-    // checkFlagsUntilDriveIsFinished();
+    checkFlagsUntilDriveIsFinished();
 
     communication::TileDriveProperties tileDriveProperties = communicatorSingleton->tileInfoComm.readLatestTileProperties();
-    // updateMap(tileDriveProperties);
-    std::vector<Tile::TileProperty> tileProperties = {Tile::TileProperty::WallNorth};
-
-    mazeMap.makeTileExploredWithProperties(currentPosition, tileProperties);
+    updateMap(tileDriveProperties);
 }
 
 void MazeNavigator::makeNavigationDecision()
 {
+    returnIfLittleTime();
     addExplorableNeighborsToExplorationStack();
+
+    if (endConditionsAreMet()) finishRun();
 
     if (anyTilesInPath()) 
         followPath();
@@ -61,6 +61,22 @@ bool MazeNavigator::wallVectorHasWall(std::vector<communication::Walls> walls, c
             return true;
     }
     return false;
+}
+
+bool MazeNavigator::endConditionsAreMet()
+{
+    return currentPosition == StartPosition && knownUnexploredTilePositions.empty();
+}
+
+void MazeNavigator::finishRun()
+{
+    logToConsoleAndFile("!!!!!!!!!!!!!");
+    logToConsoleAndFile("!! IS DONE !!");
+    logToConsoleAndFile("!! OH YEAH !!");
+    logToConsoleAndFile("!! IS DONE !!");
+    logToConsoleAndFile("!!!!!!!!!!!!!");
+
+    std::this_thread::sleep_for(END_SLEEP_TIME);
 }
 
 bool MazeNavigator::anyTilesInPath()
@@ -130,7 +146,7 @@ MazePosition MazeNavigator::getNeighborInDirection(LocalDirections direction)
 
 void MazeNavigator::startFollowingPathToLastUnexploredTile()
 {
-    if (!knownUnexploredTilePositions.empty()) 
+    if (!knownUnexploredTilePositions.empty())
     {
         while (mazeMap.tileHasProperty(knownUnexploredTilePositions.top(), Tile::TileProperty::Explored) || knownUnexploredTilePositions.top() == currentPosition)
         {
@@ -147,7 +163,7 @@ void MazeNavigator::startFollowingPathToLastUnexploredTile()
     }
     else
     {
-        pathToFollow = pathTo(MazePosition(START_X, START_Y, START_LEVEL));
+        pathToFollow = pathTo(StartPosition);
     }
 
     followPath();
@@ -169,21 +185,6 @@ void MazeNavigator::goToNeighborInDirection(LocalDirections direction)
 
 void MazeNavigator::turnToDirection(LocalDirections direction)
 {
-    if (direction == LocalDirections::Right) 
-    {
-        giveLowLevelInstruction(communication::DriveCommand::turnRight);
-        logToConsoleAndFile("turning right");
-    }
-    if (direction == LocalDirections::Left)
-    {
-        giveLowLevelInstruction(communication::DriveCommand::turnLeft);
-        logToConsoleAndFile("turning left");
-    }
-    if (direction == LocalDirections::Back)
-    { 
-        giveLowLevelInstruction(communication::DriveCommand::turnBack);
-        logToConsoleAndFile("turning to back");
-    }
     if (direction == LocalDirections::Right) 
     {
         giveLowLevelInstruction(communication::DriveCommand::turnRight);
@@ -300,6 +301,8 @@ void MazeNavigator::updatePosition(const communication::TileDriveProperties& til
     {
         if (tileDriveProperties.tileColourOnNewTile == TileColours::Black)
             mazeMap.setTileProperty(getNeighborInDirection(globalToLocalDirection(currentDirection)), Tile::TileProperty::Black, true);
+        if (anyTilesInPath())
+            pathToFollow = pathTo(pathToFollow.peekBottomPosition());
     }
     else if(tileDriveProperties.usedRamp)
     {
@@ -418,17 +421,25 @@ void MazeNavigator::saveCheckpointInfo()
 
 void MazeNavigator::returnIfLittleTime()
 {
-    MazePath pathHome = pathTo(MazePosition(START_X, START_Y, START_LEVEL));
-    if (communicatorSingleton->timer.timeRemaining() <= estimateTimeForPath(pathHome) + END_WAIT_TIME)
+    if (returningBecauseTime) return;
+
+    MazePath pathHome = pathTo(StartPosition);
+    if (communicatorSingleton->timer.timeRemaining() <= estimateTimeForPath(pathHome) + END_BUFFER_TIME)
     {
         logToConsoleAndFile("RETURNING HOME");
         pathToFollow = pathHome;
+        returningBecauseTime = true;
     }
 }
 
 std::chrono::seconds MazeNavigator::estimateTimeForPath(MazePath path)
 {
     return path.getPositionAmount() * DRIVE_AND_TURN_TIME;
+}
+
+void MazeNavigator::logPosition()
+{
+    logToConsoleAndFile("CurrentPosition: " + currentPosition.toLoggable());
 }
 
 void MazeNavigator::logDirection()

@@ -21,7 +21,8 @@
 #define LOOP_SLEEPTIME std::chrono::milliseconds(20)
 #define START_SLEEPTIME std::chrono::milliseconds(50)
 #define DRIVE_AND_TURN_TIME std::chrono::seconds(7)
-#define END_WAIT_TIME std::chrono::seconds(10)
+#define END_BUFFER_TIME std::chrono::seconds(10)
+#define END_SLEEP_TIME std::chrono::seconds(100)
 
 class MazeNavigator
 {
@@ -34,7 +35,8 @@ class MazeNavigator
     bool shouldReturnFromTile = false;
     bool sentNewDriveCommand = false;
 
-    MazePosition currentPosition = MazePosition(START_X, START_Y, START_LEVEL);
+    const MazePosition StartPosition{START_X, START_Y, START_LEVEL};
+    MazePosition currentPosition = StartPosition;
     GlobalDirections currentDirection = START_DIRECTION;
     MazePosition latestCheckpointPosition = currentPosition;
 
@@ -43,6 +45,10 @@ class MazeNavigator
     MazePath pathToFollow;
 
     bool lackOfProgressActive = false;
+    bool returningBecauseTime = false;
+
+    bool endConditionsAreMet();
+    void finishRun();
 
     void exploreMaze();
 
@@ -92,7 +98,9 @@ class MazeNavigator
     bool wallVectorHasWall(std::vector<communication::Walls> walls, communication::Walls searchWall);
 
     void logTileProperties(std::vector<Tile::TileProperty> properties);
+    void logPosition();
     void logDirection();
+    
     void logToFile(std::string message);
     void logToConsole(std::string message);
     void logToConsoleAndFile(std::string message);
