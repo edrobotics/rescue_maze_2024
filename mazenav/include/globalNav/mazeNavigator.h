@@ -42,6 +42,8 @@ class MazeNavigator
     PathFinder pathFinder{&mazeMap};
     MazePath pathToFollow;
 
+    bool lackOfProgressActive = false;
+
     void exploreMaze();
 
     bool anyTilesInPath();
@@ -66,7 +68,6 @@ class MazeNavigator
     bool lackOfProgressFlagRaised();
     bool victimFlagRaised();
 
-
     void updatePosition(const communication::TileDriveProperties& tileDriveProperties);
     void updatePositionNormally();
     void updateInfoFromRamp();
@@ -83,7 +84,7 @@ class MazeNavigator
     LocalDirections globalToLocalDirection(GlobalDirections globalDirections);
 
     void saveCheckpointInfo();
-    void resetToLastCheckpoint();
+    void lackOfProgress();
 
     void returnIfLittleTime();
     std::chrono::seconds estimateTimeForPath(MazePath path);

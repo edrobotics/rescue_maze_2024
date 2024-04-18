@@ -220,6 +220,11 @@ void MazeNavigator::updateInfoAfterDriving()
     sentNewDriveCommand = false;
 
     checkFlagsUntilDriveIsFinished();
+    if (lackOfProgressActive) 
+    {
+        lackOfProgressActive = false;
+        return;
+    }
 
     communication::TileDriveProperties tileDriveProperties = communicatorSingleton->tileInfoComm.readLatestTileProperties();
     updatePosition(tileDriveProperties);
@@ -232,6 +237,7 @@ void MazeNavigator::checkFlagsUntilDriveIsFinished()
     {
         handleActivePanicFlags();
         std::this_thread::sleep_for(LOOP_SLEEPTIME);
+        if (lackOfProgressActive) return;
     }
 }
 
@@ -256,7 +262,7 @@ void MazeNavigator::handleActivePanicFlags()
     }
     if (lackOfProgressFlagRaised())
     {
-        resetToLastCheckpoint();
+        lackOfProgress();
     }
 }
 
@@ -375,11 +381,14 @@ Tile::TileProperty MazeNavigator::wallPropertyInDirection(LocalDirections direct
     return Tile::TileProperty::WallEast;
 }
 
-void MazeNavigator::resetToLastCheckpoint()
+void MazeNavigator::lackOfProgress()
 {
     mazeMap.resetSinceLastCheckpoint();
     currentPosition = latestCheckpointPosition;
     knownUnexploredTilePositions = checkpointedKnownUnexploredTilePositions;
+
+    communicatorSingleton->navigationComm.clearAllCommands();
+    lackOfProgressActive = true;
 }
 
 void MazeNavigator::saveCheckpointInfo()

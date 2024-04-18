@@ -26,4 +26,16 @@ namespace communication
 
         return queuedCommand;
     }
+
+    void NavigationCommunicator::clearAllCommands()
+    {
+        mtx_commands.lock();
+
+        while (!commands.empty())
+        {
+            commands.pop();
+        }
+        
+        mtx_commands.unlock();
+    }
 } // namespace communication

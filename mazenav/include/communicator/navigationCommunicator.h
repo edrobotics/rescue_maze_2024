@@ -24,6 +24,8 @@ namespace communication
         void pushCommand(DriveCommand command);
         // Gets the next command from the command queue and removes it from the queue
         DriveCommand popCommand();
+        //Should only be used for LOP
+        void clearAllCommands();
 
         private:
         std::mutex mtx_commands {};
