@@ -81,15 +81,19 @@ class ColoredSquareDetection:
                             text = "Red ({}, {})".format(x + w // 2, y + h // 2)
                             cv2.putText(image, text, (x, y), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 2)
                             print("Color: Red, Position: ({}, {})".format(x + w // 2, y + h // 2))
-                            return image
+                            return image, "red", (x + w // 2, y + h // 2)
                         else:  # If no red is found, draw the square in green and add text
                             cv2.drawContours(image, [approx], -1, (0, 255, 0), 2)
                             text = "Green ({}, {})".format(x + w // 2, y + h // 2)
                             cv2.putText(image, text, (x, y), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
                             print("Color: Green, Position: ({}, {})".format(x + w // 2, y + h // 2))
-                            return image
+                            return image,  "green", (x + w // 2, y + h // 2) 
 
-        return None
+        return self.detect_yellow_square(original_image=image)
+
+
+
+        #return None, None, None
 
     def detect_yellow_square(self, original_image):
         # Convert image to HSV
