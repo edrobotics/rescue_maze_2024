@@ -18,6 +18,7 @@ def nothing(x):
 class Trackbars:
 
     def run(self,image):
+        print("trackbar")
         self.create()
         self.showimage(image)
         self.clean_up()
@@ -98,7 +99,7 @@ class validation:
         while key != 27:
             key = 0
             #cv2.imshow("window",testing.image_clone)
-            key = cv2.waitKey(1)
+            key = cv2.waitKey(100)
             for folder in folders:
                 if key == ord(folder):
                     self.move(self.file_name,folders[folder])
@@ -109,7 +110,8 @@ class validation:
             elif moved:
                 break
             elif key == ord("t"):
-                self.TB.run(self.image)
+                print("trackbar")
+                self.TB.run(self.imgproc.colorDetection.adjustedImage)
                     
         if key == 27:
             cv2.destroyAllWindows()
@@ -127,11 +129,13 @@ class validation:
 
 
     def move(self, file_name, type, source = None, base = None):
-        
-        destination_path = os.path.join(self.base_folder,"log/sorted", type,file_name)
-        print(f"source: {self.base_folder}")
-        print(f"destination: {destination_path}")
-        shutil.move(self.source_path, destination_path)
+        destinationFolder = os.path.join(self.base_folder,"log/sorted",type)
+        dnum = len(os.listdir(destinationFolder))
+        destinationPath = os.path.join(destinationFolder, str(dnum) + file_name)
+        #type,file_name)
+        print(f"source: {self.source_path}")
+        print(f"destination: {destinationPath}")
+        shutil.move(self.source_path, destinationPath)
 
 
     def showimage(self, image):
@@ -140,6 +144,7 @@ class validation:
 
             try:
                 cv2.imshow("image",image)
+                #cv2.imshow("color", self.imgproc.detector.image)
             #colours = ("red","green","yellow")
             except:
                 cv2.imshow(self.imgproc.image)

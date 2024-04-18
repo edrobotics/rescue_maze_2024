@@ -9,8 +9,15 @@ import socket
 import os
 import time
 import platform
-import ColoredVictimsLinkoping.ColoredSquareDetection as CD
-#import ColoredVictimsLinkoping.ColorDetection as CD
+
+colorChoice = 3
+if colorChoice ==1:
+    import ColoredVictimsLinkoping.ColoredSquareDetection as CD
+elif colorChoice ==2:
+    import ColoredVictimsLinkoping.ColorDetection as CD
+else:
+    import ColorDetection as CD
+
 
 if platform.system() == "Linux":
 
@@ -100,8 +107,9 @@ class imgproc:
 
         self.loadModel()
         self.com = comms(bComms=bComms)
-      #  self.detector = CD.ColorDetection()
-        self.detector = CD.ColoredSquareDetection()
+        if colorChoice ==1: self.detector = CD.ColorDetection()
+        elif colorChoice ==2: self.detector = CD.ColoredSquareDetection()
+        else: self.colorDetection = CD.ColorDetection()
 
 
     def do_the_work(self, image, camera):
@@ -118,9 +126,21 @@ class imgproc:
 
     def findColor(self, image):
         #print("finding color")
-        result, color, _ = self.detector.detect_square(image)
+        result = None
+        if colorChoice ==1: 
+            result, color, _ = self.detector.detect_square(image)
         #print(f"result:{result}, color: {color} ")
-        #result, color, middle_point = self.detector.detect_colored_square(image)
+        elif colorChoice ==2: 
+            result, color, middle_point = self.detector.detect_colored_square(image)
+        else:
+            color  = self.colorDetection.doTheWork(image)
+            print(f"detected {color}")
+            if color:
+                self.framedetected.append(color)
+                
+
+
+
         if result is not None:
             print(f"{color} detected ")
             self.framedetected.append(color)
@@ -131,20 +151,26 @@ class imgproc:
 
     def preprocessing(self,image):
         #print("preprocessing")
+        kernel = np.ones((9,9),np.uint8)
         gray = cv2.cvtColor(image,cv2.COLOR_BGR2GRAY)
         binary = cv2.adaptiveThreshold(gray,255,cv2.ADAPTIVE_THRESH_MEAN_C, cv2.THRESH_BINARY,21,10) 
+        
         binary = np.invert(binary)
+        cv2.imshow("before closing",binary)
+        binary = cv2.morphologyEx(binary,cv2.MORPH_CLOSE, kernel)
 
         return binary
 
     def find_visual(self, image):
         binary = self.preprocessing(image)
+        cv2.imshow("binary", binary)
         binary2 = binary.copy()
-        contours, hierarchy = cv2.findContours(binary,cv2.RETR_LIST,cv2.CHAIN_APPROX_NONE)
+        contours, hierarchy = cv2.findContours(binary,cv2.RETR_EXTERNAL,cv2.CHAIN_APPROX_NONE)
         cv2.drawContours(binary2, contours, 1, (255,0,0),3)
         #print(len(contours))
         for contour in contours:
             area = cv2.contourArea(contour)
+
             if area >1337: 
                 rect = cv2.minAreaRect(contour)
                 box = cv2.boxPoints(rect)
@@ -159,6 +185,8 @@ class imgproc:
                 potentialVictimRS = cv2.resize(potentialVictim, size)
                 potentialVictimBGR = cv2.cvtColor(potentialVictimRS, cv2.COLOR_GRAY2BGR)
                 self.identify_victim(potentialVictimBGR)
+                cv2.imshow("visual", potentialVictimBGR)
+                #cv2.waitKey(0)
 
 
         #cv2.imshow("contours", binary2)
@@ -183,8 +211,8 @@ class imgproc:
         if victim != "none" and percentage > 0.99:
             #print(f"{victim} {percentage}") 
             self.com.send("C",victim,self.camera,self.vPos[0],self.timestamp)
-            if self.training:
-                self.logTraining.save_image(section, victim)
+        if self.training:
+            self.logTraining.save_image(section, victim)
 
 
 
