@@ -17,6 +17,18 @@ namespace globalNav
 		catch(const std::exception& e){
 			//Left wall follower
 			std::cerr << e.what() << '\n';
+			while (true)
+			{
+				try
+				{
+					mazeNavigator.followLeftWall();
+				}
+				catch(const std::exception& e)
+				{
+					std::cerr << e.what() << '\n';
+				}
+			}
+			
 		}
 		
 	}
