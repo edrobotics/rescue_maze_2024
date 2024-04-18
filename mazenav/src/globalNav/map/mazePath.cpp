@@ -29,6 +29,8 @@ bool MazePath::isEmpty()
 
 std::string MazePath::toLoggable()
 {
+    if (positionsInPath.empty()) return "Path is empty";
+
     std::string baseString = "PATH FROM " + positionsInPath.back().toLoggable() + " TO " + positionsInPath.front().toLoggable() + " : ";
 
     for (MazePosition& position : positionsInPath)
