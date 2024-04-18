@@ -111,6 +111,9 @@ MazePosition MazeNavigator::getNeighborInDirection(LocalDirections direction)
 
 void MazeNavigator::startFollowingPathToLastUnexploredTile()
 {
+    while (mazeMap.tileHasProperty(knownUnexploredTilePositions.top(), Tile::TileProperty::Explored) || knownUnexploredTilePositions.top() == currentPosition)
+        knownUnexploredTilePositions.pop();
+    
     pathToFollow = pathTo(knownUnexploredTilePositions.top());
     knownUnexploredTilePositions.pop();
 

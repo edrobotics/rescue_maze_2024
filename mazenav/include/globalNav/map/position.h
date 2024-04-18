@@ -25,4 +25,5 @@ struct MazePosition
                this->tileY == otherPosition.tileY && 
                this->levelIndex == otherPosition.levelIndex;
     };
+    bool operator !=(MazePosition otherPosition) { return !(*this == otherPosition); };
 };
