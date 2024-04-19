@@ -1169,11 +1169,11 @@ bool PoseEstimator::getHasLocalTileMoved()
 {
     if (globComm->poseComm.hasDrivenStep())
     {
-        return false;
+        return true;
     }
     else
     {
-        return true;
+        return false;
     }
 }
 
