@@ -31,26 +31,36 @@ void MazeNavigator::followLeftWall()
     std::this_thread::sleep_for(DRIVE_AND_TURN_TIME);
     giveLowLevelInstruction(communication::DriveCommand::init);
 
-    while (!driveIsFinished()) std::this_thread::sleep_for(LOOP_SLEEPTIME);
-    communication::TileDriveProperties tileDriveProperties = communicatorSingleton->tileInfoComm.readLatestTileProperties();
-    auto walls = tileDriveProperties.wallsOnNewTile;
-    
-    bool frontWall = wallVectorHasWall(walls, communication::Walls::FrontWall);
-    bool leftWall = wallVectorHasWall(walls, communication::Walls::LeftWall);
-    bool rightWall = wallVectorHasWall(walls, communication::Walls::RightWall);
-
-    if (!tileDriveProperties.droveTile && tileDriveProperties.tileColourOnNewTile == TileColours::Black)
-        frontWall = true;
-
-    if (!leftWall)
-        turnToDirection(LocalDirections::Left);
-    else if (frontWall)
+    while (true)
     {
-        if (rightWall) turnToDirection(LocalDirections::Back);
-        else turnToDirection(LocalDirections::Right);
+        checkFlagsUntilDriveIsFinished();
+
+        if (lackOfProgress) 
+        {
+            lackOfProgressInactive();
+            return;
+        }
+
+        communication::TileDriveProperties tileDriveProperties = communicatorSingleton->tileInfoComm.readLatestTileProperties();
+        auto walls = tileDriveProperties.wallsOnNewTile;
+        
+        bool frontWall = wallVectorHasWall(walls, communication::Walls::FrontWall);
+        bool leftWall = wallVectorHasWall(walls, communication::Walls::LeftWall);
+        bool rightWall = wallVectorHasWall(walls, communication::Walls::RightWall);
+
+        if (!tileDriveProperties.droveTile && tileDriveProperties.tileColourOnNewTile == TileColours::Black)
+            frontWall = true;
+
+        if (!leftWall)
+            turnToDirection(LocalDirections::Left);
+        else if (frontWall)
+        {
+            if (rightWall) turnToDirection(LocalDirections::Back);
+            else turnToDirection(LocalDirections::Right);
+        }
+
+        driveTile();
     }
-    
-    driveTile();
 }
 
 bool MazeNavigator::wallVectorHasWall(std::vector<communication::Walls> walls, communication::Walls searchWall)
@@ -241,10 +251,9 @@ void MazeNavigator::updateInfoAfterDriving()
     checkFlagsUntilDriveIsFinished();
     if (lackOfProgressActive) 
     {
-        waitForFlag(communication::PanicFlags::lackOfProgressDeactivated);
-        communicatorSingleton->victimDataComm.clearVictimsBecauseLOP(); //Clear again just in case cameras have detected during movement of robot
-        lackOfProgressActive = false;
-        return;
+        lackOfProgressInactive();
+        // return;
+        logAndThrowException("Throwing exception to start left wall - LOP inactive"); //this is temporary, for when we cannot detect checkpoints
     }
 
     communication::TileDriveProperties tileDriveProperties = communicatorSingleton->tileInfoComm.readLatestTileProperties();
@@ -327,6 +336,13 @@ void MazeNavigator::lackOfProgress()
     lackOfProgressActive = true;
 }
 
+void MazeNavigator::lackOfProgressInactive()
+{
+    waitForFlag(communication::PanicFlags::lackOfProgressDeactivated);
+    communicatorSingleton->victimDataComm.clearVictimsBecauseLOP(); //Clear again just in case cameras have detected during movement of robot
+    lackOfProgressActive = false;
+}
+
 bool MazeNavigator::droveHalfTileFlagRaised()
 {
     return communicatorSingleton->panicFlagComm.readFlagFromThread(communication::PanicFlags::droveHalfTile, communication::ReadThread::globalNav);
@@ -399,15 +415,16 @@ void MazeNavigator::updateMap(const communication::TileDriveProperties& tileDriv
 
     std::vector<Tile::TileProperty> tileProperties = getWallProperties(tileDriveProperties.wallsOnNewTile);
 
-    if (tileDriveProperties.tileColourOnNewTile == TileColours::Checkpoint){
-        saveCheckpointInfo();
+    if (tileDriveProperties.tileColourOnNewTile == TileColours::Checkpoint)
         tileProperties.push_back(Tile::TileProperty::Checkpoint);
-    }
     else if (tileDriveProperties.tileColourOnNewTile == TileColours::Blue)
         tileProperties.push_back(Tile::TileProperty::Blue);
 
     logTileProperties(tileProperties);
     mazeMap.makeTileExploredWithProperties(currentPosition, tileProperties);
+
+    if (tileDriveProperties.tileColourOnNewTile == TileColours::Checkpoint)
+        saveCheckpointInfo();
 }
 
 std::vector<Tile::TileProperty> MazeNavigator::getWallProperties(std::vector<communication::Walls> walls)
@@ -490,8 +507,8 @@ void MazeNavigator::logTileProperties(std::vector<Tile::TileProperty> properties
         if (property == Tile::TileProperty::WallWest) logString += ",wW";
         if (property == Tile::TileProperty::WallSouth) logString += ",sW";
         if (property == Tile::TileProperty::WallEast) logString += ",eW";
-        if (property == Tile::TileProperty::Black) logString += ",Bk";
-        if (property == Tile::TileProperty::Checkpoint) logString += ",Ch";
+        if (property == Tile::TileProperty::Black) logString += ",Blk";
+        if (property == Tile::TileProperty::Checkpoint) logString += ",Chp";
     }
     logToConsoleAndFile(logString);
 }

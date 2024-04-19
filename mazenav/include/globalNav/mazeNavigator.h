@@ -96,6 +96,7 @@ class MazeNavigator
 
     void saveCheckpointInfo();
     void lackOfProgress();
+    void lackOfProgressInactive();
 
     void returnIfLittleTime();
     std::chrono::seconds estimateTimeForPath(MazePath path);
