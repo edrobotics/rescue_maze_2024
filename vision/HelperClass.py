@@ -13,23 +13,24 @@ class Helper:
 
 
 
-    def putText(self, text, image = None, pos = (5,5)):
+    def putText(self, text, image = None, pos = (10,25)):
         if image is None: pass #out
         font                   = cv2.FONT_HERSHEY_SIMPLEX
-        fontScale              =  1/2
+        fontScale              =  1
         color                  = (255,255,255)
         thickness              =   1
         try:
-            cv2.putText(
-                image = image,
+            image = cv2.putText(
+                img = image,
                 text= str(text),
-                pos = pos,
-                font =font,
+                org = pos,
+                fontFace=font,
                 fontScale=fontScale,
                 color=color,
-                thickness=thickness)
+                thickness=thickness, )
         except Exception as ex:
             logging.exception("could not put text")
             logging.debug(f"textpos: {pos}")
             print("failed putting text")
+        return image
     

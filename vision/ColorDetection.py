@@ -55,9 +55,9 @@ class ColorDetection:
         if x < 5 or x+w > 635:
             print(f"safeguard width {x}, {w}" )
             return False
-        #elif y < 5 or y+h >475:
-        #    print(f"safeguard height{y}, {h}")
-        #    return False
+        elif y+h >475:
+            print(f"safeguard height{y}, {h}")
+            return False
         else:
             return True
 
@@ -72,9 +72,9 @@ class ColorDetection:
         self.masks = {}
 
         lower_range = {
-            "yellow": np.array([18,100,42]),#decrese Saturation? 
-            "red" : np.array([130,69,100]), #increase saturation >100
-            "green": np.array([20,70,30]) #decrese V 50 
+            "yellow": np.array([18,100,42]),
+            "red" : np.array([130,69,42]), 
+            "green": np.array([20,70,30]) 
             }
         upper_range = {
             "yellow" : np.array([35,255,255]),
@@ -91,32 +91,30 @@ class ColorDetection:
                 mask2 = cv2.inRange(hsv,red2_lower,red2_upper)
                 mask = np.bitwise_or(mask,mask2)
             #mask = self.blank_out(mask)
-            self.ColVicP(mask, color)
-            cv2.imshow(color, mask)
+            self.colVicP(mask, color)
 
 
 
-    def ColVicP(self, mask,color):
+    def colVicP(self, mask,color):
         kernel = np.ones((9, 9), np.uint8) 
         mask = cv2.erode(mask,kernel, iterations=1)
         mask = cv2.dilate(mask,kernel, iterations=1) 
-        log_mask = cv2.bitwise_and(self.image, self.image, mask=mask)
-        print(f"{color}: {np.count_nonzero(mask)} ")
-        self.helper.putText(np.count_nonzero(mask),image = mask)
+        #print(f"{color}: {np.count_nonzero(mask)} ")
+        count = np.count_nonzero(mask)
 
-
-        if np.count_nonzero(mask) > 5000 and np.count_nonzero(mask)< 110000:
+        if count > 5000 and count< 110000:
             #print(np.count_nonzero(mask))
             ret,thresh = cv2.threshold(mask, 40, 255, 0)# is this necessary?
             contours, hierarchy = cv2.findContours(thresh, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_NONE)
             c = max(contours, key = cv2.contourArea)
             if cv2.contourArea(c) > 5000:
-                print("possible vicitm detcted")
+                #print("possible vicitm detcted")
 
                 if self.safeguardsColor(c):
 
+                    text = f"detected {count}"
                     self.frameDetected.append(color)
-                    print(f"{color}: {cv2.contourArea(c)}")
+                    #print(f"{color}: {cv2.contourArea(c)}")
 
                    # self.detected(k+self.side,victim=color)
                     #logging.info(f"found {color}, image {self.fnum}")
@@ -124,7 +122,14 @@ class ColorDetection:
                     #elf.log(color,img = log_mask)
 
                 else: 
-                    print("stoped by safeguard")
+                   # print("stoped by safeguard")
+
+                    text = f"safeguards: {count}"
                     #self.log(f"F{color}",img = log_mask)
                     #logging.info(f"found {color}, image {self.fnum}, but was stopped by safeguards")
-
+            else:
+                text = f"contour to smol {cv2.contourArea(c)} of {count}"
+        else:
+            text = f"{count}"
+        logMask = self.helper.putText(text,image = mask)
+        cv2.imshow(color, logMask)

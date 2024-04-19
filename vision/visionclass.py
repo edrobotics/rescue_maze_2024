@@ -81,6 +81,8 @@ class comms:
     def send(self,messageType,victimType,camera,position,timeStamp):
 
         message = f"!{messageType},{victimType},{camera},{position},{timeStamp}"
+        print(message)
+        logging.info(message)
         if self.bComms:
             message = message.encode(self.FORMAT)
             self.s.send(message)
