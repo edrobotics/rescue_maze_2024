@@ -1216,3 +1216,34 @@ bool PoseEstimator::getBackWallPresent(Tof::TofData td)
         return false;
     }
 }
+
+
+
+
+void PoseEstimator::checkAndHandleColour(communication::PoseDataSyncBlob& poseData)
+{
+    // Guaranteed to be done due to sensor update
+    ColourSample colSample {sensors->colSens.colSample};
+
+    colSample.rotX = poseData.robotFrame.transform.rot_x;
+    colSample.rotY = poseData.robotFrame.transform.rot_y;
+
+    if (globComm->poseComm.hasDrivenStep())
+    {
+        colId.setSensorOnNextTile(true);
+    }
+    else
+    {
+        colId.setSensorOnNextTile(false);
+    }
+
+    colId.registerColourSample(colSample);
+
+    // Do the actual detection
+    if (colId.getCurTileColour()==TileColours::Black)
+    {
+        globComm->panicFlagComm.raiseFlag(communication::PanicFlags::sawBlackTile);
+    }
+
+    // Checking the full tile colour is done when the robot stops (when requested?)
+}

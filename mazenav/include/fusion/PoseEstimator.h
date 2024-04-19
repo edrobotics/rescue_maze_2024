@@ -19,6 +19,7 @@
 #include <iostream>
 
 #include "fusion/Sensors.h"
+#include "fusion/ColourIdentifier.h"
 #include "fusion/TeensyCommunicator.h"
 #include "fusion/Average.h"
 #include "communicator/communicator.h"
@@ -247,6 +248,10 @@ class PoseEstimator
         // Front sensor value where we think something is there.
         #warning untuned constant
         static constexpr int FRONT_OBSTACLE_DETECTION_THRESHOLD {100};
+        
+        
+        ColourIdentifier colId {};
+        void checkAndHandleColour(communication::PoseDataSyncBlob& poseData);
 
 
         // Updates tile properties if requested by another thread.

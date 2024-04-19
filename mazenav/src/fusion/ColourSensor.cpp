@@ -1,6 +1,35 @@
 #include "fusion/ColourSensor.h"
 
 
+std::ostream& operator<< (std::ostream& out, const TileColours& tileColour)
+{
+    switch (tileColour)
+    {
+        case TileColours::Black:
+            out << "black";
+            break;
+        case TileColours::Blue:
+            out << "blue";
+            break;
+        case TileColours::Checkpoint:
+            out << "checkpoint/reflective";
+            break;
+        case TileColours::White:
+            out << "white";
+            break;
+        case TileColours::Unknown:
+            out << "unknown";
+            break;
+        case TileColours::NotUpdated:
+            out << "notUpdated";
+            break;
+        default:
+            out << "(invalid TileColours)";
+    }
+
+    return out;
+}
+
 ColourSensor::ColourSensor(i2cCommunicator* i2cComm)
 : colSens {TCS34725_INTEGRATIONTIME_50MS, TCS34725_GAIN_1X, i2cComm}
 {
@@ -49,4 +78,9 @@ bool ColourSensor::updateVals()
 {
     colSample = getValuesFromSensor();
     return colSample.wasDone;
+}
+
+double ColourSample::calcColourDistance(ColourSample s1, ColourSample s2)
+{
+    return sqrt(pow(s1.values.at(fcol_r)-s2.values.at(fcol_r), 2)+pow(s1.values.at(fcol_g)-s2.values.at(fcol_g), 2)+pow(s1.values.at(fcol_b)-s2.values.at(fcol_b), 2)+pow(s1.values.at(fcol_c)-s2.values.at(fcol_c), 2));
 }
