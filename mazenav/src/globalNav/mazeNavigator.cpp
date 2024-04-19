@@ -242,6 +242,7 @@ void MazeNavigator::updateInfoAfterDriving()
     if (lackOfProgressActive) 
     {
         waitForFlag(communication::PanicFlags::lackOfProgressDeactivated);
+        communicatorSingleton->victimDataComm.clearVictimsBecauseLOP(); //Clear again just in case cameras have detected during movement of robot
         lackOfProgressActive = false;
         return;
     }
@@ -294,6 +295,7 @@ bool MazeNavigator::victimFlagRaised()
 void MazeNavigator::handleVictimFlag()
 {
     std::this_thread::sleep_for(SHORT_WAIT_SLEEPTIME); //Make fully sure that victims have time to be updated
+    logToConsoleAndFile("Found victim(s)");
     std::vector<Victim> victims = communicatorSingleton->victimDataComm.getAllNonStatusVictims();
 
     MazePosition victimPosition = currentPosition;
@@ -321,6 +323,7 @@ void MazeNavigator::lackOfProgress()
     knownUnexploredTilePositions = checkpointedKnownUnexploredTilePositions;
 
     communicatorSingleton->navigationComm.clearAllCommands();
+    communicatorSingleton->victimDataComm.clearVictimsBecauseLOP();
     lackOfProgressActive = true;
 }
 

@@ -45,7 +45,13 @@ namespace communication
 
         if (panicFlag->flagIsRaised)
         {
-            if (hasBeenSeenByEveryone(panicFlag)) panicFlag->flagIsRaised = false;
+            if (hasBeenSeenByEveryone(panicFlag)) 
+            {
+                panicFlag->flagIsRaised = false;
+
+                if (flag == PanicFlags::lackOfProgressDeactivated)
+                    resetAllFlags();
+            }
             return true;
         }
         
@@ -81,5 +87,15 @@ namespace communication
             }
         }
         return true;
+    }
+
+    void PanicFlagCommunicator::resetAllFlags()
+    {
+        victimFlag.flagIsRaised = false;
+        rampFlag.flagIsRaised = false;
+        blackFlag.flagIsRaised = false;
+        lOPFlag.flagIsRaised = false;
+        lOPDoneFlag.flagIsRaised = false;
+        droveHalfTileFlag.flagIsRaised = false;
     }
 }

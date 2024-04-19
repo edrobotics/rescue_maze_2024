@@ -26,5 +26,7 @@ namespace communication
         bool hasUnrescuedVictims();
         Victim getNextUnrescuedVictim();
         std::vector<Victim> getAllUnrescuedVictims(); //LocalNav should read this or the above function (but this one is less locking)
+
+        void clearVictimsBecauseLOP();
     };
 }

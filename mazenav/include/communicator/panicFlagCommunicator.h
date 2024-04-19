@@ -46,6 +46,7 @@ namespace communication
 
         PanicFlag* getPanicFlag(PanicFlags flag);
         bool hasBeenSeenByEveryone(PanicFlag* flag);
+        void resetAllFlags();
 
         public:
         void raiseFlag(PanicFlags flag);

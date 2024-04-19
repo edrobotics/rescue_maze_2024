@@ -99,4 +99,13 @@ namespace communication
 
         return unrescuedVictims;
     }
+
+    void VictimDataCommunicator::clearVictimsBecauseLOP()
+    {
+        while (!statusQueue.empty())
+            statusQueue.pop();
+        while (!rescueQueue.empty())
+            rescueQueue.pop();
+    }
+
 }
