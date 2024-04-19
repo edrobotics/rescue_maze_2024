@@ -1,10 +1,12 @@
 #include "fusion/PoseEstimator.h"
 
-PoseEstimator::PoseEstimator(Sensors* sens)
+PoseEstimator::PoseEstimator(Sensors* sens, ColourIdentifier* colId)
     // : globComm {globalCommunicator},
     //   : tComm {teensyCommunicator},
     : sensors {sens}
 {
+    this->colId = colId;
+    colId->clearColourSamples();
 }
 
 
@@ -79,6 +81,7 @@ void PoseEstimator::update(FusionGroup fgroup, bool doUpdate)
     // Store relevant variables for use during cycle
     isTurning = globComm->poseComm.getTurning();
     isDriving = globComm->poseComm.getDriving();
+    driveStarted = globComm->tileInfoComm.getDriveStarted();
     // std::cout << "done\n";
     // Save the current value so that we can set it as the old one later
     switch (fgroup)
@@ -1065,7 +1068,7 @@ double PoseEstimator::getFrontObstacleDist(Tof::TofData td)
 
 void PoseEstimator::updateTileProperties(communication::PoseDataSyncBlob& pose)
 {
-    if (globComm->tileInfoComm.getDriveStarted())
+    if (driveStarted)
     {
         pose.startLocalTileFrame = pose.localTileFrame.getWithoutChildren();
     }
@@ -1222,6 +1225,10 @@ bool PoseEstimator::getBackWallPresent(Tof::TofData td)
 
 void PoseEstimator::checkAndHandleColour(communication::PoseDataSyncBlob& poseData)
 {
+    if (driveStarted)
+    {
+        colId->clearColourSamples();
+    }
     // Guaranteed to be done due to sensor update
     ColourSample colSample {sensors->colSens.colSample};
 
@@ -1230,17 +1237,17 @@ void PoseEstimator::checkAndHandleColour(communication::PoseDataSyncBlob& poseDa
 
     if (globComm->poseComm.hasDrivenStep())
     {
-        colId.setSensorOnNextTile(true);
+        colId->setSensorOnNextTile(true);
     }
     else
     {
-        colId.setSensorOnNextTile(false);
+        colId->setSensorOnNextTile(false);
     }
 
-    colId.registerColourSample(colSample);
+    colId->registerColourSample(colSample);
 
     // Do the actual detection
-    if (colId.getCurTileColour()==TileColours::Black)
+    if (colId->getCurTileColour()==TileColours::Black)
     {
         globComm->panicFlagComm.raiseFlag(communication::PanicFlags::sawBlackTile);
     }

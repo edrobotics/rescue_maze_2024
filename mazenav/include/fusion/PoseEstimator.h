@@ -29,7 +29,7 @@
 class PoseEstimator
 {
     public:
-        PoseEstimator(Sensors* sens);
+        PoseEstimator(Sensors* sens, ColourIdentifier* colId);
 
         // Spawns a new thread running everything that needs to be run
         // void begin();
@@ -76,6 +76,8 @@ class PoseEstimator
         // Whether currently turning or not - influences certain thresholds and what values may be used.
         bool isTurning {false};
         bool isDriving {false};
+        // True if we started driving this iteration.
+        bool driveStarted {false};
 
         // The thread that updates.
         // Not in a state of execution by default (https://en.cppreference.com/w/cpp/thread/thread)
@@ -250,7 +252,7 @@ class PoseEstimator
         static constexpr int FRONT_OBSTACLE_DETECTION_THRESHOLD {100};
         
         
-        ColourIdentifier colId {};
+        ColourIdentifier* colId {nullptr};
         void checkAndHandleColour(communication::PoseDataSyncBlob& poseData);
 
 
