@@ -9,7 +9,9 @@
 class Sensors
 {
     public:
-        Sensors(TeensyCommunicator* communicator);
+        Sensors(TeensyCommunicator* communicator, i2cCommunicator* i2cComm);
+
+        void init();
 
         // Update all sensors.
         // capture - if true, wait for all to be updated. If false, return regardless of update state.
@@ -22,6 +24,7 @@ class Sensors
         Imu imu0;
         Tof tofs;
         MotorControllers motors;
+        ColourSensor colSens;
 
 
     private:

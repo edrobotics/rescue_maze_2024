@@ -210,6 +210,7 @@ void Adafruit_TCS34725::setGain(tcs34725Gain_t gain) {
  *  @param  *c
  *          Clear channel value
  */
+// OBS!!! When reading this function, make sure you wait for the entire integration time until you read again
 void Adafruit_TCS34725::getRawData(uint16_t *r, uint16_t *g, uint16_t *b,
                                    uint16_t *c) {
   if (!_tcs34725Initialised)
@@ -222,7 +223,7 @@ void Adafruit_TCS34725::getRawData(uint16_t *r, uint16_t *g, uint16_t *b,
 
   /* Set a delay for the integration time */
   /* 12/5 = 2.4, add 1 to account for integer truncation */
-  std::this_thread::sleep_for(std::chrono::milliseconds((256 - _tcs34725IntegrationTime) * 12 / 5 + 1));
+  // std::this_thread::sleep_for(std::chrono::milliseconds((256 - _tcs34725IntegrationTime) * 12 / 5 + 1));
 }
 
 /*!

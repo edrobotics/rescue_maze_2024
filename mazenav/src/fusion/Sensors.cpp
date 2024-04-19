@@ -1,9 +1,14 @@
 #include "fusion/Sensors.h"
 
-Sensors::Sensors(TeensyCommunicator* communicator)
-    : imu0 {communicator}, tofs {communicator}, motors {communicator}
+Sensors::Sensors(TeensyCommunicator* communicator, i2cCommunicator* i2cComm)
+    : imu0 {communicator}, tofs {communicator}, motors {communicator}, colSens {i2cComm}
 {
     this->communicator = communicator;
+}
+
+void Sensors::init()
+{
+    colSens.init();
 }
 
 void Sensors::update(bool capture)
@@ -13,11 +18,12 @@ void Sensors::update(bool capture)
         bool imuUpdated {false};
         bool tofUpdated {false};
         bool motorsUpdated {false};
+        bool colourUpdated {false};
 
         motors.setVals();
 
         // While at least one not updated exists
-        while (!imuUpdated || !tofUpdated || !motorsUpdated)
+        while (!imuUpdated || !tofUpdated || !motorsUpdated || !colourUpdated)
         {
             if (!imuUpdated)
             {
@@ -32,6 +38,11 @@ void Sensors::update(bool capture)
             if (!motorsUpdated)
             {
                 motorsUpdated = motors.getVals();
+            }
+
+            if (!colourUpdated)
+            {
+                colourUpdated = colSens.updateVals();
             }
             std::this_thread::sleep_for(std::chrono::milliseconds(2));
         }
