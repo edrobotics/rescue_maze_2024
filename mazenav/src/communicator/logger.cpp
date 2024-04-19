@@ -8,15 +8,21 @@ namespace communication
     void Logger::logToFile(std::string logMessage)
     {
         mtx_logging.lock();
-        std::ofstream oFile(logFileName, std::ios_base::app); //Also opens file
 
-        if (!oFile){
-            oFile = std::ofstream(logFileName);
+        if (!logFile.is_open())
+        {
+            logFile.open(LogFileName, std::ios_base::app);
         }
 
-        oFile << getTimestampAsString() << ": " << logMessage << std::endl;
+        if (!logFile){
+            std::cerr << "No file?" << std::endl;
+            return;
+        }
 
-        oFile.close();
+        logFile << getTimestampAsString() << ": " << logMessage << "\n";
+
+        logFile.flush();
+        logFile.close();
         
         mtx_logging.unlock();
     }

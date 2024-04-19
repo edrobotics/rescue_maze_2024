@@ -19,10 +19,12 @@ class Logger
     std::string getTimestampAsString();
     std::string getLogFileNumber() const;
     std::mutex mtx_logging;
-    std::string logFileName;
+
+    const std::string LogFileName = LOGFILE_STARTSTRING + getLogFileNumber() + LOGFILE_ENDSTRING;
+
+    std::ofstream logFile;
 
     public:
-    Logger() { logFileName = LOGFILE_STARTSTRING + getLogFileNumber() + LOGFILE_ENDSTRING; }
     void logToFile(std::string logMessage);
     void logToConsole(std::string logMessage);
     void logToAll(std::string logMessage);
