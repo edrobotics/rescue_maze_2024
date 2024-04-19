@@ -175,6 +175,7 @@ void LidarLineAnalyser::calcPosition()
 		if (xPosAvg < 0) xPosAvg+=300;
 	}
     else cout << "ERROR NO XPOS CONTRIB" << endl;
+    xPosAvg = 300 - xPosAvg; //Convert to project standard
 
     double yPosAvg = 0;
     if (yPosAmt > 0)
