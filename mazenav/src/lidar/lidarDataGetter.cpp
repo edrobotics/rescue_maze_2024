@@ -42,8 +42,8 @@ Points2D LidarDataGetter::getData()
     ldInterface.GetLaserScanData(points);
     cout << points.size() << " points\n";
     lastLidarUseTime = std::chrono::system_clock::now();
+    createCoords(points);
 
-    return points;
     #elif defined(CODE_READ_FILE_TXT)
     Points2D points = pointsFromTxt(SCANTXT_PATH);
     #endif //CODE_READ_LIDAR
