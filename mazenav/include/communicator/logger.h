@@ -13,7 +13,7 @@ namespace communication
 class Logger
 {
     private:
-    #define LOGFILE_STARTSTRING (std::string)"/home/RCJ24LOG"
+    #define LOGFILE_STARTSTRING (std::string)"RCJ24LOG"
     #define LOGFILE_ENDSTRING (std::string) ".log"
 
     std::string getTimestampAsString();

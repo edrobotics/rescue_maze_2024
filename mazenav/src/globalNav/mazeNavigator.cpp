@@ -33,7 +33,7 @@ void MazeNavigator::followLeftWall()
 
     while (true)
     {
-        checkFlagsUntilDriveIsFinished();
+        checkFlagsUntilDriveIsFinished(); //We need special victim
 
         if (lackOfProgressActive) 
         {
