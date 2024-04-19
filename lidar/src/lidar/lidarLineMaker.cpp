@@ -7,17 +7,7 @@ LidarLineMaker::LidarLineMaker(ldlidar::Points2D points)
 {
     vector<Vec4i> linesP; //detection output
     drawLines(points, linesP);
-    cout << linesP.size() << " Plines" << endl;
-
-    mergeLines(linesP, combinedLines);
-}
-
-LidarLineMaker::LidarLineMaker(ldlidar::Points2D points, cv::Mat& debugOut)
-{
-    vector<Vec4i> linesP; //detection output
-    cvtColor(drawLines(points, linesP), debugOut, COLOR_GRAY2BGR);
-
-    cout << linesP.size() << " Plines" << endl;
+    cout << points.size() << " points made " << linesP.size() << " Plines" << endl;
 
     mergeLines(linesP, combinedLines);
 }
@@ -36,6 +26,7 @@ cv::Mat LidarLineMaker::drawLines(ldlidar::Points2D& points, std::vector<cv::Vec
     {
       if (points[i].x > -ORIGIN_X && points[i].x < ORIGIN_X && points[i].y > -ORIGIN_Y && points[i].y < ORIGIN_Y)
         dst.at<uchar>(ORIGIN_Y + points[i].y, ORIGIN_X + points[i].x) = 255;
+        // cv::circle(dst, Point(ORIGIN_Y + points[i].y, ORIGIN_X + points[i].x), 2, cv::Scalar(255), FILLED);
     }
 
     cv::dilate(dst, dst, getStructuringElement(MorphShapes::MORPH_ELLIPSE, cv::Size(3, 3)));

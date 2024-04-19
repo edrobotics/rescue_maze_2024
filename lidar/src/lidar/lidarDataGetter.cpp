@@ -16,6 +16,7 @@ LidarDataGetter::LidarDataGetter()
     cout << "starting: " << ldInterface.Start() << "\n";
 
     lastLidarUseTime = std::chrono::system_clock::now();
+    std::this_thread::sleep_for(std::chrono::milliseconds(500));
     #endif
 }
 
@@ -41,8 +42,8 @@ Points2D LidarDataGetter::getData()
     ldInterface.GetLaserScanData(points);
     cout << points.size() << " points\n";
     lastLidarUseTime = std::chrono::system_clock::now();
-
-    return points;
+    createCoords(points);
+    
     #elif defined(CODE_READ_FILE_TXT)
     Points2D points = pointsFromTxt(SCANTXT_PATH);
     #endif //CODE_READ_LIDAR
@@ -54,8 +55,7 @@ void LidarDataGetter::createCoords(Points2D& points) //Convert "right hand" pola
 {
 	for (auto i = points.begin(); i != points.end(); i++)
 	{
-        double dist = i->distance;
-        i->distance *= (pow(dist, 1.5)+450)/pow(dist+10, 1.5); //Point offset function
+        i->distance *= (pow(i->distance, 1.5)+450)/pow(i->distance+10, 1.5); //Point offset function
         // if (i->distance < 180 && i->distance != 0)
         // {
         // }

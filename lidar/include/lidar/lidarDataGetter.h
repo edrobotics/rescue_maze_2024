@@ -9,14 +9,14 @@
 
 #include "lidar/lidarFiles.h"
 
-// #define CODE_READ_LIDAR
+#define CODE_READ_LIDAR
 
 #ifndef CODE_READ_LIDAR
 #define CODE_READ_FILE_TXT
 // #define CODE_READ_FILE_IMG
 #else
-#define CODE_SAVE_TXT
-#define CODE_SAVE_SCAN
+// #define CODE_SAVE_TXT
+// #define CODE_SAVE_SCAN
 // #define CODE_SAVE_LATEST
 #endif
 

@@ -15,7 +15,6 @@ class LidarLineMaker
 {
     public:
     LidarLineMaker(ldlidar::Points2D points);
-    LidarLineMaker(ldlidar::Points2D points, cv::Mat& debugOut);
 
     /** @brief Gets lines that were formed by the points
      * @retval The lines

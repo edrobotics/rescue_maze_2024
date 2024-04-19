@@ -7,6 +7,8 @@
 
 #include <lidar/ldlidar_driver/ldlidar_datatype.h>
 
+#define RPI
+
 #ifdef RPI
 #define PROJECTPATH std::string("/home/theseus/RCJ2024/lidar/")
 #else
