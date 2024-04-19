@@ -69,6 +69,19 @@ void PoseEstimator::runLoop()
 
 void PoseEstimator::update(FusionGroup fgroup, bool doUpdate)
 {
+    checkAndHandlePanic();
+
+    if (lopActive)
+    {
+        std::this_thread::sleep_for(std::chrono::milliseconds(10));
+        return;
+    }
+    if (lopDeactivated)
+    {
+        lopDeactivated = false;
+        flush(fusionGroup, true);
+    }
+    
     // std::cout << "In update" << std::endl;
     sensors->update(true);
     // std::cout << "updated sensors  ";
@@ -83,7 +96,7 @@ void PoseEstimator::update(FusionGroup fgroup, bool doUpdate)
     isDriving = globComm->poseComm.getDriving();
     driveStarted = globComm->tileInfoComm.getDriveStarted();
     // std::cout << "done\n";
-    // Save the current value so that we can set it as the old one later
+    // Check for and handle panic flags
     switch (fgroup)
     {
         case fg_lidar:
@@ -1253,4 +1266,18 @@ void PoseEstimator::checkAndHandleColour(communication::PoseDataSyncBlob& poseDa
     }
 
     // Checking the full tile colour is done when the robot stops (when requested?)
+}
+
+
+void PoseEstimator::checkAndHandlePanic()
+{
+    if (globComm->panicFlagComm.readFlagFromThread(communication::PanicFlags::lackOfProgressActivated, communication::ReadThread::fusion))
+    {
+        lopActive = true;
+    }
+    if (globComm->panicFlagComm.readFlagFromThread(communication::PanicFlags::lackOfProgressDeactivated, communication::ReadThread::fusion))
+    {
+        lopActive = false;
+        lopDeactivated = true;
+    }
 }

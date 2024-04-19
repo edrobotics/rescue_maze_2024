@@ -255,6 +255,11 @@ class PoseEstimator
         ColourIdentifier* colId {nullptr};
         void checkAndHandleColour(communication::PoseDataSyncBlob& poseData);
 
+        
+        void checkAndHandlePanic();
+        bool lopActive {false};
+        bool lopDeactivated {false};
+
 
         // Updates tile properties if requested by another thread.
         void updateTileProperties(communication::PoseDataSyncBlob& pose);
