@@ -1,10 +1,12 @@
 #include "fusion/PoseEstimator.h"
 
-PoseEstimator::PoseEstimator(Sensors* sens)
+PoseEstimator::PoseEstimator(Sensors* sens, ColourIdentifier* colId)
     // : globComm {globalCommunicator},
     //   : tComm {teensyCommunicator},
     : sensors {sens}
 {
+    this->colId = colId;
+    colId->clearColourSamples();
 }
 
 
@@ -79,6 +81,7 @@ void PoseEstimator::update(FusionGroup fgroup, bool doUpdate)
     // Store relevant variables for use during cycle
     isTurning = globComm->poseComm.getTurning();
     isDriving = globComm->poseComm.getDriving();
+    driveStarted = globComm->tileInfoComm.getDriveStarted();
     // std::cout << "done\n";
     // Save the current value so that we can set it as the old one later
     switch (fgroup)
@@ -1065,7 +1068,7 @@ double PoseEstimator::getFrontObstacleDist(Tof::TofData td)
 
 void PoseEstimator::updateTileProperties(communication::PoseDataSyncBlob& pose)
 {
-    if (globComm->tileInfoComm.getDriveStarted())
+    if (driveStarted)
     {
         pose.startLocalTileFrame = pose.localTileFrame.getWithoutChildren();
     }
@@ -1215,4 +1218,39 @@ bool PoseEstimator::getBackWallPresent(Tof::TofData td)
     {
         return false;
     }
+}
+
+
+
+
+void PoseEstimator::checkAndHandleColour(communication::PoseDataSyncBlob& poseData)
+{
+    if (driveStarted)
+    {
+        colId->clearColourSamples();
+    }
+    // Guaranteed to be done due to sensor update
+    ColourSample colSample {sensors->colSens.colSample};
+
+    colSample.rotX = poseData.robotFrame.transform.rot_x;
+    colSample.rotY = poseData.robotFrame.transform.rot_y;
+
+    if (globComm->poseComm.hasDrivenStep())
+    {
+        colId->setSensorOnNextTile(true);
+    }
+    else
+    {
+        colId->setSensorOnNextTile(false);
+    }
+
+    colId->registerColourSample(colSample);
+
+    // Do the actual detection
+    if (colId->getCurTileColour()==TileColours::Black)
+    {
+        globComm->panicFlagComm.raiseFlag(communication::PanicFlags::sawBlackTile);
+    }
+
+    // Checking the full tile colour is done when the robot stops (when requested?)
 }

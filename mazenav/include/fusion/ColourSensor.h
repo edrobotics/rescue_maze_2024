@@ -3,17 +3,25 @@
 #include <array>
 #include <thread>
 #include <chrono>
+#include <cmath>
+#include <iostream>
 
 #include "fusion/i2cCommunicator.h"
 #include "fusion/TCS34725.h"
 
 enum class TileColours
 {
-    Checkpoint,
-    Blue,
-    Black,
-    White
+    Checkpoint=0,
+    Blue=1,
+    Black=2,
+    White=3,
+    Unknown=4,
+    ColNum=5,
+    NotUpdated,
 };
+
+std::ostream& operator<< (std::ostream& out, const TileColours& tileColour);
+std::string stringFromTileColours(TileColours tileColour);
 
 enum FundamentalColour
 {
@@ -24,10 +32,24 @@ enum FundamentalColour
     fcol_num,
 };
 
-struct ColourSample
+class ColourSample
 {
+    public:
+    // The actual values
     std::array<int, fcol_num> values {};
+    // Wether value was updated by sensor or not
     bool wasDone {false};
+    // What TileColour it was classified as
+    TileColours classification {TileColours::Unknown};
+    // Robot x rotation at time of measurement
+    double rotX {};
+    // Robot y rotation at time of measurement
+    double rotY {};
+
+
+    static double calcColourDistance(ColourSample s1, ColourSample s2);
+
+    friend std::ostream& operator<< (std::ostream& out, const ColourSample& sample);
 };
 
 class ColourSensor
@@ -51,7 +73,7 @@ class ColourSensor
         // Read the sensor and store in colSample
         // true=updated, false=not updated
         bool updateVals();
-
         ColourSample colSample {};
+
 
 };

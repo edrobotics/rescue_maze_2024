@@ -19,6 +19,7 @@
 #include <iostream>
 
 #include "fusion/Sensors.h"
+#include "fusion/ColourIdentifier.h"
 #include "fusion/TeensyCommunicator.h"
 #include "fusion/Average.h"
 #include "communicator/communicator.h"
@@ -28,7 +29,7 @@
 class PoseEstimator
 {
     public:
-        PoseEstimator(Sensors* sens);
+        PoseEstimator(Sensors* sens, ColourIdentifier* colId);
 
         // Spawns a new thread running everything that needs to be run
         // void begin();
@@ -75,6 +76,8 @@ class PoseEstimator
         // Whether currently turning or not - influences certain thresholds and what values may be used.
         bool isTurning {false};
         bool isDriving {false};
+        // True if we started driving this iteration.
+        bool driveStarted {false};
 
         // The thread that updates.
         // Not in a state of execution by default (https://en.cppreference.com/w/cpp/thread/thread)
@@ -247,6 +250,10 @@ class PoseEstimator
         // Front sensor value where we think something is there.
         #warning untuned constant
         static constexpr int FRONT_OBSTACLE_DETECTION_THRESHOLD {100};
+        
+        
+        ColourIdentifier* colId {nullptr};
+        void checkAndHandleColour(communication::PoseDataSyncBlob& poseData);
 
 
         // Updates tile properties if requested by another thread.
