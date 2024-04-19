@@ -136,9 +136,9 @@ void PathFollower::runLoop()
     else
     {
         dC = globComm->navigationComm.popCommand();
-        setTargetPointTf(dC);
         if (dC!=communication::DriveCommand::noAction)
         {
+            setTargetPointTf(dC);
             globComm->poseComm.flushPose();
         }
     }
@@ -146,11 +146,12 @@ void PathFollower::runLoop()
     switch(dC)
     {
         case communication::DriveCommand::driveForward:
+            std::cout << "[PathFollower] driveForward\n";
             globComm->tileInfoComm.startDrive();
             setLinePos(GRID_SIZE/2.0);
             // alignAngle(true);
             // setTargetPointTf(dC);
-            drive();
+            drive(1);
             // We are ready to update data
             if (!abortMove)
             {
@@ -164,6 +165,7 @@ void PathFollower::runLoop()
             break;
 
         case communication::DriveCommand::driveBackward:
+            std::cout << "[PathFollower] driveBackward\n";
             setLinePos(GRID_SIZE/2.0);
             // if (!driveBackwardsBlacktile)
             // {
@@ -172,7 +174,7 @@ void PathFollower::runLoop()
             // }
             // Set target point again because it was reset by alignAngle
             setTargetPointTf(dC);
-            drive();
+            drive(-1);
 
             if (!abortMove)
             {
@@ -184,14 +186,19 @@ void PathFollower::runLoop()
             break;
         
         case communication::DriveCommand::turnLeft:
-            turn();
+            std::cout << "[PathFollower] turnLeft\n";
+            turn(1);
+            std::cout << "[PathFollower] Turned left-----------------------------------------------------------------\n";
             break;
 
         case communication::DriveCommand::turnRight:
-            turn();
+            std::cout << "[PathFollower] turnRight\n";
+            turn(-1);
+            std::cout << "[PathFollower] Turned right-----------------------------------------------------------------\n";
             break;
         
         case communication::DriveCommand::init:
+            std::cout << "[PathFollower] init\n";
             globComm->tileInfoComm.startDrive();
             std::this_thread::sleep_for(std::chrono::milliseconds(500));
             globComm->tileInfoComm.setReadyForFill();
@@ -208,10 +215,10 @@ void PathFollower::runLoop()
     driver.stop();
 }
 
-void PathFollower::drive()
+void PathFollower::drive(int direction)
 {
     bool finished {false};
-    int direction = getDriveDirection();
+    // int direction = getDriveDirection();
     globComm->poseComm.setTurning(false);
     globComm->poseComm.setDriving(true);
     while(!finished)
@@ -222,7 +229,7 @@ void PathFollower::drive()
             globPose = globComm->poseComm.copyData(true);
             checkAndHandlePanic();
             distLeftToTarget = getDistLeftToTarget();
-            // std::cout << "distLeftToTarget: " << distLeftToTarget << "\n";
+            std::cout << "distLeftToTarget: " << distLeftToTarget << "\n";
             driver.calcSpeeds(getTransSpeedDriving(direction), getRotSpeedDriving(direction));
             driver.setSpeeds();
             finished = checkIsFinishedDriving(direction);
@@ -256,10 +263,10 @@ void PathFollower::drive()
 
 // }
 
-void PathFollower::turn()
+void PathFollower::turn(int direction)
 {
     bool finished {false};
-    int direction = getTurnDirection();
+    // int direction = getTurnDirection();
     globComm->poseComm.setTurning(true);
     globComm->poseComm.setDriving(false);
     while (!finished)
@@ -269,7 +276,7 @@ void PathFollower::turn()
             globPose = globComm->poseComm.copyData(true);
             checkAndHandlePanic();
             angLeftToTarget = getAngLeftToTarget();
-            // std::cout << "angLeftToTarget: " << angLeftToTarget << "\n";
+            std::cout << "angLeftToTarget: " << angLeftToTarget << "\n";
             driver.calcSpeeds(getTransSpeedTurning(), getRotSpeedTurning(direction));
             driver.setSpeeds();
             finished = checkIsFinishedTurning(direction);

@@ -60,9 +60,9 @@ class PathFollower
         PIDController angPid {2, 0, 0.01};
 
         // Do the driving in accordance with parameters set earlier
-        void drive();
+        void drive(int direction);
         // Turn in accordance with parameters set earlier
-        void turn();
+        void turn(int direction);
         // Align angle
         // usePidAng - if false, target angle is 0. If true, target angle is determined by what the driving PID wants for the given parameters.
         // void alignAngle(bool usePidAng);

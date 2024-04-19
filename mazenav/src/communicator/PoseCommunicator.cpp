@@ -44,7 +44,9 @@ namespace communication
     {
         if (markAsRead)
         {
+            mtx_updated.lock();
             updated = false;
+            mtx_updated.unlock();
         }
         return poseDataBlob.getCopy();
     }
@@ -52,12 +54,12 @@ namespace communication
     void PoseCommunicator::giveBackData(PoseDataSyncBlob pdBlob, bool markUpdated)
     {
         poseDataBlob.giveBack(pdBlob);
-        mtx_updated.lock();
         if (markUpdated)
         {
+            mtx_updated.lock();
             updated = true;
+            mtx_updated.unlock();
         }
-        mtx_updated.unlock();
     }
 
     void PoseCommunicator::giveBackDummyData()

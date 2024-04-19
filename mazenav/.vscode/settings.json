@@ -93,6 +93,9 @@
         "valarray": "cpp",
         "variant": "cpp",
         "*.ipp": "cpp",
-        "expected": "cpp"
+        "expected": "cpp",
+        "version": "cpp",
+        "*.inc": "cpp",
+        "*.txx": "cpp"
     }
 }
