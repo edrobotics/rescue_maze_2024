@@ -17,6 +17,14 @@ class ColourThreshold
         // Stores which colour the threshold is for.
         TileColours type {TileColours::Unknown};
 
+
+        // Thresholds for maximum allowed distance outside of radius that can still count as identification
+        #warning untuned constants
+        static constexpr double MAX_DETECTION_DISTANCE_BLACK {1000};
+        static constexpr double MAX_DETECTION_DISTANCE_BLUE {1000};
+        static constexpr double MAX_DETECTION_DISTANCE_REFLECTIVE {1000};
+        static constexpr double MAX_DETECTION_DISTANCE_WHITE {1000};
+
         // Thresholds for what percentage of detections are needed on a tile
         // Black is not needed as it is not averaged
         #warning untuned constants
@@ -27,16 +35,17 @@ class ColourThreshold
         double tileAvgDetectionThreshold {};
 
         // Minimum radiuses for the colour
-        #warning untuned constants (though copied from old code)
+        #warning untuned constants
         static constexpr double STANDARD_RADIUS_BLACK {0};
-        static constexpr double STANDARD_RADIUS_BLUE {7};
-        static constexpr double STANDARD_RADIUS_REFLECTIVE {20};
-        static constexpr double STANDARD_RADIUS_WHITE {30};
+        static constexpr double STANDARD_RADIUS_BLUE {0};
+        static constexpr double STANDARD_RADIUS_REFLECTIVE {0};
+        static constexpr double STANDARD_RADIUS_WHITE {0};
         double standardRadius {};
 
     public:
         ColourThreshold();
         ColourThreshold(TileColours type);
+        // True if the sample is within the threshold
         bool isWithinThreshold(ColourSample otherSample);
         // Gets the colour distance to the sample
         double getDistanceToSample(ColourSample sample);
@@ -48,8 +57,9 @@ class ColourThreshold
         void setType(TileColours tileColour);
         void setSample(ColourSample sample);
         void setRadius(double radius);
-};
+        friend std::ostream& operator<<(std::ostream& out, const ColourThreshold& thresh);
 
+};
 
 class ColourSampleCollection
 {

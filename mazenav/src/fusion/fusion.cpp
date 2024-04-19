@@ -10,6 +10,7 @@ Sensors sensors {&tComm, &i2cComm};
 PoseEstimator poseEstimator {&sensors};
 
 
+
 void fusion::main(communication::Communicator* globComm, PiAbstractor* piAbs)
 {
     if(!i2cComm.init())
@@ -31,18 +32,27 @@ void fusion::main(communication::Communicator* globComm, PiAbstractor* piAbs)
     // std::cout << "Spawn motorDriver... ";
     std::thread motorDriver(motorDriveLoopLooper, globComm, &motors);
     // std::cout << "done." << "\n";
-    std::cout << "Spawn poseEstimator... ";
-    std::thread poseEst(&PoseEstimator::runLoopLooper, &poseEstimator, globComm);
-    std::cout << "done." << "\n";
+    // std::cout << "Spawn poseEstimator... ";
+    // std::thread poseEst(&PoseEstimator::runLoopLooper, &poseEstimator, globComm);
+    // std::cout << "done." << "\n";
     
+    ColourIdentifier colId {};
+
+    ColourCalibrator colCal {};
+    colCal.init(piAbs);
+    while (true)
+    {
+        colCal.calibrate(&sensors, &colId);
+        std::cout << "Calibration done\n";
+    }
     // while (true)
     // {
         // std::cout << globComm->poseComm.robotFrame << "\n";
         // std::this_thread::sleep_for(std::chrono::milliseconds(100));
     // }
 
-    poseEst.join();
-    std::cout << "joined\n";
+    // poseEst.join();
+    // std::cout << "joined\n";
     motorDriver.join();
     hardwareCommunicator.join();
     

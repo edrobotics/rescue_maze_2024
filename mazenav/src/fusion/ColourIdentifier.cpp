@@ -23,26 +23,31 @@ void ColourThreshold::setType(TileColours tileColour)
         case TileColours::Blue:
             tileAvgDetectionThreshold = TILE_DETECTION_THRESHOLD_BLUE;
             standardRadius = STANDARD_RADIUS_BLUE;
+            maxDetectionDistance = MAX_DETECTION_DISTANCE_BLUE;
             break;
         
         case TileColours::White:
             tileAvgDetectionThreshold = TILE_DETECTION_THRESHOLD_WHITE;
             standardRadius = STANDARD_RADIUS_WHITE;
+            maxDetectionDistance = MAX_DETECTION_DISTANCE_WHITE;
             break;
 
         case TileColours::Checkpoint:
             tileAvgDetectionThreshold = TILE_DETECTION_THRESHOLD_REFLECTIVE;
             standardRadius = STANDARD_RADIUS_REFLECTIVE;
+            maxDetectionDistance = MAX_DETECTION_DISTANCE_REFLECTIVE;
             break;
 
         case TileColours::Black:
             tileAvgDetectionThreshold = 1;
             standardRadius = STANDARD_RADIUS_BLACK;
+            maxDetectionDistance = MAX_DETECTION_DISTANCE_BLACK;
             break;
         
         default:
             tileAvgDetectionThreshold = 1;
             standardRadius = 0;
+            maxDetectionDistance = 0;
             break;
     }
 }
@@ -77,6 +82,16 @@ double ColourThreshold::getDistanceToSample(ColourSample sample)
     return ColourSample::calcColourDistance(this->sample, sample);
 }
 
+double ColourThreshold::getDistanceToRadius(ColourSample sample)
+{
+    return getDistanceToSample(sample)-radius;
+}
+
+std::ostream& operator<<(std::ostream& out, const ColourThreshold& thresh)
+{
+    out << thresh.sample << ", " << "radius=" << thresh.radius;
+    return out;
+}
 
 
 
@@ -123,11 +138,13 @@ void ColourIdentifier::setThreshold(TileColours type, ColourThreshold threshold)
 {
     if (type==TileColours::Unknown || type==TileColours::NotUpdated || type==TileColours::ColNum)
     {
+        std::cout << "could not update threshold with this type\n";
         return;
     }
     else
     {
         thresholds.at(static_cast<int>(type)) = threshold;
+        std::cout << "Wrote threshold: " << threshold << "\n";
     }
 }
 
@@ -145,7 +162,7 @@ TileColours ColourIdentifier::getCurTileColour()
     std::cout << "Current sample is: " << curSample << "\n";
     if (curSample.classification == TileColours::Unknown || curSample.classification == TileColours::NotUpdated)
     {
-        std::cout << "unknown or notUpdated\n";
+        // std::cout << "unknown or notUpdated\n";
         return lastKnownCurTileColour;
     }
     else
@@ -252,6 +269,7 @@ void ColourIdentifier::classifySamples(ColourSampleCollection& samples)
 void ColourIdentifier::classifySample(ColourSample& sample)
 {
     TileColours closestCol {getClosestColour(sample)};
+    std::cout << "closestCol: " << closestCol << '\n';
     ColourThreshold threshold {TileColours::Unknown};
     // Set threshold to the closest colour
     switch (closestCol)
@@ -265,18 +283,19 @@ void ColourIdentifier::classifySample(ColourSample& sample)
             break;
 
         case TileColours::Checkpoint:
-            
+            threshold = thresholds.at(static_cast<int>(TileColours::Checkpoint));
+            #warning disabled white failsafe for reflective tiles
             // If also detecting white, use white as it is safer.
-            if (thresholds.at(static_cast<int>(TileColours::White)).isWithinThreshold(sample))
-            {
-                // Detect white
-                threshold = thresholds.at(static_cast<int>(TileColours::White));
-                closestCol = TileColours::White;
-            }
-            else
-            {
-                threshold = thresholds.at(static_cast<int>(TileColours::Checkpoint));
-            }
+            // if (thresholds.at(static_cast<int>(TileColours::White)).isWithinThreshold(sample))
+            // {
+            //     // Detect white
+            //     threshold = thresholds.at(static_cast<int>(TileColours::White));
+            //     closestCol = TileColours::White;
+            // }
+            // else
+            // {
+            //     threshold = thresholds.at(static_cast<int>(TileColours::Checkpoint));
+            // }
             break;
 
         case TileColours::White:
@@ -304,17 +323,17 @@ TileColours ColourIdentifier::getClosestColour(ColourSample sample)
     // Fill the array
     for (int i=0;i<static_cast<int>(TileColours::ColNum)-1;++i)
     {
-        colDistances.at(i) = thresholds.at(i).getDistanceToSample(sample);
+        colDistances.at(i) = thresholds.at(i).getDistanceToRadius(sample);
     }
 
-    // Find the max and its index
-    double maxVal {};
-    TileColours closestCol {TileColours::Unknown};
+    // Find the min and its index
+    TileColours closestCol {TileColours::White};
+    double minVal {colDistances.at(static_cast<int>(closestCol))};
     for (int i=0;i<static_cast<int>(TileColours::ColNum)-1;++i)
     {
-        if (colDistances.at(i) > maxVal)
+        if (colDistances.at(i) < minVal)
         {
-            maxVal = colDistances.at(i);
+            minVal = colDistances.at(i);
             closestCol = static_cast<TileColours>(i);
         }
     }

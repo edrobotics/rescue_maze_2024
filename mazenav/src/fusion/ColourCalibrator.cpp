@@ -21,7 +21,7 @@ void ColourCalibrator::calibrate(Sensors* sensors, ColourIdentifier* colId)
 
     while (connected)
     {
-        sensors->update(false);
+        sensors->update(true);
 
         ButtonState buttState {getButtonStates()};
         switch (buttState)
@@ -56,7 +56,8 @@ void ColourCalibrator::calibrate(Sensors* sensors, ColourIdentifier* colId)
                 break;
             default:
                 colId->registerColourSample(sensors->colSens.colSample);
-                std::cout << "Tile colour: " << colId->getCurTileColour() << "\n";
+                // std::cout << "Tile colour: " << colId->getCurTileColour() << "\n";
+                colId->getCurTileColour();
                 colId->clearColourSamples();
                 break;
         
@@ -72,9 +73,9 @@ void ColourCalibrator::calibrate(Sensors* sensors, ColourIdentifier* colId)
 bool ColourCalibrator::checkActivated()
 {
     bool activated {false};
-    activated = piAbs->digitalReadTS(PIN_CONN);
+    activated = getIsPanelConnected();
     std::this_thread::sleep_for(std::chrono::milliseconds(42));
-    if (activated && piAbs->digitalReadTS(PIN_CONN))
+    if (activated && getIsPanelConnected())
     {
         return true;
     }
@@ -86,19 +87,19 @@ bool ColourCalibrator::checkActivated()
 
 ButtonState ColourCalibrator::getButtonStates()
 {
-    if (piAbs->digitalReadTS(PIN_BLACK))
+    if (!piAbs->digitalReadTS(PIN_BLACK))
     {
         return ButtonState::black;
     }
-    if (piAbs->digitalReadTS(PIN_BLUE))
+    if (!piAbs->digitalReadTS(PIN_BLUE))
     {
         return ButtonState::blue;
     }
-    if (piAbs->digitalReadTS(PIN_RELECTIVE))
+    if (!piAbs->digitalReadTS(PIN_RELECTIVE))
     {
         return ButtonState::reflective;
     }
-    if (piAbs->digitalReadTS(PIN_WHITE))
+    if (!piAbs->digitalReadTS(PIN_WHITE))
     {
         return ButtonState::white;
     }
@@ -108,7 +109,7 @@ ButtonState ColourCalibrator::getButtonStates()
 
 bool ColourCalibrator::getIsPanelConnected()
 {
-    return piAbs->digitalReadTS(PIN_CONN);
+    return !piAbs->digitalReadTS(PIN_CONN);
 }
 
 

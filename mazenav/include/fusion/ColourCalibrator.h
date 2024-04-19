@@ -34,11 +34,11 @@ class ColourCalibrator
         PiAbstractor* piAbs {nullptr};
 
         #warning maybe need to change pin numbers around
-        static constexpr int PIN_WHITE {30};
+        static constexpr int PIN_WHITE {21};
         static constexpr int PIN_RELECTIVE {22};
-        static constexpr int PIN_BLUE {21};
-        static constexpr int PIN_BLACK {23};
-        static constexpr int PIN_CONN {24};
+        static constexpr int PIN_BLUE {23};
+        static constexpr int PIN_BLACK {24};
+        static constexpr int PIN_CONN {30};
         ButtonState getButtonStates();
         bool getIsPanelConnected();
 
