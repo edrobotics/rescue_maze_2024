@@ -8,6 +8,7 @@
 
 #include "GlobalConstants.h"
 #include "transformations/tfsys.h"
+#include "communicator/PoseDataSyncBlob.h"
 
 
 namespace communication
@@ -15,42 +16,33 @@ namespace communication
     class PoseCommunicator
     {
         private:
-            // std::mutex mtx_world;
-            // std::mutex mtx_localtile;
-            // std::mutex mtx_robot;
 
-            // For timed average of robotSpeed
-            static constexpr int HISTORY_NUM {4};
-            int historyIndex {0};
-            void incrementHistoryIndex();
-            void calcAverage(CoordinateFrame& result);
-
-            // To enable initialization with constructor?
-            template <typename T, std::size_t ... Is>
-            constexpr std::array<T, sizeof...(Is)>
-            create_array(T value, std::index_sequence<Is...>)
-            {
-                // cast Is to void to remove the warning: unused value
-                return {{(static_cast<void>(Is), value)...}};
-            }
-            template <std::size_t N, typename T>
-            constexpr std::array<T, N> create_array(const T& value)
-            {
-                return create_array(value, std::make_index_sequence<N>());
-            }
-
-            std::array<CoordinateFrame, HISTORY_NUM> robotSpeeds {create_array<HISTORY_NUM, CoordinateFrame>(CoordinateFrame{nullptr})};
+            PoseDataSyncBlob poseDataBlob {};
+            // // Data group control mutexes
+            // std::mutex mtx_groupRead {};
+            // std::mutex mtx_groupWrite {};
+            // std::mutex mtx_borrowed {};
 
 
-            // Used for sensor data filtering
+            // Control the updatedness of data
+            // Indicates whether a new poseDataBlob has been set. Set to true when putting in new values (PoseEstimator), false when reading (PathFollower)
+            bool updated {false};
+            std::mutex mtx_updated {};
+
+            // Current robot action. Used for sensor data filtering
             bool isTurning {false};
             bool isDriving {false};
-            std::mutex mtx_controlVars {};
+            std::mutex mtx_actionControl {};
 
+            // Front obstacle control
             double frontObstacleDist {-1};
+            std::mutex mtx_frontObstacle {};
 
+            // Flushing control
             bool shouldflush {false};
+            std::mutex mtx_flush {};
 
+            
         public:
             // Default constructor
             PoseCommunicator();
@@ -59,60 +51,44 @@ namespace communication
 
             // Copy the whole structure of frames.
             PoseCommunicator& operator=(const PoseCommunicator& pComm);
+            
+            PoseDataSyncBlob borrowData();
+            PoseDataSyncBlob copyData(bool markAsRead);
+            void giveBackData(PoseDataSyncBlob pdBlob, bool markUpdated);
+            // Return ownership without updating anything
+            void giveBackDummyData();
+            // True if data has been updated. Does not reset flag.
+            bool getUpdated();
 
-            // Thread safety is handled inside of the CoordinateFrame class
-            CoordinateFrame worldFrame {nullptr};
-            CoordinateFrame localTileFrame {&worldFrame};
-            CoordinateFrame robotFrame {&localTileFrame};
-            CoordinateFrame lastRobotFrame {&localTileFrame};
-
-            void setTargetFrameTS(CoordinateFrame& frame);
-            CoordinateFrame getTargetFrame();
             void setTargetFrameTransformTS(Transform tf);
-            
-            // Speeds can be represented with coordinateframes. The speeds are relative to the parent object. (unsure if this representation is actually okay)
-            // CoordinateFrame worldSpeed {nullptr};
-            // CoordinateFrame localTileSpeed {&worldSpeed};
-            // CoordinateFrame robotSpeed {nullptr};
-            CoordinateFrame robotSpeedAvg {nullptr};
-            CoordinateFrame robotSpeedCur {nullptr};
-            // Take in a new speed and calculate robotSpeedAvg based on this.
-            void calcRobotSpeedAvg(CoordinateFrame newSpeed);
-
-            // Indicates whether or not values have been set before
-            int freshness {6};
-
-            // Indicates whether new values have been set. Set to true when putting in new values (PoseEstimator), false when reading (PathFollower)
-            bool updated {false};
-            
-            // Time point for when the lastRobotTime was captured
-            std::chrono::steady_clock::time_point curRobotTime {std::chrono::steady_clock::now()};
-            std::chrono::steady_clock::time_point lastRobotTime {std::chrono::steady_clock::now()};
-        
-            std::mutex mtx_general {};
-            // Used by PathFollower. Is here to ensure synchronisation
-            // DO NOT USE DIRECTLY! ACCESS THROUGH THREAD SAFE FUNCTIONS
-            CoordinateFrame targetFrame {&localTileFrame};
+            Transform getTargetFrameTransformTS();
 
 
+
+            // Getters and setters -------------------------
+
+            // Returns true if the robot is not on the same tile as startLocalTileFrame
+            bool hasDrivenStep();
+
+
+            // Control what action the robot is currently doing.
             void setTurning(bool turning);
             bool getTurning();
             void setDriving(bool driving);
             bool getDriving();
 
-
+            // Communication about the front obstacle distance
             void setFrontObstacleDist(double dist);
             double getFrontObstacleDist();
 
 
-            CoordinateFrame startLocalTileFrame {&worldFrame};
-            // Returns true if the robot is not on the same tile as startLocalTileFrame
-            bool hasDrivenStep();
-
             // Call to flush the pose data
             void flushPose();
+            // Call to get if you want to flush the data
             bool getShouldFlushPose();
+            // Call to signal that the flush has been performed
             void flushDone();
+
 
     };
 }

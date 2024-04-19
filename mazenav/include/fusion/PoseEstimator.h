@@ -95,16 +95,16 @@ class PoseEstimator
 
         // High-level pose estimation functions. Return the estimated pose.
         // Simple fusiongroup
-        communication::PoseCommunicator updateSimple();
+        void updateSimple(communication::PoseDataSyncBlob& poseResult);
         // Lidar fusiongroup
-        communication::PoseCommunicator updateLidar();
+        void updateLidar(communication::PoseDataSyncBlob& poseResult);
         // Lidar+simple fusiongroup
-        communication::PoseCommunicator updateLidarSimple();
+        void updateLidarSimple(communication::PoseDataSyncBlob& poseResult);
         // Only gives rotation, not translations
-        communication::PoseCommunicator updateIMU();
+        void updateIMU(communication::PoseDataSyncBlob& poseResult);
 
         // Calculate and set the speeds
-        void calcSpeeds(communication::PoseCommunicator& pose);
+        void calcSpeeds(communication::PoseDataSyncBlob& pose);
 
 
         // Low-level pose estimation helper functions
@@ -120,7 +120,7 @@ class PoseEstimator
         ConditionalAverageTerm getWheelRotDiff();
 
         // Distance travelled since last check or reset
-        ConditionalAverageTerm getTofTransYDiff();
+        ConditionalAverageTerm getTofTransYDiff(const communication::PoseDataSyncBlob& pose);
         double lastTofFR {};
         double lastTofFL {};
         double lastTofB {};
@@ -212,11 +212,11 @@ class PoseEstimator
         void wrapVectorSameScale(std::vector<ConditionalAverageTerm>& vec, double lower, double upper);
 
         // Wrap the pose values into the current tile. Does not register tile changes, only bounds the values
-        void wrapPoseComm(communication::PoseCommunicator& posecomm);
+        void wrapPoseCommData(communication::PoseDataSyncBlob& posecomm);
         // Given a poseComm and the last poseComm, ghost-move the local tile to register tile transitions
         // Assumes that input posecomm has values inside of limits.
         // Will only register one "step" - for example cannot register two tile moves forward in one execution, as that is not feasible with these speeds and loop times
-        void updatePoseComm(communication::PoseCommunicator& pose);
+        void updatePoseComm(communication::PoseDataSyncBlob& pose);
         // Limits for wrapping a pose
         const int minYPos {0};
         const int maxYPos {GRID_SIZE};
@@ -250,7 +250,7 @@ class PoseEstimator
 
 
         // Updates tile properties if requested by another thread.
-        void updateTileProperties();
+        void updateTileProperties(communication::PoseDataSyncBlob& pose);
         // Gets the wall states in a vector, as requested by TileProperties
         std::vector<communication::Walls> getWallStates();
         // Get the tile colour for the tile you just drove onto, or in case of black (meaning did not complete drive), colour of tile in front (black)
