@@ -19,6 +19,7 @@ namespace communication
         sawBlackTile,
         lackOfProgressActivated,
         lackOfProgressDeactivated,
+        droveHalfTile
     };
 
     struct PanicFlag
@@ -36,16 +37,15 @@ namespace communication
     class PanicFlagCommunicator
     {
         private:
-        PanicFlag victimFlag{{ ReadThread::localNav }};
+        PanicFlag victimFlag{{ ReadThread::localNav, ReadThread::globalNav }};
         PanicFlag rampFlag{{ ReadThread::localNav }};
         PanicFlag blackFlag{{ ReadThread::localNav }};
         PanicFlag lOPFlag{{ ReadThread::globalNav, ReadThread::localNav , ReadThread::fusion}};
         PanicFlag lOPDoneFlag{{ReadThread::globalNav, ReadThread::localNav, ReadThread::fusion}};
+        PanicFlag droveHalfTileFlag{{ ReadThread::globalNav }};
 
         PanicFlag* getPanicFlag(PanicFlags flag);
         bool hasBeenSeenByEveryone(PanicFlag* flag);
-
-        std::vector<PanicFlags> getActivePanicFlags(ReadThread readThread);
 
         public:
         void raiseFlag(PanicFlags flag);

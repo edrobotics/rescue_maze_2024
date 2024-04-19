@@ -241,6 +241,7 @@ void MazeNavigator::updateInfoAfterDriving()
     checkFlagsUntilDriveIsFinished();
     if (lackOfProgressActive) 
     {
+        waitForFlag(communication::PanicFlags::lackOfProgressDeactivated);
         lackOfProgressActive = false;
         return;
     }
@@ -255,8 +256,16 @@ void MazeNavigator::checkFlagsUntilDriveIsFinished()
     while (!driveIsFinished())
     {
         handleActivePanicFlags();
-        std::this_thread::sleep_for(LOOP_SLEEPTIME);
         if (lackOfProgressActive) return;
+        std::this_thread::sleep_for(LOOP_SLEEPTIME);
+    }
+}
+
+void MazeNavigator::waitForFlag(communication::PanicFlags panicFlag)
+{
+    while (!communicatorSingleton->panicFlagComm.readFlagFromThread(panicFlag, communication::ReadThread::globalNav))
+    {
+        std::this_thread::sleep_for(LOOP_SLEEPTIME);
     }
 }
 
@@ -269,19 +278,34 @@ void MazeNavigator::handleActivePanicFlags()
 {
     if (victimFlagRaised())
     {
-        std::vector<Victim> victims = communicatorSingleton->victimDataComm.getAllNonStatusVictims();
-        for (auto i = victims.begin(); i != victims.end(); i++)
-        {
-            if (!mazeMap.tileHasProperty(currentPosition, Tile::TileProperty::HasVictim))
-            {
-                mazeMap.setTileProperty(currentPosition, Tile::TileProperty::HasVictim, true);
-                communicatorSingleton->victimDataComm.addVictimToRescueQueue(*i);
-            }
-        }
+        handleVictimFlag();
     }
     if (lackOfProgressFlagRaised())
     {
         lackOfProgress();
+    }
+}
+
+bool MazeNavigator::victimFlagRaised()
+{
+    return communicatorSingleton->panicFlagComm.readFlagFromThread(communication::PanicFlags::victimDetected, communication::ReadThread::globalNav);
+}
+
+void MazeNavigator::handleVictimFlag()
+{
+    std::this_thread::sleep_for(SHORT_WAIT_SLEEPTIME); //Make fully sure that victims have time to be updated
+    std::vector<Victim> victims = communicatorSingleton->victimDataComm.getAllNonStatusVictims();
+
+    MazePosition victimPosition = currentPosition;
+    if (droveHalfTileFlagRaised()) victimPosition = mazeMap.neighborInDirection(currentPosition, currentDirection); //If we have driven half, we are on the next tile
+    
+    for (auto i = victims.begin(); i != victims.end(); i++)
+    {
+        if (!mazeMap.tileHasProperty(victimPosition, Tile::TileProperty::HasVictim))
+        {
+            mazeMap.setTileProperty(victimPosition, Tile::TileProperty::HasVictim, true);
+            communicatorSingleton->victimDataComm.addVictimToRescueQueue(*i);
+        }
     }
 }
 
@@ -290,9 +314,19 @@ bool MazeNavigator::lackOfProgressFlagRaised()
     return communicatorSingleton->panicFlagComm.readFlagFromThread(communication::PanicFlags::lackOfProgressActivated, communication::ReadThread::globalNav);
 }
 
-bool MazeNavigator::victimFlagRaised()
+void MazeNavigator::lackOfProgress()
 {
-    return communicatorSingleton->panicFlagComm.readFlagFromThread(communication::PanicFlags::victimDetected, communication::ReadThread::globalNav);
+    mazeMap.resetSinceLastCheckpoint();
+    currentPosition = latestCheckpointPosition;
+    knownUnexploredTilePositions = checkpointedKnownUnexploredTilePositions;
+
+    communicatorSingleton->navigationComm.clearAllCommands();
+    lackOfProgressActive = true;
+}
+
+bool MazeNavigator::droveHalfTileFlagRaised()
+{
+    return communicatorSingleton->panicFlagComm.readFlagFromThread(communication::PanicFlags::droveHalfTile, communication::ReadThread::globalNav);
 }
 
 void MazeNavigator::updatePosition(const communication::TileDriveProperties& tileDriveProperties)
@@ -400,16 +434,6 @@ Tile::TileProperty MazeNavigator::wallPropertyInDirection(LocalDirections direct
     if (globalDirection == GlobalDirections::West) return Tile::TileProperty::WallWest;
     if (globalDirection == GlobalDirections::South) return Tile::TileProperty::WallSouth;
     return Tile::TileProperty::WallEast;
-}
-
-void MazeNavigator::lackOfProgress()
-{
-    mazeMap.resetSinceLastCheckpoint();
-    currentPosition = latestCheckpointPosition;
-    knownUnexploredTilePositions = checkpointedKnownUnexploredTilePositions;
-
-    communicatorSingleton->navigationComm.clearAllCommands();
-    lackOfProgressActive = true;
 }
 
 void MazeNavigator::saveCheckpointInfo()

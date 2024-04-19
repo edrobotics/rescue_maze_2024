@@ -64,8 +64,10 @@ namespace communication
             return &blackFlag;
         case PanicFlags::lackOfProgressDeactivated:
             return &lOPDoneFlag;
-        default:
+        case PanicFlags::lackOfProgressActivated:
             return &lOPFlag;
+        default:
+            return &droveHalfTileFlag;
         }
     }
 

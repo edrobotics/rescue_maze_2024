@@ -18,8 +18,10 @@
 #define START_Y LEVELSIZE/2
 #define START_LEVEL 0
 #define START_DIRECTION GlobalDirections::North
+
 #define LOOP_SLEEPTIME std::chrono::milliseconds(20)
 #define START_SLEEPTIME std::chrono::milliseconds(50)
+#define SHORT_WAIT_SLEEPTIME std::chrono::milliseconds(4)
 #define DRIVE_AND_TURN_TIME std::chrono::seconds(7)
 #define END_BUFFER_TIME std::chrono::seconds(10)
 #define END_SLEEP_TIME std::chrono::seconds(100)
@@ -73,6 +75,9 @@ class MazeNavigator
     void handleActivePanicFlags();
     bool lackOfProgressFlagRaised();
     bool victimFlagRaised();
+    bool droveHalfTileFlagRaised();
+    void waitForFlag(communication::PanicFlags panicFlag);
+    void handleVictimFlag();
 
     void updatePosition(const communication::TileDriveProperties& tileDriveProperties);
     void updatePositionFromDirection();
