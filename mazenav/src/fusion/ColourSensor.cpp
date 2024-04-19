@@ -42,7 +42,7 @@ std::string stringFromTileColours(TileColours tileColour)
             out = "blue";
             break;
         case TileColours::Checkpoint:
-            out = "checkpoint/reflective";
+            out = "checkpoint_reflective";
             break;
         case TileColours::White:
             out = "white";
