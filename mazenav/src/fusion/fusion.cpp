@@ -11,6 +11,8 @@ PoseEstimator poseEstimator {&sensors};
 
 VisionCommunicator visionComm;
 
+LackOfProgressChecker lOPChecker;
+
 
 void fusion::main(communication::Communicator* globComm, PiAbstractor* piAbs)
 {
@@ -38,6 +40,8 @@ void fusion::main(communication::Communicator* globComm, PiAbstractor* piAbs)
     std::cout << "done." << "\n";
     
     std::thread visionServerThread(&VisionCommunicator::visionServerLooper, &visionComm, globComm);
+
+    std::thread lackOfProgressThread(&LackOfProgressChecker::loopChecker, &lOPChecker, globComm, piAbs);
     // while (true)
     // {
         // std::cout << globComm->poseComm.robotFrame << "\n";
@@ -49,6 +53,7 @@ void fusion::main(communication::Communicator* globComm, PiAbstractor* piAbs)
     motorDriver.join();
     hardwareCommunicator.join();
     visionServerThread.join();
+    lackOfProgressThread.join();
 }
 
 void fusion::motorDriveLoop(communication::Communicator* gCom, MotorControllers* mot)
