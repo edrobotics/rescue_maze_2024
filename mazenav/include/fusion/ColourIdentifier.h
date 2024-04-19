@@ -26,17 +26,28 @@ class ColourThreshold
         // The actual threshold in use
         double tileAvgDetectionThreshold {};
 
+        // Minimum radiuses for the colour
+        #warning untuned constants (though copied from old code)
+        static constexpr double STANDARD_RADIUS_BLACK {0};
+        static constexpr double STANDARD_RADIUS_BLUE {7};
+        static constexpr double STANDARD_RADIUS_REFLECTIVE {20};
+        static constexpr double STANDARD_RADIUS_WHITE {30};
+        double standardRadius {};
+
     public:
         ColourThreshold();
         ColourThreshold(TileColours type);
         bool isWithinThreshold(ColourSample otherSample);
-        void setType(TileColours tileColour);
         // Gets the colour distance to the sample
         double getDistanceToSample(ColourSample sample);
         // Gets the colour distance to the radius (to sample minus the radius)
         double getDistanceToRadius(ColourSample sample);
 
         bool isAboveTileAvgThresh(double share);
+
+        void setType(TileColours tileColour);
+        void setSample(ColourSample sample);
+        void setRadius(double radius);
 };
 
 
@@ -72,6 +83,7 @@ class ColourIdentifier
         // Store the colour samples
         // ColourSampleCollection samplesOnStartTile {};
         ColourSampleCollection samplesOnNext {};
+        ColourSample curSample {};
 
         // The last known current tile colour
         TileColours lastKnownCurTileColour {TileColours::White};
@@ -103,6 +115,9 @@ class ColourIdentifier
 
         // Call with true when the sensor passes over to the next tile
         void setSensorOnNextTile(bool nextTile);
+
+        // Set the threshold to use
+        void setThreshold(TileColours type, ColourThreshold threshold);
 
         // Colour output ---------------------------------------------------------
 

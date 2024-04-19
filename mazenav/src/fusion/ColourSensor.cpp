@@ -30,6 +30,21 @@ std::ostream& operator<< (std::ostream& out, const TileColours& tileColour)
     return out;
 }
 
+std::ostream& operator<< (std::ostream& out, const ColourSample& sample)
+{
+    out << "r=" << sample.values.at(fcol_r)
+    << " g=" << sample.values.at(fcol_g)
+    << " b=" << sample.values.at(fcol_b)
+    << " c=" << sample.values.at(fcol_c)
+    << " wasDone=" << sample.wasDone
+    << " classification=" << sample.classification
+    << " rotX=" << sample.rotX
+    << " rotY=" << sample.rotY;
+
+    return out;
+
+}
+
 ColourSensor::ColourSensor(i2cCommunicator* i2cComm)
 : colSens {TCS34725_INTEGRATIONTIME_50MS, TCS34725_GAIN_1X, i2cComm}
 {

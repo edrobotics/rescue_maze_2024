@@ -47,7 +47,9 @@ class ColourSample
 
 
     static double calcColourDistance(ColourSample s1, ColourSample s2);
+
 };
+std::ostream& operator<< (std::ostream& out, const ColourSample& sample);
 
 class ColourSensor
 {

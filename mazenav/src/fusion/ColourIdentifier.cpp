@@ -22,21 +22,48 @@ void ColourThreshold::setType(TileColours tileColour)
     {
         case TileColours::Blue:
             tileAvgDetectionThreshold = TILE_DETECTION_THRESHOLD_BLUE;
+            standardRadius = STANDARD_RADIUS_BLUE;
             break;
         
         case TileColours::White:
             tileAvgDetectionThreshold = TILE_DETECTION_THRESHOLD_WHITE;
+            standardRadius = STANDARD_RADIUS_WHITE;
             break;
 
         case TileColours::Checkpoint:
             tileAvgDetectionThreshold = TILE_DETECTION_THRESHOLD_REFLECTIVE;
+            standardRadius = STANDARD_RADIUS_REFLECTIVE;
+            break;
+
+        case TileColours::Black:
+            tileAvgDetectionThreshold = 1;
+            standardRadius = STANDARD_RADIUS_BLACK;
             break;
         
         default:
             tileAvgDetectionThreshold = 1;
+            standardRadius = 0;
             break;
     }
 }
+
+void ColourThreshold::setSample(ColourSample sample)
+{
+    this->sample = sample;
+}
+
+void ColourThreshold::setRadius(double radius)
+{
+    if (radius>standardRadius)
+    {
+        this->radius = radius;
+    }
+    else
+    {
+        this->radius = standardRadius;
+    }
+}
+
 
 
 bool ColourThreshold::isAboveTileAvgThresh(double share)
@@ -67,9 +94,10 @@ ColourIdentifier::ColourIdentifier()
 
 void ColourIdentifier::registerColourSample(ColourSample sample)
 {
+    curSample = sample;
     if (onNextTile)
     {
-        samplesOnNext.samples.push_back(sample);
+        samplesOnNext.samples.push_back(curSample);
     }
     else
     {
@@ -90,6 +118,19 @@ void ColourIdentifier::setSensorOnNextTile(bool nextTile)
     onNextTile = nextTile;
 }
 
+
+void ColourIdentifier::setThreshold(TileColours type, ColourThreshold threshold)
+{
+    if (type==TileColours::Unknown || type==TileColours::NotUpdated || type==TileColours::ColNum)
+    {
+        return;
+    }
+    else
+    {
+        thresholds.at(static_cast<int>(type)) = threshold;
+    }
+}
+
 TileColours ColourIdentifier::getTileColour()
 {
     // Calculate colour vlaues for all the individual values
@@ -100,9 +141,8 @@ TileColours ColourIdentifier::getTileColour()
 
 TileColours ColourIdentifier::getCurTileColour()
 {
-    classifySample(samplesOnNext.samples.back());
-    ColourSample curSample {samplesOnNext.samples.back()};
-    std::cout << "Current tile colour is: " << curSample.classification << '\n';
+    classifySample(curSample);
+    std::cout << "Current sample is: " << curSample << "\n";
     if (curSample.classification == TileColours::Unknown || curSample.classification == TileColours::NotUpdated)
     {
         std::cout << "unknown or notUpdated\n";
