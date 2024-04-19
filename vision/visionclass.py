@@ -151,9 +151,9 @@ class imgproc:
 
     def preprocessing(self,image):
         #print("preprocessing")
-        kernel = np.ones((9,9),np.uint8)
+        kernel = np.ones((7,7),np.uint8)
         gray = cv2.cvtColor(image,cv2.COLOR_BGR2GRAY)
-        binary = cv2.adaptiveThreshold(gray,255,cv2.ADAPTIVE_THRESH_MEAN_C, cv2.THRESH_BINARY,21,10) 
+        binary = cv2.adaptiveThreshold(gray,255,cv2.ADAPTIVE_THRESH_MEAN_C, cv2.THRESH_BINARY,31,10) 
         
         binary = np.invert(binary)
         cv2.imshow("before closing",binary)
@@ -206,9 +206,9 @@ class imgproc:
 
     def identify_victim(self, section):
         victim, percentage = self.model.recogniseSection(section)
-        if victim != "none": self.framedetected.append(victim)
         cv2.putText(self.imagecopy, f"{victim}, {percentage:.2f}",self.vPos,cv2.FONT_HERSHEY_SIMPLEX,1.0,(0,255,0))
         if victim != "none" and percentage > 0.99:
+            if victim != "none": self.framedetected.append(victim)
             #print(f"{victim} {percentage}") 
             self.com.send("C",victim,self.camera,self.vPos[0],self.timestamp)
         if self.training:

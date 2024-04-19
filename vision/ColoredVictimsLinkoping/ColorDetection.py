@@ -2,7 +2,7 @@ import cv2
 import numpy as np
 
 class ColorDetection:
-    def __init__(self, min_area=500, white_balance=None):
+    def __init__(self, min_area=5500, white_balance=None):
         self.min_area = min_area
         self.white_balance = white_balance
 
@@ -75,7 +75,7 @@ class ColorDetection:
                 else:
                     color = 'unknown'
 
+                self.image = image
                 return image, color, (middle_x, middle_y)
-
         # If no square is found, return None
         return None, None, None

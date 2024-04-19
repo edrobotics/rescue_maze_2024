@@ -63,7 +63,12 @@ class Trackbars:
 
 class validation:
     stop = False
-    detected = {"H":0,"S":0,"U":0, "red": 0, "green": 0, "yellow": 0}
+    detected = {"H":0,
+                "S":0,
+                "U":0,
+                "red": 0,
+                "green": 0,
+                "yellow": 0}
 
     def __init__(self,dir_path,showsource = False,training = False,pause = False) -> None:
         self.TB = Trackbars() #trackbar object
@@ -71,7 +76,7 @@ class validation:
         self.pause = pause
         if pause:
             self.showWrong = True
-            self.showsource = True
+            self.showsource = False
 
         else:
             self.showsource = showsource
@@ -140,7 +145,7 @@ class validation:
 
     def showimage(self, image):
 
-        if self.showsource:# or len(vc.framedetected[0]) == 1: #true for now
+        if self.showsource or self.showWrong:# or len(vc.framedetected[0]) == 1: #true for now
 
             try:
                 cv2.imshow("image",image)
@@ -160,7 +165,7 @@ class validation:
         if True:
             #source_folder = os.path.join(self.base_folder,"log/previous",victim)
             source_folder = os.path.join(self.base_folder,"log/sorted",victim)
-            identifiedVictims =self.iterateFolder(source_folder, victim = victim)
+            identifiedVictims =self.iterateFolder(source_folder, expectedVictim = victim)
 
                     
  #               if len(self.imgproc.framedetected) == 1:
@@ -181,7 +186,7 @@ class validation:
         
 
 
-    def iterateFolder(self,folder, victim = None):
+    def iterateFolder(self,folder, expectedVictim = None):
         file_list = os.listdir(folder)
         ct = 0
         for file_name in file_list:
@@ -197,11 +202,14 @@ class validation:
                 image = cv2.imread(self.source_path) 
                 self.imgproc.do_the_work(image, file_name)
                 if self.showWrong:
-                    if len(self.imgproc.framedetected) == 0 and victim != "none":
-                        print("victim not detected")
-                        self.showimage(self.imgproc.imagecopy)
-                    elif self.imgproc.framedetected[0] != victim:
-                        print(f"detected {self.imgproc.framedetected[0]} instead of {victim}")
+                    if len(self.imgproc.framedetected) == 0:
+                        if expectedVictim != "none":
+                            print("victim not detected")
+                            self.showimage(self.imgproc.imagecopy)
+                            print(expectedVictim)
+                    elif self.imgproc.framedetected[0] != expectedVictim:
+                        print(f"detected {self.imgproc.framedetected[0]} instead of {expectedVictim}")
+                        
                         self.showimage(self.imgproc.imagecopy)
                 elif self.showsource:
                     self.showimage(self.imgproc.imagecopy)
@@ -235,6 +243,7 @@ class validation:
         #currently not used
 
     def runValidation(self):
+        stop = False
         print("testing")
         victims = ("U","H","S", "red","yellow","green","none")
 
@@ -248,6 +257,9 @@ class validation:
                 if self.stop:
                     break
 
+        elif victim == "q":
+            stop = True    
+
         elif victim in victims:
             self.evaluatefolder(victim)
         elif victim == "l":
@@ -256,6 +268,10 @@ class validation:
     
         else:
             print("invalid victim")
+
+
+        if not stop: self.runValidation()
+    
         cv2.destroyAllWindows()
 
 

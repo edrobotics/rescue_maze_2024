@@ -1,14 +1,14 @@
 import cv2
 import numpy as np
 import logging
-
+from HelperClass import Helper
 
 
 class ColorDetection:
     frameDetected = []
 
     def __init__(self) -> None:
-        pass
+        self.helper = Helper()
 
 
     def doTheWork(self, image):
@@ -46,6 +46,23 @@ class ColorDetection:
         cv2.imshow("adjusted",adjusted_image)
         return adjusted_image       
 
+
+    def safeguardsColor(self,contour):
+
+        #contours = cv2.findContours(mask)
+        #biggestContour = max(contours, key=cv2.contourArea)
+        (x,y,w,h) = cv2.boundingRect(contour)
+        if x < 5 or x+w > 635:
+            print(f"safeguard width {x}, {w}" )
+            return False
+        #elif y < 5 or y+h >475:
+        #    print(f"safeguard height{y}, {h}")
+        #    return False
+        else:
+            return True
+
+
+
     def findColor(self):
         image = self.adjustedImage
         #    image = image.copy
@@ -55,9 +72,9 @@ class ColorDetection:
         self.masks = {}
 
         lower_range = {
-            "yellow": np.array([18,100,100]),#decrese Saturation? 
+            "yellow": np.array([18,100,42]),#decrese Saturation? 
             "red" : np.array([130,69,100]), #increase saturation >100
-            "green": np.array([30,70,30]) #decrese V 50 
+            "green": np.array([20,70,30]) #decrese V 50 
             }
         upper_range = {
             "yellow" : np.array([35,255,255]),
@@ -85,6 +102,8 @@ class ColorDetection:
         mask = cv2.dilate(mask,kernel, iterations=1) 
         log_mask = cv2.bitwise_and(self.image, self.image, mask=mask)
         print(f"{color}: {np.count_nonzero(mask)} ")
+        self.helper.putText(np.count_nonzero(mask),image = mask)
+
 
         if np.count_nonzero(mask) > 5000 and np.count_nonzero(mask)< 110000:
             #print(np.count_nonzero(mask))
@@ -94,7 +113,7 @@ class ColorDetection:
             if cv2.contourArea(c) > 5000:
                 print("possible vicitm detcted")
 
-                if True or self.safeguards_color(c, color, mask):#debug
+                if self.safeguardsColor(c):
 
                     self.frameDetected.append(color)
                     print(f"{color}: {cv2.contourArea(c)}")
@@ -105,7 +124,7 @@ class ColorDetection:
                     #elf.log(color,img = log_mask)
 
                 else: 
-                    if self.info: print("stoped by safeguard")
-                    self.log(f"F{color}",img = log_mask)
-                    logging.info(f"found {color}, image {self.fnum}, but was stopped by safeguards")
+                    print("stoped by safeguard")
+                    #self.log(f"F{color}",img = log_mask)
+                    #logging.info(f"found {color}, image {self.fnum}, but was stopped by safeguards")
 
