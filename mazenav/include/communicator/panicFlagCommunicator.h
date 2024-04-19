@@ -22,7 +22,7 @@ namespace communication
         droveHalfTile
     };
 
-    struct PanicFlag
+    struct PanicFlag //IMPORTANT - add new flags to resetAllFlags(), here, as a member in PanicFlagCommunicator and in getPanicFlag
     {
         std::atomic_bool flagIsRaised = false;
         std::atomic_bool readByGlobalNav = false;
