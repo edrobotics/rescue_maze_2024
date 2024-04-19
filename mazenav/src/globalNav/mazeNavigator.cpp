@@ -35,7 +35,7 @@ void MazeNavigator::followLeftWall()
     {
         checkFlagsUntilDriveIsFinished();
 
-        if (lackOfProgress) 
+        if (lackOfProgressActive) 
         {
             lackOfProgressInactive();
             return;
