@@ -259,6 +259,7 @@ class PoseEstimator
         void checkAndHandlePanic();
         bool lopActive {false};
         bool lopDeactivated {false};
+        bool halfTileDrivenFlagSet {false};
 
 
         // Updates tile properties if requested by another thread.
