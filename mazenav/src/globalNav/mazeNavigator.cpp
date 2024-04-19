@@ -215,6 +215,7 @@ void MazeNavigator::turnToDirection(LocalDirections direction)
 
 void MazeNavigator::driveTile()
 {
+    communicatorSingleton->panicFlagComm.readFlagFromThread(communication::PanicFlags::droveHalfTile, communication::ReadThread::globalNav);
     logToConsoleAndFile("Sending command to drive forward");
     giveLowLevelInstruction(communication::DriveCommand::driveForward);
     sentNewDriveCommand = true;
