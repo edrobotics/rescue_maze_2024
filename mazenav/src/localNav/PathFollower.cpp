@@ -178,6 +178,7 @@ void PathFollower::runLoop()
 
             if (!abortMove)
             {
+                globComm->poseComm.flushPose();
                 globComm->tileInfoComm.setReadyForFill();
                 std::cout << "[PathFollower] Drove back------------------------------------------------------------------------\n";
             }
@@ -198,9 +199,9 @@ void PathFollower::runLoop()
             break;
 
         case communication::DriveCommand::turnBack:
-            turn();
+            turn(1);
             setTargetPointTf(communication::DriveCommand::turnLeft);
-            turn();
+            turn(1);
             break;
         
         case communication::DriveCommand::init:
