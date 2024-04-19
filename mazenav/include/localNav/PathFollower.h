@@ -173,10 +173,14 @@ class PathFollower
 
         // Panic handling
         void checkAndHandlePanic();
+        void checkAndHandleLop();
         void handleVictim();
         void handleBlackTile();
         bool driveBackwardsBlacktile {false};
         void handleLOP();
+        void handleLopDeactivated();
+        bool lopActive {false};
+        bool lopDeactivated {false};
 
 
 };

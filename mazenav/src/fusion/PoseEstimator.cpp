@@ -81,7 +81,7 @@ void PoseEstimator::update(FusionGroup fgroup, bool doUpdate)
         lopDeactivated = false;
         flush(fusionGroup, true);
     }
-    
+
     // std::cout << "In update" << std::endl;
     sensors->update(true);
     // std::cout << "updated sensors  ";
@@ -1271,6 +1271,12 @@ void PoseEstimator::checkAndHandleColour(communication::PoseDataSyncBlob& poseDa
 
 void PoseEstimator::checkAndHandlePanic()
 {
+
+    if (driveStarted)
+    {
+        halfTileDrivenFlagSet = false;
+    }
+
     if (globComm->panicFlagComm.readFlagFromThread(communication::PanicFlags::lackOfProgressActivated, communication::ReadThread::fusion))
     {
         lopActive = true;
@@ -1279,5 +1285,13 @@ void PoseEstimator::checkAndHandlePanic()
     {
         lopActive = false;
         lopDeactivated = true;
+    }
+    if (globComm->poseComm.hasDrivenStep())
+    {
+        if (!halfTileDrivenFlagSet)
+        {
+            globComm->panicFlagComm.raiseFlag(communication::PanicFlags::droveHalfTile);
+            halfTileDrivenFlagSet = true;
+        }
     }
 }

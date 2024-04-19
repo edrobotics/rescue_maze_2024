@@ -120,6 +120,16 @@ void PathFollower::setLinePos(double newYLine)
 void PathFollower::runLoop()
 {
     abortMove = false;
+    while (lopActive)
+    {
+        std::this_thread::sleep_for(std::chrono::milliseconds(10));
+        checkAndHandleLop();
+    }
+    if (lopDeactivated)
+    {
+        lopDeactivated = false;
+        // Special reinitialization
+    }
     yPid.restartPID();
     angPid.restartPID();
     driveTransSpeedPid.restartPID();
@@ -535,11 +545,7 @@ void PathFollower::readPidFromFile()
 
 void PathFollower::checkAndHandlePanic()
 {
-    // LOP
-    if (globComm->panicFlagComm.readFlagFromThread(communication::PanicFlags::lackOfProgressActivated, communication::ReadThread::localNav))
-    {
-        handleLOP();
-    }
+    checkAndHandleLop();
 
     // Ramp
     if (globComm->panicFlagComm.readFlagFromThread(communication::PanicFlags::onRamp, communication::ReadThread::localNav))
@@ -578,16 +584,32 @@ void PathFollower::handleVictim()
 
 void PathFollower::handleBlackTile()
 {
-    // Do not do anything if we are already reversing due to black tile
-    if (driveBackwardsBlacktile)
+    // Do not do anything if we are already reversing due to black tile or if we are not driving (i.e. turning)
+    if (driveBackwardsBlacktile || !globComm->poseComm.getDriving())
     {
         return;
     }
     driver.stop();
 
+    std::cout << "[PathFollower] Saw black tile - going back to safety\n";
+
     // Reverse
     driveBackwardsBlacktile = true;
     abortMove = true;
+}
+
+void PathFollower::checkAndHandleLop()
+{
+    // LOP
+    if (globComm->panicFlagComm.readFlagFromThread(communication::PanicFlags::lackOfProgressActivated, communication::ReadThread::localNav))
+    {
+        handleLOP();
+    }
+
+    if (globComm->panicFlagComm.readFlagFromThread(communication::PanicFlags::lackOfProgressDeactivated, communication::ReadThread::localNav))
+    {
+        handleLopDeactivated();
+    }
 }
 
 void PathFollower::handleLOP()
@@ -595,6 +617,13 @@ void PathFollower::handleLOP()
     driver.stop();
 
     abortMove = true;
+    lopActive = true;
+}
+
+void PathFollower::handleLopDeactivated()
+{
+    lopActive = false;
+    lopDeactivated = true;
 }
 
 double PathFollower::capYPidOutput(double output)
