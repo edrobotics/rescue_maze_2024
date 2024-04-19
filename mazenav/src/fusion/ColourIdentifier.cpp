@@ -105,7 +105,7 @@ void ColourThreshold::writeToFile()
     std::ofstream storeFile(getFileNameFromType(type));
     if (!storeFile)
     {
-        // std::cerr << "could not open file: " << getFileNameFromType(type) << "\n";
+        std::cerr << "could not open file: " << getFileNameFromType(type) << "\n";
     }
     
     storeFile

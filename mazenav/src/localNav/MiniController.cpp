@@ -27,7 +27,7 @@ void MiniController::runLoopFunc(communication::Communicator* gComm)
                 globComm->navigationComm.pushCommand(communication::DriveCommand::driveForward);
                 break;
             case 's':
-                globComm->navigationComm.pushCommand(communication::DriveCommand::driveForward);
+                globComm->navigationComm.pushCommand(communication::DriveCommand::driveBackward);
                 break;
             case 'a':
                 globComm->navigationComm.pushCommand(communication::DriveCommand::turnLeft);

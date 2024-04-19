@@ -161,9 +161,9 @@ class PathFollower
         PIDController turnRotSpeedPid {0.1, 0, 0};
 
 
-        static constexpr double DRIVE_SPEED_STANDARD {200};
-        static constexpr double DRIVE_SPEED_SLOW {100};
-        static constexpr double TURN_SPEED_STANDARD {M_PI_2*0.75};
+        static constexpr double DRIVE_SPEED_STANDARD {121};
+        static constexpr double DRIVE_SPEED_SLOW {69};
+        static constexpr double TURN_SPEED_STANDARD {M_PI_2*0.5};
         static constexpr double TURN_SPEED_SLOW {TURN_SPEED_STANDARD};
 
 

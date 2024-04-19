@@ -50,14 +50,14 @@ double PathFollower::getTransSpeedDriving(int direction)
     }
     double driveSpeed {};
     // Simple slow-down when close by
-    if (distLeftToTarget<DRIVING_CLOSE_PID_THRESHOLD)
+    if (direction*distLeftToTarget<DRIVING_CLOSE_PID_THRESHOLD)
     {
         // Can replace with separate PID later (whose output would be used: driveSpeed = baseSpeed+correction))
-        driveSpeed = DRIVE_SPEED_SLOW;
+        driveSpeed = direction*DRIVE_SPEED_SLOW;
     }
     else
     {
-        driveSpeed = DRIVE_SPEED_STANDARD;
+        driveSpeed = direction*DRIVE_SPEED_STANDARD;
     }
 
     driveTransSpeedPid.setSetpoint(driveSpeed);
@@ -256,6 +256,7 @@ void PathFollower::drive(int direction)
             std::this_thread::sleep_for(std::chrono::milliseconds(5));
         }
     }
+    driver.stop();
     globComm->poseComm.setDriving(false);
 }
 
@@ -303,6 +304,7 @@ void PathFollower::turn(int direction)
             std::this_thread::sleep_for(std::chrono::milliseconds(5));
         }
     }
+    driver.stop();
     globComm->poseComm.setTurning(false);
 }
 
