@@ -1,6 +1,7 @@
 #pragma once
 
 #include <vector>
+#include <fstream>
 
 #include "fusion/ColourSensor.h"
 
@@ -42,6 +43,11 @@ class ColourThreshold
         static constexpr double STANDARD_RADIUS_WHITE {0};
         double standardRadius {};
 
+
+        // For file storage
+        // Get the filename for this type
+        std::string getFileNameFromType(TileColours type);
+
     public:
         ColourThreshold();
         ColourThreshold(TileColours type);
@@ -58,6 +64,9 @@ class ColourThreshold
         void setSample(ColourSample sample);
         void setRadius(double radius);
         friend std::ostream& operator<<(std::ostream& out, const ColourThreshold& thresh);
+
+        void writeToFile();
+        void readFromFile();
 
 };
 
@@ -135,6 +144,12 @@ class ColourIdentifier
         TileColours getTileColour();
         // Get the tile colour of the tile directly beneath the sensor.
         TileColours getCurTileColour();
+
+        // Reads stored thresholds from files
+        void readThresholdsFromFiles();
+        // Stores thresholds to files
+        void storeThresholds();
+
 
 
 

@@ -17,6 +17,8 @@ void ColourCalibrator::calibrate(Sensors* sensors, ColourIdentifier* colId)
     this->sensors = sensors;
     this->colId = colId;
 
+    colId->readThresholdsFromFiles();
+
     bool connected {true};
 
     while (connected)
@@ -67,6 +69,9 @@ void ColourCalibrator::calibrate(Sensors* sensors, ColourIdentifier* colId)
         // If we have disconnected, leave the loop
         connected = checkActivated();
     }
+
+    // Store thresholds for future use
+    colId->storeThresholds();
 
 }
 
@@ -167,7 +172,6 @@ ColourSample ColourCalibrator::calcAverage(std::vector<ColourSample> samples)
 
     for (auto& sample : samples)
     {
-        ++iterations;
         resultSample.values.at(fcol_r)+=sample.values.at(fcol_r);
         resultSample.values.at(fcol_g)+=sample.values.at(fcol_g);
         resultSample.values.at(fcol_b)+=sample.values.at(fcol_b);

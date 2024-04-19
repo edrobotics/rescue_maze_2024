@@ -93,7 +93,48 @@ std::ostream& operator<<(std::ostream& out, const ColourThreshold& thresh)
     return out;
 }
 
+std::string ColourThreshold::getFileNameFromType(TileColours type)
+{
+    return "colCal_" + stringFromTileColours(type) + ".txt";
+}
 
+
+
+void ColourThreshold::writeToFile()
+{
+    std::ofstream storeFile(getFileNameFromType(type));
+    if (!storeFile)
+    {
+        // std::cerr << "could not open file: " << getFileNameFromType(type) << "\n";
+    }
+    
+    storeFile
+    << sample.values.at(fcol_r) << " "
+    << sample.values.at(fcol_g) << " "
+    << sample.values.at(fcol_b) << " "
+    << sample.values.at(fcol_c) << " "
+    << radius << std::endl;
+
+    storeFile.close();
+}
+
+void ColourThreshold::readFromFile()
+{
+    std::ifstream storeFile(getFileNameFromType(type));
+    if (!storeFile)
+    {
+        std::cerr << "could not open file: " << getFileNameFromType(type) << "\n";
+        return;
+    }
+    storeFile >> sample.values.at(fcol_r);
+    storeFile >> sample.values.at(fcol_g);
+    storeFile >> sample.values.at(fcol_b);
+    storeFile >> sample.values.at(fcol_c);
+    storeFile >> radius;
+
+    storeFile.close();
+
+}
 
 
 
@@ -104,6 +145,7 @@ ColourIdentifier::ColourIdentifier()
     thresholds.at(static_cast<int>(TileColours::Blue)).setType(TileColours::Blue);
     thresholds.at(static_cast<int>(TileColours::White)).setType(TileColours::White);
     thresholds.at(static_cast<int>(TileColours::Checkpoint)).setType(TileColours::Checkpoint);
+    readThresholdsFromFiles();
 }
 
 
@@ -339,4 +381,21 @@ TileColours ColourIdentifier::getClosestColour(ColourSample sample)
     }
 
     return closestCol;
+}
+
+
+void ColourIdentifier::readThresholdsFromFiles()
+{
+    for (auto& threshold : thresholds)
+    {
+        threshold.readFromFile();
+    }
+}
+
+void ColourIdentifier::storeThresholds()
+{
+    for (auto& threshold : thresholds)
+    {
+        threshold.writeToFile();
+    }
 }

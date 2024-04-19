@@ -30,6 +30,38 @@ std::ostream& operator<< (std::ostream& out, const TileColours& tileColour)
     return out;
 }
 
+std::string stringFromTileColours(TileColours tileColour)
+{
+    std::string out {};
+    switch (tileColour)
+    {
+        case TileColours::Black:
+            out = "black";
+            break;
+        case TileColours::Blue:
+            out = "blue";
+            break;
+        case TileColours::Checkpoint:
+            out = "checkpoint/reflective";
+            break;
+        case TileColours::White:
+            out = "white";
+            break;
+        case TileColours::Unknown:
+            out = "unknown";
+            break;
+        case TileColours::NotUpdated:
+            out = "notUpdated";
+            break;
+        default:
+            // out = "(invalid TileColours)";
+            break;
+    }
+
+    return out;
+
+}
+
 std::ostream& operator<< (std::ostream& out, const ColourSample& sample)
 {
     out << "r=" << sample.values.at(fcol_r)
@@ -46,7 +78,7 @@ std::ostream& operator<< (std::ostream& out, const ColourSample& sample)
 }
 
 ColourSensor::ColourSensor(i2cCommunicator* i2cComm)
-: colSens {TCS34725_INTEGRATIONTIME_50MS, TCS34725_GAIN_1X, i2cComm}
+: colSens {TCS34725_INTEGRATIONTIME_50MS, TCS34725_GAIN_4X, i2cComm}
 {
 }
 

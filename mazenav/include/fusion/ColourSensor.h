@@ -21,6 +21,7 @@ enum class TileColours
 };
 
 std::ostream& operator<< (std::ostream& out, const TileColours& tileColour);
+std::string stringFromTileColours(TileColours tileColour);
 
 enum FundamentalColour
 {
