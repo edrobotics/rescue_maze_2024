@@ -9,6 +9,8 @@ Sensors sensors {&tComm, &i2cComm};
 
 PoseEstimator poseEstimator {&sensors};
 
+VisionCommunicator visionComm;
+
 
 void fusion::main(communication::Communicator* globComm, PiAbstractor* piAbs)
 {
@@ -35,6 +37,7 @@ void fusion::main(communication::Communicator* globComm, PiAbstractor* piAbs)
     std::thread poseEst(&PoseEstimator::runLoopLooper, &poseEstimator, globComm);
     std::cout << "done." << "\n";
     
+    std::thread visionServerThread(&VisionCommunicator::visionServerLooper, &visionComm, globComm);
     // while (true)
     // {
         // std::cout << globComm->poseComm.robotFrame << "\n";
@@ -45,7 +48,7 @@ void fusion::main(communication::Communicator* globComm, PiAbstractor* piAbs)
     std::cout << "joined\n";
     motorDriver.join();
     hardwareCommunicator.join();
-    
+    visionServerThread.join();
 }
 
 void fusion::motorDriveLoop(communication::Communicator* gCom, MotorControllers* mot)

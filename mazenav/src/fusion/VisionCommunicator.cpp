@@ -2,7 +2,21 @@
 
 using namespace std;
 
-VisionCommunicator::VisionCommunicator()
+void VisionCommunicator::visionServerLooper(communication::Communicator* communicatorInstance)
+{
+    createServerAndBindClient();
+    while (true)
+    {
+        auto bestVictimOptional = getBestVictim();
+        if (bestVictimOptional)
+        {
+            communicatorInstance->victimDataComm.addVictimToRescueQueue(bestVictimOptional.value());
+            communicatorInstance->panicFlagComm.raiseFlag(communication::PanicFlags::victimDetected);
+        }
+    }
+}
+
+void VisionCommunicator::createServerAndBindClient()
 {
     struct sockaddr_in address;
     int opt = 1;
@@ -11,7 +25,7 @@ VisionCommunicator::VisionCommunicator()
     // Creating socket file descriptor
     if ((listeningSocket = socket(AF_INET, SOCK_STREAM, 0)) < 0) {
         perror("socket failed");
-        exit(EXIT_FAILURE);
+        return;
     }
  
     // Forcefully attaching socket to the port 4242
@@ -19,7 +33,7 @@ VisionCommunicator::VisionCommunicator()
                    SO_REUSEADDR | SO_REUSEPORT, &opt,
                    sizeof(opt))) {
         perror("setsockopt");
-        exit(EXIT_FAILURE);
+        return;
     }
     address.sin_family = AF_INET;
     address.sin_addr.s_addr = INADDR_ANY;
@@ -28,15 +42,15 @@ VisionCommunicator::VisionCommunicator()
     // Forcefully attaching socket to the port 4242
     if (bind(listeningSocket, (struct sockaddr*)&address, sizeof(address)) < 0) {
         perror("VisionCommunicator: bind failed");
-        exit(EXIT_FAILURE);
+        return;
     }
     if (listen(listeningSocket, 3) < 0) {
         perror("VisionCommunicator: listen");
-        exit(EXIT_FAILURE);
+        return;
     }
     if ((clientSocket = accept(listeningSocket, (struct sockaddr*)&address, &addrlen)) < 0) {
         perror("VisionCommunicator: accept");
-        exit(EXIT_FAILURE);
+        return;
     }
 }
 
@@ -48,15 +62,22 @@ VisionCommunicator::~VisionCommunicator()
     close(listeningSocket);
 }
 
+std::optional<Victim> VisionCommunicator::getBestVictim() //Remove after linkping
+{
+    auto victims = getVictims();
+    if (victims.empty()) return nullopt;
+
+    return victims.back(); //Latest should be best
+}
+
 vector<Victim> VisionCommunicator::getVictims()
 {
     vector<Victim> victimDatas;
-    auto dataOptional = getData();
-    if (!dataOptional) return victimDatas;
-    if (dataOptional.value().empty()) return victimDatas;
+    string victimData = getData();
+    if (victimData.empty()) return victimDatas;
 
-    std::vector<std::string> commands = split(dataOptional.value(), '!');
-    if (dataOptional.value()[0] != '!') commands.erase(commands.begin()); //Remove first element, as it did not >start< with a '!'
+    std::vector<std::string> commands = split(victimData, '!');
+    if (victimData[0] != '!') commands.erase(commands.begin()); //Remove first element, as it did not >start< with a '!'
 
     for (auto i = commands.begin(); i != commands.end(); i++)
     {
@@ -68,20 +89,20 @@ vector<Victim> VisionCommunicator::getVictims()
     return victimDatas;
 }
 
-optional<string> VisionCommunicator::getData()
+string VisionCommunicator::getData()
 {
     fd_set rfd;
     FD_ZERO(&rfd);
     FD_SET(clientSocket, &rfd);
 
-    int ret = select(clientSocket+1, &rfd, NULL, NULL, &commTimeout);
-    if (ret < 0) {
-        perror("VisionCommunicator: select");
-        return nullopt;
-    }
-    if (ret == 0) {
-        return nullopt;
-    }
+    // int ret = select(clientSocket+1, &rfd, NULL, NULL, &commTimeout);
+    // if (ret < 0) {
+    //     perror("VisionCommunicator: select");
+    //     return nullopt;
+    // }
+    // if (ret == 0) {
+    //     return nullopt;
+    // }
 
     ssize_t valread;
     const int bufSize = 1024;
@@ -91,12 +112,14 @@ optional<string> VisionCommunicator::getData()
 
     if (valread < 0) {
         perror("VisionCommunicator: read error");
-        // exit (EXIT_FAILURE);
+        return "";
     }
+    if (valread == 0)
+        return "";
 
-    printf("Recived ::%s::\n", buffer);
+    printf("Visioncomm Recived ::%s::\n", buffer);
 
-    return make_optional<string>(buffer);
+    return string(buffer);
 }
 
 

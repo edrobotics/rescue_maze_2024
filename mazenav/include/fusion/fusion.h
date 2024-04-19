@@ -11,6 +11,7 @@
 #include "fusion/Sensors.h"
 #include "fusion/MotorControllers.h"
 #include "fusion/PoseEstimator.h"
+#include "fusion/VisionCommunicator.h"
 
 #include "fusion/LedControl.h"
 #include "fusion/PiAbstractor.h"

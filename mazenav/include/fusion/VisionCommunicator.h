@@ -9,6 +9,7 @@
 #include <iostream>
 
 #include "fusion/Victim.h"
+#include "communicator/communicator.h"
 
 #define VISION_PORT 4242
 #define VISION_COMMUNICATION_TIMEOUT_MS 10
@@ -16,13 +17,18 @@
 class VisionCommunicator
 {
     public:
-    VisionCommunicator();
     ~VisionCommunicator();
+
+    void visionServerLooper(communication::Communicator* communicatorInstance);
+
+    private:
+    std::optional<Victim> getBestVictim();
+
+    void createServerAndBindClient();
 
     std::vector<Victim> getVictims();
 
-    private:
-    std::optional<std::string> getData();
+    std::string getData();
     std::optional<Victim> constructVictim(std::string victimData);
     bool hasWallInCameraDirection(Victim::RobotCamera camera);
 
@@ -33,6 +39,7 @@ class VisionCommunicator
     std::optional<int> parseInt(std::string& str);
     std::optional<long> parseLong(std::string& str);
 
+    bool couldConnect = false;
     struct timeval commTimeout{0, VISION_COMMUNICATION_TIMEOUT_MS*1'000};
     int clientSocket;
     int listeningSocket;
