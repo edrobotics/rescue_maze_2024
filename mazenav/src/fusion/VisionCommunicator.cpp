@@ -95,15 +95,6 @@ string VisionCommunicator::getData()
     FD_ZERO(&rfd);
     FD_SET(clientSocket, &rfd);
 
-    // int ret = select(clientSocket+1, &rfd, NULL, NULL, &commTimeout);
-    // if (ret < 0) {
-    //     perror("VisionCommunicator: select");
-    //     return nullopt;
-    // }
-    // if (ret == 0) {
-    //     return nullopt;
-    // }
-
     ssize_t valread;
     const int bufSize = 1024;
     char buffer[bufSize] = { 0 };
@@ -131,35 +122,35 @@ std::optional<Victim> VisionCommunicator::constructVictim(std::string victimData
     struct Victim vicData;
 
     //Check for !v
-    if (!findChar(segments[1], {'v'})) return nullopt;
+    if (!findChar(segments[0], {'v'})) return nullopt;
 
     //Check for 'p'/'c' - potential/confirmed
-    auto detType = findChar(segments[2], {'p', 'c'});
+    auto detType = findChar(segments[1], {'p', 'c'});
     if (!detType) return nullopt;
     vicData.isConfirmedByVision = (detType.value() == 'c');
 
     //Check type - 'g'/'y'/'r'/'u'/'s'/'h'
-    auto vicType = parseVictimType(segments[3]);
+    auto vicType = parseVictimType(segments[2]);
     if (!vicType) return nullopt;
     vicData.victimType = vicType.value();
 
     //Parsing numbers
     //Check which camera - 0++
-    auto cam = parseInt(segments[4]);
+    auto cam = parseInt(segments[3]);
     if (!cam) return nullopt;
     vicData.captureCamera = (Victim::RobotCamera)cam.value();
     if (!hasWallInCameraDirection(vicData.captureCamera)) return nullopt;
 
     //Position X int mm (+/-)
-    auto victimX = parseInt(segments[5]);
+    auto victimX = parseInt(segments[4]);
     if (!victimX) return nullopt;
 
     //Position Y int mm (+/-)
-    auto victimY = parseInt(segments[6]);
+    auto victimY = parseInt(segments[5]);
     if (!victimY) return nullopt;
 
     //Unix timestamp
-    auto visionTimestamp = parseLong(segments[7]);
+    auto visionTimestamp = parseLong(segments[6]);
     if (!visionTimestamp) return nullopt;
     vicData.captureUnixTimestamp = visionTimestamp.value();
     return vicData;
@@ -168,15 +159,15 @@ std::optional<Victim> VisionCommunicator::constructVictim(std::string victimData
 bool VisionCommunicator::hasWallInCameraDirection(Victim::RobotCamera camera)
 {
     #warning IMPLEMENT
-    //If onRamp return false
+    //if (onRamp) return false;
     switch (camera)
     {
     case Victim::RobotCamera::FrontCam:
-        return true;
+        return true; //return hasFrontWall;
     case Victim::RobotCamera::LeftCam:
-        return true;
+        return true; //return hasLeftWall;
     case Victim::RobotCamera::RightCam:
-        return true;
+        return true; //return hasRightWall;
     default:
         return false;
     }
