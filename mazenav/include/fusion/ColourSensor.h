@@ -9,10 +9,13 @@
 
 enum class TileColours
 {
-    Checkpoint,
-    Blue,
-    Black,
-    White
+    Checkpoint=0,
+    Blue=1,
+    Black=2,
+    White=3,
+    RealNum=4,
+    NotUpdated,
+    Unknown,
 };
 
 enum FundamentalColour
@@ -24,10 +27,13 @@ enum FundamentalColour
     fcol_num,
 };
 
-struct ColourSample
+class ColourSample
 {
+    public:
     std::array<int, fcol_num> values {};
     bool wasDone {false};
+    TileColours classification {TileColours::Unknown};
+    static double calcColourDistance(ColourSample s1, ColourSample s2);
 };
 
 class ColourSensor
