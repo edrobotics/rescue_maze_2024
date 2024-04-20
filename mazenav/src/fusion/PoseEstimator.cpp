@@ -95,6 +95,10 @@ void PoseEstimator::update(FusionGroup fgroup, bool doUpdate)
     isTurning = globComm->poseComm.getTurning();
     isDriving = globComm->poseComm.getDriving();
     driveStarted = globComm->tileInfoComm.getDriveStarted();
+    if (driveStarted)
+    {
+        std::cout << "[PoseEstimator] driveStarted\n";
+    }
     // std::cout << "done\n";
     // Check for and handle panic flags
     switch (fgroup)
@@ -141,6 +145,7 @@ void PoseEstimator::update(FusionGroup fgroup, bool doUpdate)
     // std::cout << "In poseEstimator, before calcSpeeds\n";
     calcSpeeds(poseResult);
 
+
     checkAndHandleColour(poseResult);
 
     if (doUpdate)
@@ -161,6 +166,7 @@ void PoseEstimator::update(FusionGroup fgroup, bool doUpdate)
     // sensors->tofs.printVals(true);
     // sensors->imu0.printVals(true);
 
+    updateTileFrame(poseResult);
     updateTileProperties(poseResult);
 }
 
@@ -725,7 +731,7 @@ ConditionalAverageTerm PoseEstimator::getTofYTrans(double angle, double yoffset,
     Average avg {};
     avg.terms.push_back(flY);
     avg.terms.push_back(frY);
-    avg.terms.push_back(bY);
+    // avg.terms.push_back(bY);
     // std::cout << "bY: " << bY.value << "  ";
     // std::cout << "b.avg: " << td.b.avg << "  ";
     // std::cout << "b.cur: " << td.b.cur << "  ";
@@ -1132,11 +1138,11 @@ double PoseEstimator::getFrontObstacleDist(Tof::TofData td)
 }
 
 
-void PoseEstimator::updateTileProperties(communication::PoseDataSyncBlob& pose)
+void PoseEstimator::updateTileProperties(const communication::PoseDataSyncBlob& pose)
 {
     if (driveStarted)
     {
-        pose.startLocalTileFrame = pose.localTileFrame.getWithoutChildren();
+        
         blackDetected = false;
     }
 
@@ -1155,6 +1161,15 @@ void PoseEstimator::updateTileProperties(communication::PoseDataSyncBlob& pose)
     tProp.usedRamp = getDroveRamp();
 
     globComm->tileInfoComm.setNewTileProperties(tProp);
+}
+
+void PoseEstimator::updateTileFrame(communication::PoseDataSyncBlob& pose)
+{
+    if (driveStarted)
+    {
+        std::cout << "[PoseEstimator] Set startLocalTileFrame\n";
+        pose.startLocalTileFrame = pose.localTileFrame.getWithoutChildren();
+    }
 }
 
 

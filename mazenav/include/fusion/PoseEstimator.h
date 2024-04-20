@@ -281,7 +281,8 @@ class PoseEstimator
 
 
         // Updates tile properties if requested by another thread.
-        void updateTileProperties(communication::PoseDataSyncBlob& pose);
+        void updateTileProperties(const communication::PoseDataSyncBlob& pose);
+        void updateTileFrame(communication::PoseDataSyncBlob& pose);
         // Gets the wall states in a vector, as requested by TileProperties
         std::vector<communication::Walls> getWallStates();
         // Get the tile colour for the tile you just drove onto, or in case of black (meaning did not complete drive), colour of tile in front (black)

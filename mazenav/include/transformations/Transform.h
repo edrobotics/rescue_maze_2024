@@ -37,7 +37,7 @@ class Transform
     // Invert the transform
     Transform operator-() const;
     // Check if equal
-    bool operator==(const Transform tf) const;
+    bool operator==(const Transform& tf) const;
 
 };
 

@@ -458,6 +458,7 @@ void PathFollower::setBackWardTargetPointTf()
     }
     // Else, do nothing as resultTf is already on the correct tile.
     
+    std::cout << "Backwards transform: " << resultTf << "\n";
     // Update the targetPoint
     setTargetPointTf(resultTf);
 }
