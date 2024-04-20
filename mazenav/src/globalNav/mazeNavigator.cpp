@@ -2,6 +2,9 @@
 
 void MazeNavigator::init()
 {
+    // waitForFlag(lop unactivated) // wait for start
+    communicatorSingleton->timer.startTimer();
+
     std::this_thread::sleep_for(START_SLEEPTIME);
     logToConsoleAndFile("sending init");
     giveLowLevelInstruction(communication::DriveCommand::init);
@@ -33,7 +36,7 @@ void MazeNavigator::followLeftWall()
 
     while (true)
     {
-        checkFlagsUntilDriveIsFinished(); //We need special victim
+        checkFlagsUntilDriveIsFinished(); //We need special victimg
 
         if (lackOfProgressActive) 
         {
