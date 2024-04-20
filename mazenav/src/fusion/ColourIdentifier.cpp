@@ -134,6 +134,8 @@ void ColourThreshold::readFromFile()
 
     storeFile.close();
 
+    std::cout << "Read file (" << getFileNameFromType(type) << ") with values: " << *this << "\n";
+
 }
 
 

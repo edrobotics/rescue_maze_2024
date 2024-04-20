@@ -254,6 +254,7 @@ class PoseEstimator
         
         ColourIdentifier* colId {nullptr};
         void checkAndHandleColour(communication::PoseDataSyncBlob& poseData);
+        bool blackDetected {false};
 
         // void checkRamp();
         // bool onRamp {false};

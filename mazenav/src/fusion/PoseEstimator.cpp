@@ -141,6 +141,8 @@ void PoseEstimator::update(FusionGroup fgroup, bool doUpdate)
     // std::cout << "In poseEstimator, before calcSpeeds\n";
     calcSpeeds(poseResult);
 
+    checkAndHandleColour(poseResult);
+
     if (doUpdate)
     {
         // Write the new pose with only changes.
@@ -213,6 +215,11 @@ void PoseEstimator::updateSimple(communication::PoseDataSyncBlob& resultPose)
         {
             // std::cout << "imu unusable\n";
         }
+    }
+
+    if (imuRot.weight>0)
+    {
+        wheelRot.weight = 0;
     }
 
     wheelRot.value += resultPose.lastRobotFrame.transform.rot_z;
@@ -1084,6 +1091,7 @@ void PoseEstimator::updateTileProperties(communication::PoseDataSyncBlob& pose)
     if (driveStarted)
     {
         pose.startLocalTileFrame = pose.localTileFrame.getWithoutChildren();
+        blackDetected = false;
     }
 
     // Check if requested
@@ -1161,7 +1169,11 @@ std::vector<communication::Walls> PoseEstimator::getWallStates()
 
 TileColours PoseEstimator::getTileColour()
 {
-    #warning not yet implemented
+    #warning not yet implemented correctly
+    if (blackDetected)
+    {
+        return TileColours::Black;
+    }
     return TileColours::White;
 }
 
@@ -1260,9 +1272,12 @@ void PoseEstimator::checkAndHandleColour(communication::PoseDataSyncBlob& poseDa
     colId->registerColourSample(colSample);
 
     // Do the actual detection
+    std::cout << colId->getCurTileColour() << "\n";
     if (colId->getCurTileColour()==TileColours::Black)
     {
+        std::cout << "[PoseEstimator] Black tlie detected";
         globComm->panicFlagComm.raiseFlag(communication::PanicFlags::sawBlackTile);
+        blackDetected = true;
     }
 
     // Checking the full tile colour is done when the robot stops (when requested?)
