@@ -16,6 +16,7 @@ namespace communication
     {
         victimDetected,
         onRamp,
+        offRamp,
         sawBlackTile,
         lackOfProgressActivated,
         lackOfProgressDeactivated,
@@ -39,6 +40,7 @@ namespace communication
         private:
         PanicFlag victimFlag{{ ReadThread::localNav }};
         PanicFlag rampFlag{{ ReadThread::localNav }};
+        PanicFlag offRampFlag{{ ReadThread::localNav }};
         PanicFlag blackFlag{{ ReadThread::localNav }};
         PanicFlag lOPFlag{{ ReadThread::globalNav, ReadThread::localNav , ReadThread::fusion}};
         PanicFlag lOPDoneFlag{{ReadThread::globalNav, ReadThread::localNav, ReadThread::fusion}};

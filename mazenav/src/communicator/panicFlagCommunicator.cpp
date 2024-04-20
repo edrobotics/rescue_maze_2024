@@ -66,6 +66,8 @@ namespace communication
             return &victimFlag;
         case PanicFlags::onRamp:
             return &rampFlag;
+        case PanicFlags::offRamp:
+            return &offRampFlag;
         case PanicFlags::sawBlackTile:
             return &blackFlag;
         case PanicFlags::lackOfProgressDeactivated:
@@ -93,6 +95,7 @@ namespace communication
     {
         victimFlag.flagIsRaised = false;
         rampFlag.flagIsRaised = false;
+        offRampFlag.flagIsRaised = false;
         blackFlag.flagIsRaised = false;
         lOPFlag.flagIsRaised = false;
         lOPDoneFlag.flagIsRaised = false;
