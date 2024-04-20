@@ -6,29 +6,40 @@ namespace globalNav
 	{
 		MazeNavigator mazeNavigator(communicatorInstance);
 
-		try{
-			mazeNavigator.init();
-
-			while (true){
-				mazeNavigator.makeNavigationDecision();
-				mazeNavigator.updateInfoAfterDriving();
-			}
-		}
-		catch(...){
-			//Left wall follower
-			communicatorInstance->logger.logToAll("globNav - Trying left wal following");
-			while (true)
+		while (true)
+		{
+			try
 			{
-				try
-				{
-					mazeNavigator.followLeftWall();
-				}
-				catch(...)
-				{
-				}
+				mazeNavigator.followLeftWall();
 			}
-			
+			catch(...)
+			{
+			}
 		}
+
+		// try{
+		// 	mazeNavigator.init();
+
+		// 	while (true){
+		// 		mazeNavigator.makeNavigationDecision();
+		// 		mazeNavigator.updateInfoAfterDriving();
+		// 	}
+		// }
+		// catch(...){
+		// 	//Left wall follower
+		// 	communicatorInstance->logger.logToAll("globNav - Trying left wal following");
+		// 	while (true)
+		// 	{
+		// 		try
+		// 		{
+		// 			mazeNavigator.followLeftWall();
+		// 		}
+		// 		catch(...)
+		// 		{
+		// 		}
+		// 	}
+			
+		// }
 		
 	}
 }
