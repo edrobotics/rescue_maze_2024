@@ -80,8 +80,8 @@ class comms:
 
     def send(self,messageType,victimType,camera,position,timeStamp):
 
-        message = f"!{messageType},{victimType},{camera},{position},{timeStamp}"
-        print(message)
+        message = f"!v,{messageType.lower()},{victimType[0].lower()},{camera[3]},{position[0]},{position[1]},{timeStamp}"
+       # print(message)
         logging.info(message)
         if self.bComms:
             message = message.encode(self.FORMAT)
@@ -98,8 +98,9 @@ class imgproc:
     
     framedetected = []
 
-    def __init__(self, bLogging, dir_path, bComms = True, training = False):
+    def __init__(self, bLogging, dir_path, bComms = True, training = False, showSource = False):
         print("initiating visionclass")
+        self.showSource = showSource
         self.dir_path = dir_path
         self.bLogging = bLogging
         self.log = loggingclass.log(base_dir=dir_path, bLogging = bLogging)
@@ -136,15 +137,16 @@ class imgproc:
             result, color, middle_point = self.detector.detect_colored_square(image)
         else:
             color  = self.colorDetection.doTheWork(image)
-            print(f"detected {color}")
+            #print(f"detected {color}")
             if color:
                 self.framedetected.append(color)
+                self.com.send("C",color,self.camera,(42,42),self.timestamp)
                 
 
 
 
         if result is not None:
-            print(f"{color} detected ")
+            #print(f"{color} detected ")
             self.framedetected.append(color)
 
 
@@ -158,14 +160,14 @@ class imgproc:
         binary = cv2.adaptiveThreshold(gray,255,cv2.ADAPTIVE_THRESH_MEAN_C, cv2.THRESH_BINARY,31,10) 
         
         binary = np.invert(binary)
-        cv2.imshow("before closing",binary)
+        if self.showSource: cv2.imshow("before closing",binary)
         binary = cv2.morphologyEx(binary,cv2.MORPH_CLOSE, kernel)
 
         return binary
 
     def find_visual(self, image):
         binary = self.preprocessing(image)
-        cv2.imshow("binary", binary)
+        if self.showSource: cv2.imshow("binary", binary)
         binary2 = binary.copy()
         contours, hierarchy = cv2.findContours(binary,cv2.RETR_EXTERNAL,cv2.CHAIN_APPROX_NONE)
         cv2.drawContours(binary2, contours, 1, (255,0,0),3)
@@ -187,7 +189,7 @@ class imgproc:
                 potentialVictimRS = cv2.resize(potentialVictim, size)
                 potentialVictimBGR = cv2.cvtColor(potentialVictimRS, cv2.COLOR_GRAY2BGR)
                 self.identify_victim(potentialVictimBGR)
-                cv2.imshow("visual", potentialVictimBGR)
+                if self.showSource: cv2.imshow("visual", potentialVictimBGR)
                 #cv2.waitKey(0)
 
 
@@ -212,7 +214,7 @@ class imgproc:
         if victim != "none" and percentage > 0.99:
             if victim != "none": self.framedetected.append(victim)
             #print(f"{victim} {percentage}") 
-            self.com.send("C",victim,self.camera,self.vPos[0],self.timestamp)
+            self.com.send("C",victim,self.camera,self.vPos,self.timestamp)
         if self.training:
             self.logTraining.save_image(section, victim)
 

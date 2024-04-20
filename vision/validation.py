@@ -200,15 +200,15 @@ class validation:
 
             try:
                 image = cv2.imread(self.source_path) 
-                self.imgproc.do_the_work(image, file_name)
+                self.imgproc.do_the_work(image, "cam0",)
                 if self.showWrong:
                     if len(self.imgproc.framedetected) == 0:
                         if expectedVictim != "none":
-                            print("victim not detected")
+                            #print("victim not detected")
                             self.showimage(self.imgproc.imagecopy)
                             print(expectedVictim)
                     elif self.imgproc.framedetected[0] != expectedVictim:
-                        print(f"detected {self.imgproc.framedetected[0]} instead of {expectedVictim}")
+                        #print(f"detected {self.imgproc.framedetected[0]} instead of {expectedVictim}")
                         
                         self.showimage(self.imgproc.imagecopy)
                 elif self.showsource:
@@ -228,12 +228,12 @@ class validation:
                 self.detected[victim] += 1 
             
             self.imgproc.cleanUp()
-            #print(self.detected)
+        print(self.detected)
         if ct < len(file_list):
             print(f"run on {ct} out of {len(file_list)} images")
         else:
             print(f"finished all {ct} images")
-        print(f"detected {self.detected}")
+        #print(f"detected {self.detected}")
 
 
 
@@ -244,6 +244,7 @@ class validation:
 
     def runValidation(self):
         stop = False
+        cv2.destroyAllWindows()
         print("testing")
         victims = ("U","H","S", "red","yellow","green","none")
 
@@ -270,9 +271,10 @@ class validation:
             print("invalid victim")
 
 
-        if not stop: self.runValidation()
+        if not stop: 
+            cv2.destroyAllWindows()
+            self.runValidation()
     
-        cv2.destroyAllWindows()
 
 
                      

@@ -92,6 +92,7 @@ def imageCapture(queue, cap):
         if timeTillNext <=0:
             ret, image = cap.read()
             queue.put(image)
+            lastFrame = time.time()
         else:
             time.sleep(timeTillNext)
 
