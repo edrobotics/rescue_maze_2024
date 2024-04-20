@@ -1235,7 +1235,11 @@ TileColours PoseEstimator::getTileColour()
     {
         return TileColours::Black;
     }
-    return TileColours::White;
+    if (colId->getTileColour()==TileColours::Blue)
+    {
+        globComm->panicFlagComm.raiseFlag(communication::PanicFlags::sawBlueTile);
+    }
+    return colId->getTileColour();
 }
 
 bool PoseEstimator::getHasLocalTileMoved()

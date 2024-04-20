@@ -165,7 +165,14 @@ void PathFollower::runLoop()
             // We are ready to update data
             if (!abortMove)
             {
+                driver.stop();
                 globComm->tileInfoComm.setReadyForFill();
+                std::this_thread::sleep_for(std::chrono::milliseconds(169)); // Wait to allow for update
+                // If saw blue
+                if (globComm->panicFlagComm.readFlagFromThread(communication::PanicFlags::sawBlueTile, communication::ReadThread::localNav))
+                {
+                    std::this_thread::sleep_for(std::chrono::seconds(5));
+                }
                 std::cout << "[PathFollower] Drove forward-----------------------------------------------------------------\n";
             }
             else

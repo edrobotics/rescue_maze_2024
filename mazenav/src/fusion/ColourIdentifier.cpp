@@ -219,7 +219,7 @@ TileColours ColourIdentifier::getCurTileColour()
 
 TileColours ColourIdentifier::getTileColourFromClassifiedSamples(ColourSampleCollection& collection)
 {
-    classifySamples(collection);
+    // classifySamples(collection);
 
     TileColours  tileColour {determineColourFromColourShares(getNewTileColourShares(collection))};
 

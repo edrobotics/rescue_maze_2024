@@ -29,9 +29,9 @@ class ColourThreshold
         // Thresholds for what percentage of detections are needed on a tile
         // Black is not needed as it is not averaged
         #warning untuned constants
-        static constexpr double TILE_DETECTION_THRESHOLD_WHITE {0.5};
-        static constexpr double TILE_DETECTION_THRESHOLD_BLUE {0.6};
-        static constexpr double TILE_DETECTION_THRESHOLD_REFLECTIVE {0.3};
+        static constexpr double TILE_DETECTION_THRESHOLD_WHITE {0.7};
+        static constexpr double TILE_DETECTION_THRESHOLD_BLUE {0.2};
+        static constexpr double TILE_DETECTION_THRESHOLD_REFLECTIVE {1};
         // The actual threshold in use
         double tileAvgDetectionThreshold {};
 
