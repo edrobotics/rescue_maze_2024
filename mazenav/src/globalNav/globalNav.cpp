@@ -22,6 +22,7 @@ namespace globalNav
 				try
 				{
 					mazeNavigator.followLeftWall();
+					std::this_thread::sleep_for(std::chrono::seconds(10));
 				}
 				catch(...)
 				{
