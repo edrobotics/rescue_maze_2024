@@ -174,7 +174,7 @@ bool VisionCommunicator::hasWallInCameraDirection(Victim::RobotCamera camera)
     }
 }
 
-bool wallsContainWall(std::vector<communication::Walls> wallsContainer, communication::Walls goalWall)
+bool VisionCommunicator::wallsContainWall(std::vector<communication::Walls> wallsContainer, communication::Walls goalWall)
 {
     for (communication::Walls& currentWall : wallsContainer)
     {

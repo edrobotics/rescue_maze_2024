@@ -1220,7 +1220,7 @@ TileColours PoseEstimator::getTileColour()
     {
         return TileColours::Black;
     }
-    if (colId->getCurTileColour()==TileColours::Blue)
+    if (colId->getTileColour()==TileColours::Blue)
     {
         globComm->panicFlagComm.raiseFlag(communication::PanicFlags::sawBlueTile);
     }
@@ -1388,8 +1388,9 @@ void PoseEstimator::checkRamp(communication::PoseDataSyncBlob& poseData)
             // Tell everyone
             globComm->panicFlagComm.raiseFlag(communication::PanicFlags::offRamp);
             // Just so that the mutexes work
-            poseData.borrow();
-            poseData.giveBack(poseDataBeginRamp);
+            // poseData.borrow();
+            // poseData.giveBack(poseDataBeginRamp);
+            poseData = poseDataBeginRamp;
             std::cout << "[PoseEstimator] Got off ramp\n";
         }
         else

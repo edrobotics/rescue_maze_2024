@@ -208,9 +208,10 @@ namespace communication
     {
         mtx_wallStatesReadWrite.lock();
         wallStates = states;
-        mtx_wallStatesReadWrite.unlock();
 
+        mtx_wallStatesReadWrite.unlock();
         mtx_wallStatesRequest.lock();
+
         wantsWallStates = false;
         mtx_wallStatesRequest.unlock();
     }
