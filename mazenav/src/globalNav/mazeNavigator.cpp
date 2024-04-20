@@ -78,7 +78,11 @@ void MazeNavigator::followLeftWall()
             turnToDirection(LocalDirections::Left);
         else if (frontWall)
         {
-            if (rightWall) turnToDirection(LocalDirections::Back);
+            if (rightWall)
+            {
+                turnToDirection(LocalDirections::Left);
+                turnToDirection(LocalDirections::Left);
+            }
             else turnToDirection(LocalDirections::Right);
         }
 
