@@ -31,7 +31,7 @@ void MazeNavigator::makeNavigationDecision()
 void MazeNavigator::followLeftWall()
 {
     //sendResetCommand
-    std::this_thread::sleep_for(DRIVE_AND_TURN_TIME);
+    std::this_thread::sleep_for(std::chrono::seconds(1));
     giveLowLevelInstruction(communication::DriveCommand::init);
 
     while (true)

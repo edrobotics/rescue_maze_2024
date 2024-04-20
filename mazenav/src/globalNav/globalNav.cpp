@@ -6,17 +6,17 @@ namespace globalNav
 	{
 		MazeNavigator mazeNavigator(communicatorInstance);
 
-		try{
-			mazeNavigator.init();
+		// try{
+		// 	mazeNavigator.init();
 
-			while (true){
-				mazeNavigator.makeNavigationDecision();
-				mazeNavigator.updateInfoAfterDriving();
-			}
-		}
-		catch(...){
-			//Left wall follower
-			communicatorInstance->logger.logToAll("globNav - Trying left wal following");
+		// 	while (true){
+		// 		mazeNavigator.makeNavigationDecision();
+		// 		mazeNavigator.updateInfoAfterDriving();
+		// 	}
+		// }
+		// catch(...){
+		// 	//Left wall follower
+		// 	communicatorInstance->logger.logToAll("globNav - Trying left wal following");
 			while (true)
 			{
 				try
@@ -27,8 +27,7 @@ namespace globalNav
 				{
 				}
 			}
-			
-		}
+		// }
 		
 	}
 }
