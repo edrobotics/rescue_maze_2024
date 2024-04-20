@@ -30,6 +30,7 @@ void MazeNavigator::makeNavigationDecision()
 
 void MazeNavigator::followLeftWall()
 {
+    communicatorSingleton->victimDataComm.clearVictimsBecauseLOP();
     //sendResetCommand
     std::this_thread::sleep_for(std::chrono::seconds(1));
     giveLowLevelInstruction(communication::DriveCommand::init);
