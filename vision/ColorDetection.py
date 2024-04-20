@@ -11,8 +11,9 @@ class ColorDetection:
         self.helper = Helper()
 
 
-    def doTheWork(self, image):
+    def doTheWork(self, image, showSource = False):
         self.image = image
+        self.showSource = showSource
         self.adjustedImage = self.adjust_white_balance(image)
         self.frameDetected = []
 
@@ -43,7 +44,7 @@ class ColorDetection:
         adjusted_image = cv2.merge([adj_b, g, adj_r])
         
         #if self.showsource:
-        cv2.imshow("adjusted",adjusted_image)
+        if self.showSource: cv2.imshow("adjusted",adjusted_image)
         return adjusted_image       
 
 
@@ -74,7 +75,7 @@ class ColorDetection:
         lower_range = {
             "yellow": np.array([18,100,42]),
             "red" : np.array([130,69,42]), 
-            "green": np.array([20,70,30]) 
+            "green": np.array([50,70,30]) 
             }
         upper_range = {
             "yellow" : np.array([35,255,255]),
@@ -132,4 +133,4 @@ class ColorDetection:
         else:
             text = f"{count}"
         logMask = self.helper.putText(text,image = mask)
-        cv2.imshow(color, logMask)
+        if self.showSource: cv2.imshow(color, logMask)
