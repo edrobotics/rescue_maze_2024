@@ -765,7 +765,7 @@ ConditionalAverageTerm PoseEstimator::getTofYTrans(double angle, double yoffset,
 
     // Invert the front sensors
     avg.terms.at(0).value = GRID_SIZE - avg.terms.at(0).value;
-    avg.terms.at(1).value = GRID_SIZE - avg.terms.at(1).value;
+    // avg.terms.at(1).value = GRID_SIZE - avg.terms.at(1).value;
 
     for (auto& term : avg.terms)
     {
