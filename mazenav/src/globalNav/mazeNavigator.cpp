@@ -327,7 +327,6 @@ bool MazeNavigator::victimIsAvailable()
 
 void MazeNavigator::handleVictimFlag()
 {
-    std::this_thread::sleep_for(SHORT_WAIT_SLEEPTIME); //Make fully sure that victims have time to be updated
     logToConsoleAndFile("Found victim(s)");
     std::vector<Victim> victims = communicatorSingleton->victimDataComm.getAllNonStatusVictims();
 

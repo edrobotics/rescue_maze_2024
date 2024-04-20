@@ -70,6 +70,8 @@ namespace communication
             return &offRampFlag;
         case PanicFlags::sawBlackTile:
             return &blackFlag;
+        case PanicFlags::sawBlueTile:
+            return &blueFlag;
         case PanicFlags::lackOfProgressDeactivated:
             return &lOPDoneFlag;
         case PanicFlags::lackOfProgressActivated:
@@ -97,6 +99,7 @@ namespace communication
         rampFlag.flagIsRaised = false;
         offRampFlag.flagIsRaised = false;
         blackFlag.flagIsRaised = false;
+        blueFlag.flagIsRaised = false;
         lOPFlag.flagIsRaised = false;
         lOPDoneFlag.flagIsRaised = false;
         droveHalfTileFlag.flagIsRaised = false;

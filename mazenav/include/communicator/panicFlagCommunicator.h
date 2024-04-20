@@ -18,6 +18,7 @@ namespace communication
         onRamp,
         offRamp,
         sawBlackTile,
+        sawBlueTile,
         lackOfProgressActivated,
         lackOfProgressDeactivated,
         droveHalfTile
@@ -42,6 +43,7 @@ namespace communication
         PanicFlag rampFlag{{ ReadThread::localNav }};
         PanicFlag offRampFlag{{ ReadThread::localNav }};
         PanicFlag blackFlag{{ ReadThread::localNav }};
+        PanicFlag blueFlag{{ ReadThread::localNav }};
         PanicFlag lOPFlag{{ ReadThread::globalNav, ReadThread::localNav , ReadThread::fusion}};
         PanicFlag lOPDoneFlag{{ReadThread::globalNav, ReadThread::localNav, ReadThread::fusion}};
         PanicFlag droveHalfTileFlag{{ ReadThread::globalNav }};
