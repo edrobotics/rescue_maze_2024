@@ -280,8 +280,10 @@ void PoseEstimator::updateSimple(communication::PoseDataSyncBlob& resultPose)
 
     ConditionalAverageTerm wheelTransX {getWheelTransDiff()};
     ConditionalAverageTerm wheelTransY {wheelTransX};
+    std::cout << "wheel diff: " << wheelTransX.value;
     wheelTransX.value = -wheelTransX.value*sin(resultPose.lastRobotFrame.transform.rot_z) + resultPose.lastRobotFrame.transform.pos_x;
     wheelTransY.value = wheelTransY.value*cos(resultPose.lastRobotFrame.transform.rot_z) + resultPose.lastRobotFrame.transform.pos_y;
+    std::cout << "x: " << wheelTransX.value << " y: " << wheelTransY.value << "\n";
     transXAbs.terms.push_back(wheelTransX);
     transYAbs.terms.push_back(wheelTransY);
 
@@ -731,8 +733,8 @@ ConditionalAverageTerm PoseEstimator::getTofYTrans(double angle, double yoffset,
     // Average calculation preparation
     Average avg {};
     avg.terms.push_back(flY);
-    avg.terms.push_back(frY);
-    // avg.terms.push_back(bY);
+    // avg.terms.push_back(frY);
+    avg.terms.push_back(bY);
     // std::cout << "bY: " << bY.value << "  ";
     // std::cout << "b.avg: " << td.b.avg << "  ";
     // std::cout << "b.cur: " << td.b.cur << "  ";
