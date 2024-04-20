@@ -22,6 +22,11 @@ namespace communication
         {
             *dependency = false;
         }
+
+        if (flag == PanicFlags::lackOfProgressDeactivated)
+            resetAllFlags();
+        if (flag == PanicFlags::lackOfProgressActivated)
+            lOPDoneFlag.flagIsRaised = false;
     }
 
     bool PanicFlagCommunicator::readFlagFromThread(PanicFlags flag, ReadThread fromThread)
