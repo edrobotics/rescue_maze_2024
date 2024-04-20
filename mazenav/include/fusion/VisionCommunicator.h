@@ -32,6 +32,7 @@ class VisionCommunicator
     std::string getData();
     std::optional<Victim> constructVictim(std::string victimData);
     bool hasWallInCameraDirection(Victim::RobotCamera camera);
+    bool wallsContainWall(std::vector<communication::Walls> wallsContainer, communication::Walls goalWall);
 
     std::vector<std::string> split(std::string& split, char deliminator);
 

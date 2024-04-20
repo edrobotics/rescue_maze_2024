@@ -159,20 +159,29 @@ std::optional<Victim> VisionCommunicator::constructVictim(std::string victimData
 
 bool VisionCommunicator::hasWallInCameraDirection(Victim::RobotCamera camera)
 {
-    #warning IMPLEMENT
     std::vector<communication::Walls> wallStates {globComm->poseComm.requestWallStates()};
-    //if (onRamp) return false;
+
     switch (camera)
     {
     case Victim::RobotCamera::FrontCam:
-        return true; //return hasFrontWall;
+        return wallsContainWall(wallStates, communication::Walls::FrontWall); //return hasFrontWall;
     case Victim::RobotCamera::LeftCam:
-        return true; //return hasLeftWall;
+        return wallsContainWall(wallStates, communication::Walls::LeftWall); //return hasFrontWall;
     case Victim::RobotCamera::RightCam:
-        return true; //return hasRightWall;
+        return wallsContainWall(wallStates, communication::Walls::RightWall); //return hasFrontWall;
     default:
         return false;
     }
+}
+
+bool wallsContainWall(std::vector<communication::Walls> wallsContainer, communication::Walls goalWall)
+{
+    for (communication::Walls& currentWall : wallsContainer)
+    {
+        if (currentWall == goalWall)
+            return true;
+    }
+    return false;
 }
 
 vector<string> VisionCommunicator::split(string& split, char deliminator)
