@@ -183,7 +183,10 @@ void PathFollower::runLoop()
             //     alignAngle(true);
             // }
             // Set target point again because it was reset by alignAngle
-            setTargetPointTf(dC);
+            if (!driveBackwardsBlacktile)
+            {
+                setTargetPointTf(dC);
+            }
             drive(-1);
 
             if (!abortMove)
@@ -329,6 +332,11 @@ bool PathFollower::checkIsFinishedDriving(int direction)
         direction = -1;
     }
 
+    if (abortMove)
+    {
+        return true;
+    }
+
     // distLeftToTarget is updated in another loop, as it is used both for this and for speed control
 
     // If driving forward and there is an obstacle in front
@@ -370,6 +378,11 @@ bool PathFollower::checkIsFinishedTurning(int direction)
     else
     {
         direction = -1;
+    }
+
+    if (abortMove)
+    {
+        return true;
     }
 
     // angLeftToTarget is updated in another loop, as it is used both for this and for speed control
@@ -475,20 +488,12 @@ double PathFollower::getDistLeftToTarget()
     // Transform targetPointTf {targetPoint.getTransformLevelTo(&(globComm->poseComm.robotFrame), 1, 1)};
     // return targetPointTf.pos_y;
 
-    if (abortMove==true)
-    {
-        return 0;
-    }
     
     return globPose.getTargetFrame().transform.pos_y - globPose.robotFrame.transform.pos_y;
 }
 
 double PathFollower::getAngLeftToTarget()
 {
-    if (abortMove==true)
-    {
-        return 0;
-    }
     // Transform targetPointTf {targetPoint.getTransformLevelTo(&(globComm->poseComm.robotFrame), 1, 1)};
     double rotDiff {globPose.getTargetFrame().transform.rot_z - globPose.robotFrame.transform.rot_z};
     if (rotDiff > M_PI)

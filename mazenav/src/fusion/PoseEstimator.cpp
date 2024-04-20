@@ -681,6 +681,8 @@ ConditionalAverageTerm PoseEstimator::getTofYTrans(double angle, double yoffset,
     frY.value = (frY.value+yoffset*cos(angle)+xoffset*sin(angle) + WALL_THICKNESS/2.0);
     bY.value = bY.value+yoffset*cos(angle) + WALL_THICKNESS/2.0;
 
+    // std::cout << "Robot centre: " << 
+
     // Average calculation preparation
     Average avg {};
     avg.terms.push_back(flY);

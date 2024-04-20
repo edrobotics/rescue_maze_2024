@@ -203,7 +203,7 @@ TileColours ColourIdentifier::getTileColour()
 TileColours ColourIdentifier::getCurTileColour()
 {
     classifySample(curSample);
-    std::cout << "Current sample is: " << curSample << "\n";
+    // std::cout << "Current sample is: " << curSample << "\n";
     if (curSample.classification == TileColours::Unknown || curSample.classification == TileColours::NotUpdated)
     {
         // std::cout << "unknown or notUpdated\n";
@@ -313,7 +313,7 @@ void ColourIdentifier::classifySamples(ColourSampleCollection& samples)
 void ColourIdentifier::classifySample(ColourSample& sample)
 {
     TileColours closestCol {getClosestColour(sample)};
-    std::cout << "closestCol: " << closestCol << '\n';
+    // std::cout << "closestCol: " << closestCol << '\n';
     ColourThreshold threshold {TileColours::Unknown};
     // Set threshold to the closest colour
     switch (closestCol)
