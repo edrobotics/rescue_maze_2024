@@ -18,11 +18,13 @@ namespace communication
 
     bool Timer::timeIsOut()
     {
+        if (!timerStarted) return false;
         return duration_cast<seconds>(system_clock::now()-startTime).count() >= END_TIME_SECONDS;
     }
 
     std::chrono::seconds Timer::timeRemaining()
     {
+        if (!timerStarted) return std::chrono::seconds(END_TIME_SECONDS);
         return duration_cast<seconds>(endTime-system_clock::now());
     }
 }
