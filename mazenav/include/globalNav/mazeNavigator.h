@@ -74,7 +74,7 @@ class MazeNavigator
 
     void handleActivePanicFlags();
     bool lackOfProgressFlagRaised();
-    bool victimFlagRaised();
+    bool victimIsAvailable();
     bool droveHalfTileFlagRaised();
     void waitForFlag(communication::PanicFlags panicFlag);
     void handleVictimFlag();

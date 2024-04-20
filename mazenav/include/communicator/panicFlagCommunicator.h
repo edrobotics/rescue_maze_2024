@@ -37,7 +37,7 @@ namespace communication
     class PanicFlagCommunicator
     {
         private:
-        PanicFlag victimFlag{{ ReadThread::localNav, ReadThread::globalNav }};
+        PanicFlag victimFlag{{ ReadThread::localNav }};
         PanicFlag rampFlag{{ ReadThread::localNav }};
         PanicFlag blackFlag{{ ReadThread::localNav }};
         PanicFlag lOPFlag{{ ReadThread::globalNav, ReadThread::localNav , ReadThread::fusion}};

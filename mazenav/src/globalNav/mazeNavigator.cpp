@@ -38,13 +38,14 @@ void MazeNavigator::followLeftWall()
     {
         while (!driveIsFinished())
         {
-            if (victimFlagRaised())
+            if (victimIsAvailable())
             {
                 std::this_thread::sleep_for(SHORT_WAIT_SLEEPTIME); //Make fully sure that victims have time to be updated
                 logToConsoleAndFile("Found victim(s)");
                 std::vector<Victim> victims = communicatorSingleton->victimDataComm.getAllNonStatusVictims();
                 if (!victims.empty())
-                    communicatorSingleton->victimDataComm.addVictimToRescueQueue(victims.back());
+                    communicatorSingleton->panicFlagComm.raiseFlag(communication::PanicFlags::victimDetected);
+
             }
             if (lackOfProgressFlagRaised())
             {
@@ -309,7 +310,7 @@ bool MazeNavigator::driveIsFinished()
 
 void MazeNavigator::handleActivePanicFlags()
 {
-    if (victimFlagRaised())
+    if (victimIsAvailable())
     {
         handleVictimFlag();
     }
@@ -319,9 +320,9 @@ void MazeNavigator::handleActivePanicFlags()
     }
 }
 
-bool MazeNavigator::victimFlagRaised()
+bool MazeNavigator::victimIsAvailable()
 {
-    return communicatorSingleton->panicFlagComm.readFlagFromThread(communication::PanicFlags::victimDetected, communication::ReadThread::globalNav);
+    return communicatorSingleton->victimDataComm.hasNonStatusVictims();
 }
 
 void MazeNavigator::handleVictimFlag()
@@ -338,7 +339,7 @@ void MazeNavigator::handleVictimFlag()
         if (!mazeMap.tileHasProperty(victimPosition, Tile::TileProperty::HasVictim))
         {
             mazeMap.setTileProperty(victimPosition, Tile::TileProperty::HasVictim, true);
-            communicatorSingleton->victimDataComm.addVictimToRescueQueue(*i);
+            communicatorSingleton->panicFlagComm.raiseFlag(communication::PanicFlags::victimDetected);
         }
     }
 }

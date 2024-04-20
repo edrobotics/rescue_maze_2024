@@ -10,8 +10,8 @@ void VisionCommunicator::visionServerLooper(communication::Communicator* communi
         auto bestVictimOptional = getBestVictim();
         if (bestVictimOptional)
         {
+            communicatorInstance->logger.logToAll("VisionComm: sending vitim");
             communicatorInstance->victimDataComm.addVictimToRescueQueue(bestVictimOptional.value());
-            communicatorInstance->panicFlagComm.raiseFlag(communication::PanicFlags::victimDetected);
         }
     }
 }
