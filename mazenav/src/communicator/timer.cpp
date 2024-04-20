@@ -7,8 +7,12 @@ namespace communication
     void Timer::startTimer()
     {
         mtx_timer.lock();
-        startTime = system_clock::now();
-        endTime = startTime + seconds(END_TIME_SECONDS);
+        if (!timerStarted)
+        {
+            timerStarted = true;
+            startTime = system_clock::now();
+            endTime = startTime + seconds(END_TIME_SECONDS);
+        }
         mtx_timer.unlock();
     }
 

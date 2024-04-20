@@ -14,6 +14,7 @@ namespace communication
         std::mutex mtx_timer;
         std::chrono::_V2::system_clock::time_point startTime;
         std::chrono::_V2::system_clock::time_point endTime;
+        bool timerStarted = false;
 
         public:
         bool timeIsOut();
