@@ -127,17 +127,17 @@ namespace communication
         PoseDataSyncBlob pdBlob {poseDataBlob.getCopy()};
         Transform current {pdBlob.getLocalTileFrame().transform};
         Transform start {pdBlob.getStartLocalTileFrame().transform};
-        std::cout << "localTileFrame: " << current.pos_x <<  " " << current.pos_y;
-        std::cout << "StartLocalTileFrame: " << pdBlob.getStartLocalTileFrame().transform.pos_x <<  " " << pdBlob.getStartLocalTileFrame().transform.pos_y << "  ";
+        // std::cout << "localTileFrame: " << current.pos_x <<  " " << current.pos_y;
+        // std::cout << "StartLocalTileFrame: " << pdBlob.getStartLocalTileFrame().transform.pos_x <<  " " << pdBlob.getStartLocalTileFrame().transform.pos_y << "  ";
 
         if (current == start)
         {
-            std::cout << "hasDrivenStep says: no\n";
+            // std::cout << "hasDrivenStep says: no\n";
             return false;
         }
         else
         {
-            std::cout << "hasDrivenStep says: yes\n";
+            // std::cout << "hasDrivenStep says: yes\n";
             return true;
         }
     }

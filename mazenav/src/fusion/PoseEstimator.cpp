@@ -269,6 +269,7 @@ void PoseEstimator::updateSimple(communication::PoseDataSyncBlob& resultPose)
     {
         if (abs(resultPose.robotFrame.transform.rot_x)<TOF_Y_MAX_X_ANGLE)
         {
+            getTofYTrans(resultPose.lastRobotFrame.transform.rot_z, TOF_FY_OFFSET, TOF_FX_OFFSET);
             transYAbs.terms.push_back(getTofYTrans(resultPose.lastRobotFrame.transform.rot_z, TOF_FY_OFFSET, TOF_FX_OFFSET));
         }
         else
@@ -712,20 +713,20 @@ ConditionalAverageTerm PoseEstimator::getTofYTrans(double angle, double yoffset,
     frY.value = (frY.value+yoffset*cos(angle)+xoffset*sin(angle) + WALL_THICKNESS/2.0);
     bY.value = bY.value+yoffset*cos(angle) + WALL_THICKNESS/2.0;
 
-    // std::cout << "ToF: "
-    // << "fl.avg=" << td.fl.avg << " "
-    // << "fl.cur=" << td.fl.cur << " "
-    // << "fr.avg=" << td.fr.avg << " "
-    // << "fr.cur=" << td.fr.cur << " "
-    // << "b.avg=" << td.b.avg << " "
-    // << "b.cur=" << td.b.cur << " ";
+    std::cout << "ToF: "
+    << "fl.avg=" << td.fl.avg << " "
+    << "fl.cur=" << td.fl.cur << " "
+    << "fr.avg=" << td.fr.avg << " "
+    << "fr.cur=" << td.fr.cur << " "
+    << "b.avg=" << td.b.avg << " "
+    << "b.cur=" << td.b.cur << " ";
 
 
-    // std::cout << "Robot centre: "
-    // << "flY=" << flY.value << " "
-    // << "frY=" << frY.value << " "
-    // << "bY=" << bY.value << " "
-    // << "\n";
+    std::cout << "Robot centre: "
+    << "flY=" << flY.value << " "
+    << "frY=" << frY.value << " "
+    << "bY=" << bY.value << " "
+    << "\n";
 
     // Average calculation preparation
     Average avg {};
