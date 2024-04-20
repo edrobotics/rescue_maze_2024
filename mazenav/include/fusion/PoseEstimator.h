@@ -259,6 +259,7 @@ class PoseEstimator
         void checkRamp(communication::PoseDataSyncBlob& poseData);
         bool onRamp {false};
         bool beganRamp {false};
+        bool gotOffRamp {false};
         // Reset on drive begin
         double distOnRamp {0};
         static constexpr double RAMP_DETECTION_ANGLE_THRESHOLD {0.14}; // About 8 degrees
@@ -270,6 +271,8 @@ class PoseEstimator
         static constexpr int RAMP_DETECTION_TRUE_NUM_THRESHOLD {8};
         int getRampTrueNum();
         static constexpr double RAMP_DRIVEN_MIN_DISTANCE {69};
+        communication::PoseDataSyncBlob poseDataBeginRamp {};
+        static constexpr double TOF_Y_MAX_X_ANGLE {0.069}; // About 4 degrees
         
         void checkAndHandlePanic();
         bool lopActive {false};

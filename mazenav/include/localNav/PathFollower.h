@@ -182,5 +182,10 @@ class PathFollower
         bool lopActive {false};
         bool lopDeactivated {false};
 
+        void checkRamp();
+        bool onRamp {false};
+        bool gotOnRamp {false};
+        bool gotOffRamp {false};
+
 
 };

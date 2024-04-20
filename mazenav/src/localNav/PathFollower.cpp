@@ -250,6 +250,7 @@ void PathFollower::drive(int direction)
             // Create local copy of pose
             globPose = globComm->poseComm.copyData(true);
             checkAndHandlePanic();
+            checkRamp();
             distLeftToTarget = getDistLeftToTarget();
             std::cout << "distLeftToTarget: " << distLeftToTarget << "\n";
             driver.calcSpeeds(getTransSpeedDriving(direction), getRotSpeedDriving(direction));
@@ -490,8 +491,15 @@ double PathFollower::getDistLeftToTarget()
     // Transform targetPointTf {targetPoint.getTransformLevelTo(&(globComm->poseComm.robotFrame), 1, 1)};
     // return targetPointTf.pos_y;
 
+    if (onRamp)
+    {
+        return GRID_SIZE;
+    }
+    else
+    {
+        return globPose.getTargetFrame().transform.pos_y - globPose.robotFrame.transform.pos_y;
+    }
     
-    return globPose.getTargetFrame().transform.pos_y - globPose.robotFrame.transform.pos_y;
 }
 
 double PathFollower::getAngLeftToTarget()
@@ -555,12 +563,6 @@ void PathFollower::readPidFromFile()
 void PathFollower::checkAndHandlePanic()
 {
     checkAndHandleLop();
-
-    // Ramp
-    if (globComm->panicFlagComm.readFlagFromThread(communication::PanicFlags::onRamp, communication::ReadThread::localNav))
-    {
-        #warning not done
-    }
 
     // Black tile
     if (globComm->panicFlagComm.readFlagFromThread(communication::PanicFlags::sawBlackTile, communication::ReadThread::localNav))
@@ -650,4 +652,31 @@ double PathFollower::capYPidOutput(double output)
         // Do nothing
     }
     return output;
+}
+
+
+void PathFollower::checkRamp()
+{
+    if (onRamp==true)
+    {
+        gotOnRamp = false;
+    }
+    if (onRamp==false)
+    {
+        gotOffRamp = false;
+    }
+
+    // Ramp get on
+    if (globComm->panicFlagComm.readFlagFromThread(communication::PanicFlags::onRamp, communication::ReadThread::localNav))
+    {
+        onRamp = true;
+        gotOnRamp = true;
+    }
+
+    // Ramp get off
+    if (globComm->panicFlagComm.readFlagFromThread(communication::PanicFlags::offRamp, communication::ReadThread::localNav))
+    {
+        onRamp = false;
+        gotOffRamp = true;
+    }
 }

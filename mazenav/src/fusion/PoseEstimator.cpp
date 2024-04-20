@@ -250,7 +250,6 @@ void PoseEstimator::updateSimple(communication::PoseDataSyncBlob& resultPose)
     }
 
     // Check if we are on a ramp
-    checkRamp(resultPose);
 
     // std::cout << "rotation done\n";
     
@@ -260,7 +259,17 @@ void PoseEstimator::updateSimple(communication::PoseDataSyncBlob& resultPose)
     Average transYAbs {};
 
     transXAbs.terms.push_back(getTofXTrans(resultPose.lastRobotFrame.transform.rot_z));
-    transYAbs.terms.push_back(getTofYTrans(resultPose.lastRobotFrame.transform.rot_z, TOF_FY_OFFSET, TOF_FX_OFFSET));
+    if (!onRamp)
+    {
+        if (abs(resultPose.robotFrame.transform.rot_x)<TOF_Y_MAX_X_ANGLE)
+        {
+            transYAbs.terms.push_back(getTofYTrans(resultPose.lastRobotFrame.transform.rot_z, TOF_FY_OFFSET, TOF_FX_OFFSET));
+        }
+        else
+        {
+            std::cout << "X angle too large for ToF Y pos\n";
+        }
+    }
 
     ConditionalAverageTerm wheelTransX {getWheelTransDiff()};
     ConditionalAverageTerm wheelTransY {wheelTransX};
@@ -304,6 +313,9 @@ void PoseEstimator::updateSimple(communication::PoseDataSyncBlob& resultPose)
         // std::cout << "translation done\n";
     }
 
+    // Check the ramp last. Will technically allow one iteration where you are on a ramp but did calculations like if you were not.
+    // When you get off a ramp, it must be here though.
+    checkRamp(resultPose);
 }
 
 void PoseEstimator::updateLidar(communication::PoseDataSyncBlob& resultPose)
@@ -1326,14 +1338,14 @@ void PoseEstimator::checkAndHandleColour(communication::PoseDataSyncBlob& poseDa
 
 void PoseEstimator::checkRamp(communication::PoseDataSyncBlob& poseData)
 {
-    if (driveStarted)
-    {
-        distOnRamp = 0;
-    }
     // Must be driving
     if (!isDriving)
     {
         return;
+    }
+    if (driveStarted)
+    {
+        distOnRamp = 0;
     }
     if (abs(poseData.robotFrame.transform.rot_x)>RAMP_DETECTION_ANGLE_THRESHOLD)
     {
@@ -1351,6 +1363,8 @@ void PoseEstimator::checkRamp(communication::PoseDataSyncBlob& poseData)
             beganRamp = true;
             // Tell everyone
             globComm->panicFlagComm.raiseFlag(communication::PanicFlags::onRamp);
+            poseDataBeginRamp = poseData.getCopy();
+            std::cout << "[PoseEstimator] Got on ramp\n";
         }
         else
         {
@@ -1364,6 +1378,20 @@ void PoseEstimator::checkRamp(communication::PoseDataSyncBlob& poseData)
     }
     else
     {
+        if (onRamp)
+        {
+            gotOffRamp = true;
+            // Tell everyone
+            globComm->panicFlagComm.raiseFlag(communication::PanicFlags::offRamp);
+            // Just so that the mutexes work
+            poseData.borrow();
+            poseData.giveBack(poseDataBeginRamp);
+            std::cout << "[PoseEstimator] Got off ramp\n";
+        }
+        else
+        {
+            gotOffRamp = false;
+        }
         onRamp = false;
     }
 }

@@ -9,6 +9,7 @@ void ColourCalibrator::init(PiAbstractor* piAbs)
     piAbs->pinModeTS(PIN_RELECTIVE, PiAbstractor::PinMode::inputPullup);
     piAbs->pinModeTS(PIN_BLACK, PiAbstractor::PinMode::inputPullup);
     piAbs->pinModeTS(PIN_CONN, PiAbstractor::PinMode::inputPullup);
+    std::this_thread::sleep_for(std::chrono::milliseconds(50));
 }
 
 
