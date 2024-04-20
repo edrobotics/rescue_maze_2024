@@ -558,6 +558,10 @@ void PoseEstimator::calcWheelDistanceDiffs()
     // lastMotorDistances = motorDistances;
 
     motorDistanceDiffs = sensors->motors.getDistances();
+    motorDistanceDiffs.lb*=1.67;
+    motorDistanceDiffs.lf*=1.67;
+    motorDistanceDiffs.rb*=1.67;
+    motorDistanceDiffs.rf*=1.67;
     // std::cout << "Motor distance diffs: lf=" << motorDistanceDiffs.lf << "  ";
     // std::cout << "lb=" << motorDistanceDiffs.lb << "  ";
     // std::cout << "rf=" << motorDistanceDiffs.rf << "  ";
@@ -604,6 +608,7 @@ ConditionalAverageTerm PoseEstimator::getWheelTransDiff()
         // std::cout << "Could not use wheel odom diff\n";
         result.weight = 0;
     }
+
 
     return result;
 }
@@ -685,24 +690,24 @@ ConditionalAverageTerm PoseEstimator::getTofYTrans(double angle, double yoffset,
     ConditionalAverageTerm bY {td.b.avg*cos(angle), 1};
 
     // Change to robot centre
-    flY.value = (flY.value+yoffset*cos(angle)+xoffset*sin(angle) + WALL_THICKNESS/2.0);
+    flY.value = (flY.value+yoffset*cos(angle)-xoffset*sin(angle) + WALL_THICKNESS/2.0);
     frY.value = (frY.value+yoffset*cos(angle)+xoffset*sin(angle) + WALL_THICKNESS/2.0);
     bY.value = bY.value+yoffset*cos(angle) + WALL_THICKNESS/2.0;
 
-    std::cout << "ToF: "
-    << "fl.avg=" << td.fl.avg << " "
-    << "fl.cur=" << td.fl.cur << " "
-    << "fr.avg=" << td.fr.avg << " "
-    << "fr.cur=" << td.fr.cur << " "
-    << "b.avg=" << td.b.avg << " "
-    << "b.cur=" << td.b.cur << " ";
+    // std::cout << "ToF: "
+    // << "fl.avg=" << td.fl.avg << " "
+    // << "fl.cur=" << td.fl.cur << " "
+    // << "fr.avg=" << td.fr.avg << " "
+    // << "fr.cur=" << td.fr.cur << " "
+    // << "b.avg=" << td.b.avg << " "
+    // << "b.cur=" << td.b.cur << " ";
 
 
-    std::cout << "Robot centre: "
-    << "flY=" << flY.value << " "
-    << "frY=" << frY.value << " "
-    << "bY=" << bY.value << " "
-    << "\n";
+    // std::cout << "Robot centre: "
+    // << "flY=" << flY.value << " "
+    // << "frY=" << frY.value << " "
+    // << "bY=" << bY.value << " "
+    // << "\n";
 
     // Average calculation preparation
     Average avg {};
@@ -750,6 +755,12 @@ ConditionalAverageTerm PoseEstimator::getTofYTrans(double angle, double yoffset,
     // Fix wrapping mismatch
     avg.stripZeroWeight();
     wrapVectorSameScale(avg.terms, minYPos, maxYPos);
+    // std::cout << "Wrapped Same scale: ";
+    for (auto& values : avg.terms)
+    {
+        // std::cout << values.value << " ";
+    }
+    // std::cout << "\n";
 
     try
     {

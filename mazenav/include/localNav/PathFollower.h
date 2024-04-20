@@ -65,7 +65,7 @@ class PathFollower
         void turn(int direction);
         // Align angle
         // usePidAng - if false, target angle is 0. If true, target angle is determined by what the driving PID wants for the given parameters.
-        // void alignAngle(bool usePidAng);
+        void alignAngle(bool usePidAng);
 
 
         // Set the target point given a drivecommand
@@ -100,7 +100,7 @@ class PathFollower
         bool abortMove {};
 
         static constexpr double DRIVE_STOP_THRESHOLD {20};
-        static constexpr double TURN_STOP_THRESHOLD {M_PI_4/3.0};
+        static constexpr double TURN_STOP_THRESHOLD {M_PI_4/4.0};
         static constexpr double FRONT_OBSTACLE_DRIVE_STOP_THRESHOLD {80};
         static constexpr double FRONT_OBSTACLE_STANDING_STOP_THRESHOLD {20};
 
@@ -163,7 +163,7 @@ class PathFollower
 
         static constexpr double DRIVE_SPEED_STANDARD {121};
         static constexpr double DRIVE_SPEED_SLOW {69};
-        static constexpr double TURN_SPEED_STANDARD {M_PI_2*0.5};
+        static constexpr double TURN_SPEED_STANDARD {M_PI_4*0.6};
         static constexpr double TURN_SPEED_SLOW {TURN_SPEED_STANDARD};
 
 

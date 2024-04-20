@@ -202,12 +202,14 @@ void PathFollower::runLoop()
         case communication::DriveCommand::turnLeft:
             std::cout << "[PathFollower] turnLeft\n";
             turn(1);
+            alignAngle(false);
             std::cout << "[PathFollower] Turned left-----------------------------------------------------------------\n";
             break;
 
         case communication::DriveCommand::turnRight:
             std::cout << "[PathFollower] turnRight\n";
             turn(-1);
+            alignAngle(false);
             std::cout << "[PathFollower] Turned right-----------------------------------------------------------------\n";
             break;
 
@@ -263,26 +265,26 @@ void PathFollower::drive(int direction)
     globComm->poseComm.setDriving(false);
 }
 
-// void PathFollower::alignAngle(bool usePidAngle)
-// {
-//     yPid.restartPID();
-//     angPid.restartPID();
-//     driveTransSpeedPid.restartPID();
-//     turnRotSpeedPid.restartPID();
-//     turnTransSpeedPid.restartPID();
+void PathFollower::alignAngle(bool usePidAngle)
+{
+    yPid.restartPID();
+    angPid.restartPID();
+    driveTransSpeedPid.restartPID();
+    turnRotSpeedPid.restartPID();
+    turnTransSpeedPid.restartPID();
 
-//     if (usePidAngle)
-//     {
-//         setTargetPointTf(Transform{static_cast<double>(GRID_SIZE/2), static_cast<double>(GRID_SIZE/2), 0, 0, 0, yPid.getCorrection(globPose.robotFrame.transform.rot_z)});
-//     }
-//     else
-//     {
-//         setTargetPointTf(Transform{static_cast<double>(GRID_SIZE/2), static_cast<double>(GRID_SIZE/2), 0, 0, 0, 0});
-//     }
+    if (usePidAngle)
+    {
+        setTargetPointTf(Transform{static_cast<double>(GRID_SIZE/2), static_cast<double>(GRID_SIZE/2), 0, 0, 0, yPid.getCorrection(globPose.robotFrame.transform.rot_z)});
+    }
+    else
+    {
+        setTargetPointTf(Transform{static_cast<double>(GRID_SIZE/2), static_cast<double>(GRID_SIZE/2), 0, 0, 0, 0});
+    }
 
-//     turn();
+    // turn();
 
-// }
+}
 
 void PathFollower::turn(int direction)
 {
