@@ -22,6 +22,7 @@ class VisionCommunicator
     void visionServerLooper(communication::Communicator* communicatorInstance);
 
     private:
+    communication::Communicator* globComm {nullptr};
     std::optional<Victim> getBestVictim();
 
     void createServerAndBindClient();

@@ -175,4 +175,44 @@ namespace communication
         std::lock_guard<std::mutex> lock(mtx_flush);
         shouldflush = false;
     }
+
+    std::vector<Walls> PoseCommunicator::requestWallStates()
+    {
+        mtx_wallStatesRequest.lock();
+        wantsWallStates = true;
+        mtx_wallStatesRequest.unlock();
+
+        bool wait {true};
+        while (wait)
+        {
+            mtx_wallStatesRequest.lock();
+            wait = wantsWallStates;
+            mtx_wallStatesRequest.unlock();
+            std::this_thread::sleep_for(std::chrono::milliseconds(5));
+        }
+
+        std::lock_guard<std::mutex> lock(mtx_wallStatesReadWrite);
+        return wallStates;
+
+    }
+
+    bool PoseCommunicator::checkWantsWallStates()
+    {
+
+        std::lock_guard<std::mutex> lock(mtx_wallStatesRequest);
+        return wantsWallStates;
+
+    }
+
+    void PoseCommunicator::setWallStates(std::vector<Walls> states)
+    {
+        mtx_wallStatesReadWrite.lock();
+        wallStates = states;
+        mtx_wallStatesReadWrite.unlock();
+
+        mtx_wallStatesRequest.lock();
+        wantsWallStates = false;
+        mtx_wallStatesRequest.unlock();
+    }
+
 }

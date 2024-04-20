@@ -4,6 +4,7 @@ using namespace std;
 
 void VisionCommunicator::visionServerLooper(communication::Communicator* communicatorInstance)
 {
+    globComm = communicatorInstance;
     createServerAndBindClient();
     while (true)
     {
@@ -159,6 +160,7 @@ std::optional<Victim> VisionCommunicator::constructVictim(std::string victimData
 bool VisionCommunicator::hasWallInCameraDirection(Victim::RobotCamera camera)
 {
     #warning IMPLEMENT
+    std::vector<communication::Walls> wallStates {globComm->poseComm.requestWallStates()};
     //if (onRamp) return false;
     switch (camera)
     {

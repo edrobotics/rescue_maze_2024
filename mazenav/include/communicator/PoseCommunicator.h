@@ -9,6 +9,7 @@
 #include "GlobalConstants.h"
 #include "transformations/tfsys.h"
 #include "communicator/PoseDataSyncBlob.h"
+#include "communicator/tileDrivePropertyCommunicator.h"
 
 
 namespace communication
@@ -41,6 +42,12 @@ namespace communication
             // Flushing control
             bool shouldflush {false};
             std::mutex mtx_flush {};
+
+            // Get and set wallstates
+            std::mutex mtx_wallStatesRequest {};
+            std::mutex mtx_wallStatesReadWrite {};
+            bool wantsWallStates {false};
+            std::vector<Walls> wallStates {};
 
             
         public:
@@ -88,6 +95,10 @@ namespace communication
             bool getShouldFlushPose();
             // Call to signal that the flush has been performed
             void flushDone();
+
+            std::vector<Walls> requestWallStates();
+            bool checkWantsWallStates();
+            void setWallStates(std::vector<Walls> states);
 
 
     };

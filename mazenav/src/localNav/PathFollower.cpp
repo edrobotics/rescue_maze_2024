@@ -153,10 +153,15 @@ void PathFollower::runLoop()
         }
     }
 
+    std::vector<communication::Walls> wallStates {globComm->poseComm.requestWallStates()};
     switch(dC)
     {
         case communication::DriveCommand::driveForward:
             std::cout << "[PathFollower] driveForward\n";
+            if (std::count(wallStates.begin(), wallStates.end(), communication::Walls::FrontWall) > 0)
+            {
+                abortMove = true;
+            }
             globComm->tileInfoComm.startDrive();
             setLinePos(GRID_SIZE/2.0);
             // alignAngle(true);
@@ -167,6 +172,12 @@ void PathFollower::runLoop()
             {
                 globComm->tileInfoComm.setReadyForFill();
                 std::cout << "[PathFollower] Drove forward-----------------------------------------------------------------\n";
+                std::this_thread::sleep_for(std::chrono::milliseconds(100));
+                if (globComm->panicFlagComm.readFlagFromThread(communication::PanicFlags::sawBlueTile, communication::ReadThread::localNav))
+                {
+                    driver.stop();
+                    std::this_thread::sleep_for(std::chrono::seconds(5));
+                }
             }
             else
             {
@@ -580,6 +591,10 @@ void PathFollower::checkAndHandlePanic()
 
 void PathFollower::handleVictim()
 {
+    if (onRamp)
+    {
+        return;
+    }
     driver.stop();
 
     // Do the blinking
