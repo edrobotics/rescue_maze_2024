@@ -14,18 +14,17 @@ namespace globalNav
 				mazeNavigator.updateInfoAfterDriving();
 			}
 		}
-		catch(const std::exception& e){
+		catch(...){
 			//Left wall follower
-			std::cerr << e.what() << '\n';
+			communicatorInstance->logger.logToAll("globNav - Trying left wal following");
 			while (true)
 			{
 				try
 				{
 					mazeNavigator.followLeftWall();
 				}
-				catch(const std::exception& e)
+				catch(...)
 				{
-					std::cerr << e.what() << '\n';
 				}
 			}
 			

@@ -30,7 +30,7 @@ namespace communication
     void Logger::logToConsole(std::string logMessage)
     {
         mtx_logging.lock();
-        std::cout << logMessage << std::endl;
+        std::cout << logMessage << '\n';
         mtx_logging.unlock();
     }
 

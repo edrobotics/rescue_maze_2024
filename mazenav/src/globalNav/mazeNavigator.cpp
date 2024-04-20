@@ -48,6 +48,7 @@ void MazeNavigator::followLeftWall()
             }
             if (lackOfProgressFlagRaised())
             {
+                logToConsoleAndFile("!! LOP !!");
                 communicatorSingleton->navigationComm.clearAllCommands();
                 communicatorSingleton->victimDataComm.clearVictimsBecauseLOP();
                 lackOfProgressActive = true;
@@ -356,11 +357,13 @@ void MazeNavigator::lackOfProgress()
     communicatorSingleton->navigationComm.clearAllCommands();
     communicatorSingleton->victimDataComm.clearVictimsBecauseLOP();
     lackOfProgressActive = true;
+    logToConsoleAndFile("LOP is now active");
 }
 
 void MazeNavigator::lackOfProgressInactive()
 {
     waitForFlag(communication::PanicFlags::lackOfProgressDeactivated);
+    logToConsoleAndFile("LOP is now inactive");
     communicatorSingleton->victimDataComm.clearVictimsBecauseLOP(); //Clear again just in case cameras have detected during movement of robot
     lackOfProgressActive = false;
 }
