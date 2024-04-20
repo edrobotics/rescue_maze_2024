@@ -256,8 +256,20 @@ class PoseEstimator
         void checkAndHandleColour(communication::PoseDataSyncBlob& poseData);
         bool blackDetected {false};
 
-        // void checkRamp();
-        // bool onRamp {false};
+        void checkRamp(communication::PoseDataSyncBlob& poseData);
+        bool onRamp {false};
+        bool beganRamp {false};
+        // Reset on drive begin
+        double distOnRamp {0};
+        static constexpr double RAMP_DETECTION_ANGLE_THRESHOLD {0.14}; // About 8 degrees
+        static constexpr int RAMP_HISTORY_NUM {10};
+        int rampHistoryPointer {0};
+        // void incrementRampHistoryPointer();
+        void setValueHistoryPointer(bool value);
+        std::array<bool, RAMP_HISTORY_NUM> rampHistory {};
+        static constexpr int RAMP_DETECTION_TRUE_NUM_THRESHOLD {8};
+        int getRampTrueNum();
+        static constexpr double RAMP_DRIVEN_MIN_DISTANCE {69};
         
         void checkAndHandlePanic();
         bool lopActive {false};

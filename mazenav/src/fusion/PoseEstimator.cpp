@@ -227,6 +227,11 @@ void PoseEstimator::updateSimple(communication::PoseDataSyncBlob& resultPose)
 
     imuRot.value += resultPose.lastRobotFrame.transform.rot_z;
     rotAbs.terms.push_back(imuRot);
+    if (imuRot.weight != 0)
+    {
+        resultPose.robotFrame.transform.rot_x = sensors->imu0.angles.x;
+        resultPose.robotFrame.transform.rot_y = sensors->imu0.angles.y;
+    }
 
 
     rotAbs.stripZeroWeight();
@@ -243,6 +248,9 @@ void PoseEstimator::updateSimple(communication::PoseDataSyncBlob& resultPose)
         // std::cerr << e.what() << " : " << "Cannot compute robot angle" << '\n';
         // #warning what to do here, with no angle? Also what to do for further angle requirements
     }
+
+    // Check if we are on a ramp
+    checkRamp(resultPose);
 
     // std::cout << "rotation done\n";
     
@@ -681,7 +689,20 @@ ConditionalAverageTerm PoseEstimator::getTofYTrans(double angle, double yoffset,
     frY.value = (frY.value+yoffset*cos(angle)+xoffset*sin(angle) + WALL_THICKNESS/2.0);
     bY.value = bY.value+yoffset*cos(angle) + WALL_THICKNESS/2.0;
 
-    // std::cout << "Robot centre: " << 
+    std::cout << "ToF: "
+    << "fl.avg=" << td.fl.avg << " "
+    << "fl.cur=" << td.fl.cur << " "
+    << "fr.avg=" << td.fr.avg << " "
+    << "fr.cur=" << td.fr.cur << " "
+    << "b.avg=" << td.b.avg << " "
+    << "b.cur=" << td.b.cur << " ";
+
+
+    std::cout << "Robot centre: "
+    << "flY=" << flY.value << " "
+    << "frY=" << frY.value << " "
+    << "bY=" << bY.value << " "
+    << "\n";
 
     // Average calculation preparation
     Average avg {};
@@ -1193,8 +1214,14 @@ bool PoseEstimator::getHasLocalTileMoved()
 
 bool PoseEstimator::getDroveRamp()
 {
-    #warning unimplemented
-    return false;
+    if (distOnRamp>=RAMP_DRIVEN_MIN_DISTANCE)
+    {
+        return true;
+    }
+    else
+    {
+        return false;
+    }
 }
 
 bool PoseEstimator::getLeftWallPresent(Tof::TofData td)
@@ -1284,6 +1311,74 @@ void PoseEstimator::checkAndHandleColour(communication::PoseDataSyncBlob& poseDa
 
     // Checking the full tile colour is done when the robot stops (when requested?)
 }
+
+
+void PoseEstimator::checkRamp(communication::PoseDataSyncBlob& poseData)
+{
+    if (driveStarted)
+    {
+        distOnRamp = 0;
+    }
+    // Must be driving
+    if (!isDriving)
+    {
+        return;
+    }
+    if (abs(poseData.robotFrame.transform.rot_x)>RAMP_DETECTION_ANGLE_THRESHOLD)
+    {
+        setValueHistoryPointer(true);
+    }
+    else
+    {
+        setValueHistoryPointer(false);
+    }
+
+    if (getRampTrueNum()>RAMP_DETECTION_TRUE_NUM_THRESHOLD)
+    {
+        if (!onRamp)
+        {
+            beganRamp = true;
+            // Tell everyone
+            globComm->panicFlagComm.raiseFlag(communication::PanicFlags::onRamp);
+        }
+        else
+        {
+            beganRamp = false;
+        }
+
+        onRamp = true;
+
+        // Increment the distance driven on ramp
+        distOnRamp += (poseData.robotFrame.transform.pos_y - poseData.lastRobotFrame.transform.pos_y);
+    }
+    else
+    {
+        onRamp = false;
+    }
+}
+
+int PoseEstimator::getRampTrueNum()
+{
+    int sum {0};
+
+    for (auto& value : rampHistory)
+    {
+        if (value)
+        {
+            ++sum;
+        }
+    }
+
+    return sum;
+}
+
+void PoseEstimator::setValueHistoryPointer(bool value)
+{
+    rampHistoryPointer = (rampHistoryPointer+1)%RAMP_HISTORY_NUM;
+    rampHistory.at(rampHistoryPointer) = value;
+}
+
+
 
 
 void PoseEstimator::checkAndHandlePanic()
