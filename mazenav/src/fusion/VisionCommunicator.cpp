@@ -11,7 +11,7 @@ void VisionCommunicator::visionServerLooper(communication::Communicator* communi
         if (bestVictimOptional)
         {
             communicatorInstance->logger.logToAll("VisionComm: sending vitim");
-            communicatorInstance->victimDataComm.addVictimToRescueQueue(bestVictimOptional.value());
+            communicatorInstance->victimDataComm.addVictimToStatusQueue(bestVictimOptional.value());
         }
     }
 }
