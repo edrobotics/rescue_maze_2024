@@ -36,7 +36,25 @@ void MazeNavigator::followLeftWall()
 
     while (true)
     {
-        checkFlagsUntilDriveIsFinished(); //We need special victimg
+        while (!driveIsFinished())
+        {
+            if (victimFlagRaised())
+            {
+                std::this_thread::sleep_for(SHORT_WAIT_SLEEPTIME); //Make fully sure that victims have time to be updated
+                logToConsoleAndFile("Found victim(s)");
+                std::vector<Victim> victims = communicatorSingleton->victimDataComm.getAllNonStatusVictims();
+                if (!victims.empty())
+                    communicatorSingleton->victimDataComm.addVictimToRescueQueue(victims.back());
+            }
+            if (lackOfProgressFlagRaised())
+            {
+                communicatorSingleton->navigationComm.clearAllCommands();
+                communicatorSingleton->victimDataComm.clearVictimsBecauseLOP();
+                lackOfProgressActive = true;
+            }
+            if (lackOfProgressActive) break;
+            std::this_thread::sleep_for(LOOP_SLEEPTIME);
+        }
 
         if (lackOfProgressActive) 
         {
