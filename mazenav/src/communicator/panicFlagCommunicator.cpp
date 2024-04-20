@@ -37,7 +37,7 @@ namespace communication
                 panicFlag->readByLocalNav = true;
                 break;
             case ReadThread::globalNav:
-                panicFlag->readByFusion = true;
+                panicFlag->readByGlobalNav = true;
                 break;
             default:
                 break;

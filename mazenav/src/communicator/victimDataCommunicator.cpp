@@ -51,61 +51,10 @@ namespace communication
         return unstatusedVictims;
     }
 
-    void VictimDataCommunicator::addVictimToRescueQueue(Victim victim)
-    {
-        mtx_rescue.lock();
-
-        rescueQueue.push(victim);
-
-        mtx_rescue.unlock();
-    }
-
-    bool VictimDataCommunicator::hasUnrescuedVictims()
-    {
-        mtx_rescue.lock();
-
-        bool hasVictim = !rescueQueue.empty();
-
-        mtx_rescue.unlock();
-
-        return hasVictim;
-    }
-
-    Victim VictimDataCommunicator::getNextUnrescuedVictim()
-    {
-        mtx_rescue.lock();
-
-        Victim nextVictim = rescueQueue.front();
-        rescueQueue.pop();
-
-        mtx_rescue.unlock();
-
-        return nextVictim;
-    }
-
-    std::vector<Victim> VictimDataCommunicator::getAllUnrescuedVictims()
-    {
-        std::vector<Victim> unrescuedVictims;
-        
-        mtx_rescue.lock();
-
-        while (!rescueQueue.empty())
-        {
-            unrescuedVictims.push_back(rescueQueue.front());
-            rescueQueue.pop();
-        }
-
-        mtx_rescue.unlock();
-
-        return unrescuedVictims;
-    }
-
     void VictimDataCommunicator::clearVictimsBecauseLOP()
     {
         while (!statusQueue.empty())
             statusQueue.pop();
-        while (!rescueQueue.empty())
-            rescueQueue.pop();
     }
 
 }
